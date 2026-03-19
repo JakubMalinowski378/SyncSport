@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="src/Bootstrapper/Bootstrapper.csproj" />
+
+  <Folder Name="/Modules/Facilities/">
+    <Project Path="src/Modules/Facilities/Facilities.Api/Facilities.Api.csproj" />
+    <Project Path="src/Modules/Facilities/Facilities.Infrastructure/Facilities.Infrastructure.csproj" />
+    <Project Path="src/Modules/Facilities/Facilities.Application/Facilities.Application.csproj" />
+    <Project Path="src/Modules/Facilities/Facilities.Domain/Facilities.Domain.csproj" />
+    <Project Path="src/Modules/Facilities/Facilities.Shared/Facilities.Shared.csproj" />
+  </Folder>
+</Solution>
