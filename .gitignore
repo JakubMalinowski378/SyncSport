@@ -333,3 +333,4 @@ logs/
 .vscode/
 
 .DS_Store
+.github/copilot-instructions.md
