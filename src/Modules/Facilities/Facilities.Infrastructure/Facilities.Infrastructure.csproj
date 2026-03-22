@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
+		<ProjectReference Include="..\Facilities.Application\Facilities.Application.csproj" />
 		<ProjectReference Include="..\Facilities.Domain\Facilities.Domain.csproj" />
 	</ItemGroup>
 
