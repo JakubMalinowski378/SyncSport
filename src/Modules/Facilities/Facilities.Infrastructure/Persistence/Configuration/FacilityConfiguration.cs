@@ -20,6 +20,9 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
                 .HasMaxLength(200)
                 .IsRequired();
 
+            builder.HasIndex(x => x.Name)
+                .IsUnique();
+
             builder.Property(x => x.Address)
                 .HasMaxLength(300)
                 .IsRequired();

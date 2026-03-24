@@ -10,6 +10,16 @@ public sealed class CreateFacilityCommandHandler(
 {
     public async Task<Guid> Handle(CreateFacilityCommand request, CancellationToken cancellationToken)
     {
+        var existingFacility = await facilityRepository.FirstOrDefaultAsync(
+            x => x.Name == request.Name,
+            asNoTracking: true,
+            ct: cancellationToken);
+
+        if (existingFacility is not null)
+        {
+            throw new InvalidOperationException("A facility with this name already exists.");
+        }
+
         var openingHours = OpeningHours.Create(request.OpenTime, request.CloseTime);
         var facility = Facility.Create(request.Name, request.Address, openingHours);
 
