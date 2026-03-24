@@ -1,3 +1,6 @@
+using Facilities.Domain.ValueObjects;
+using Shared.Domain;
+
 namespace Facilities.Domain.Entities;
 
 public partial class Court : Entity<CourtId>

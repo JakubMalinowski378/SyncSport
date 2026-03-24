@@ -1,3 +1,6 @@
+using Facilities.Api;
+using Shared;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSharedFramework();

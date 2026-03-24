@@ -1,6 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Carter" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Facilities.Application\Facilities.Application.csproj" />
 		<ProjectReference Include="..\Facilities.Infrastructure\Facilities.Infrastructure.csproj" />
 	</ItemGroup>
