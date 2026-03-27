@@ -1,5 +1,6 @@
 using Carter;
 using Facilities.Application.Facilities.Commands.CreateFacility;
+using Facilities.Application.Facilities.Commands.GetFacilityById;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
@@ -63,19 +64,28 @@ public sealed class FacilitiesEndpoints : ICarterModule
         return Results.Ok(response);
     }
 
-    private static async Task<IResult> GetFacilityById(Guid facilityId, IRepository<Facility, FacilityId> facilityRepository, CancellationToken ct)
+    private static async Task<IResult> GetFacilityById(Guid facilityId, ISender sender, CancellationToken ct)
     {
-        var facility = await facilityRepository.GetByIdAsync(
-            new FacilityId(facilityId),
-            asNoTracking: true,
-            ct: ct);
-
-        if (facility is null)
+        try
         {
-            return Results.NotFound();
-        }
+            var facility = await sender.Send(new GetFacilityByIdCommand(facilityId), ct);
 
-        return Results.Ok(MapFacility(facility));
+            if (facility is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(new FacilityResponse(
+                facility.Id,
+                facility.Name,
+                facility.Address,
+                facility.OpenTime,
+                facility.CloseTime));
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     private static FacilityResponse MapFacility(Facility facility)
