@@ -16,7 +16,9 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
             .HasConversion(id => id.Value, value => new CourtId(value))
             .ValueGeneratedNever();
 
-        builder.Property<Guid>("FacilityId").IsRequired();
+        builder.Property<FacilityId>("FacilityId")
+            .HasConversion(id => id.Value, value => new FacilityId(value))
+            .IsRequired();
 
         builder.Property(x => x.Name)
             .HasMaxLength(100)
