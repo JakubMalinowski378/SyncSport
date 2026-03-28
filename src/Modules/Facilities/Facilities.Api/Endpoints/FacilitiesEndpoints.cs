@@ -2,6 +2,7 @@ using Carter;
 using Facilities.Application.Facilities.Commands.CreateFacility;
 using Facilities.Application.Facilities.Commands.GetAllFacilities;
 using Facilities.Application.Facilities.Commands.GetFacilityById;
+using Facilities.Application.Facilities.Commands.RemoveFacility;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -31,6 +32,12 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .WithName("GetFacilityById")
             .Produces<FacilityResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/{facilityId:guid}", RemoveFacility)
+            .WithName("RemoveFacility")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> CreateFacility(CreateFacilityRequest request, ISender sender, CancellationToken ct)
@@ -101,6 +108,25 @@ public sealed class FacilitiesEndpoints : ICarterModule
                 facility.Address,
                 facility.OpenTime,
                 facility.CloseTime));
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+    }
+
+    private static async Task<IResult> RemoveFacility(Guid facilityId, ISender sender, CancellationToken ct)
+    {
+        try
+        {
+            var removed = await sender.Send(new RemoveFacilityCommand(facilityId), ct);
+
+            if (!removed)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.NoContent();
         }
         catch (ArgumentException ex)
         {
