@@ -1,13 +1,12 @@
 using Carter;
 using Facilities.Application.Facilities.Commands.CreateFacility;
+using Facilities.Application.Facilities.Commands.GetAllFacilities;
 using Facilities.Application.Facilities.Commands.GetFacilityById;
-using Facilities.Domain.Entities;
-using Facilities.Domain.ValueObjects;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Shared.Persistence;
+using Shared.Pagination;
 
 namespace Facilities.Api.Endpoints;
 
@@ -25,7 +24,8 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
         group.MapGet("/", GetFacilities)
             .WithName("GetFacilities")
-            .Produces<IReadOnlyCollection<FacilityResponse>>(StatusCodes.Status200OK);
+            .Produces<PagedResult<FacilityResponse>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapGet("/{facilityId:guid}", GetFacilityById)
             .WithName("GetFacilityById")
@@ -53,15 +53,35 @@ public sealed class FacilitiesEndpoints : ICarterModule
         }
     }
 
-    private static async Task<IResult> GetFacilities(IRepository<Facility, FacilityId> facilityRepository, CancellationToken ct)
+    private static async Task<IResult> GetFacilities(int? pageNumber, int? pageSize, ISender sender, CancellationToken ct)
     {
-        var facilities = await facilityRepository.GetAllAsync(asNoTracking: true, ct: ct);
+        try
+        {
+            var facilities = await sender.Send(
+                new GetAllFacilitiesCommand(pageNumber ?? 1, pageSize ?? 10),
+                ct);
 
-        var response = facilities
-            .Select(MapFacility)
-            .ToList();
+            var responseItems = facilities.Items
+                .Select(x => new FacilityResponse(
+                    x.Id,
+                    x.Name,
+                    x.Address,
+                    x.OpenTime,
+                    x.CloseTime))
+                .ToList();
 
-        return Results.Ok(response);
+            var response = new PagedResult<FacilityResponse>(
+                responseItems,
+                facilities.TotalCount,
+                facilities.PageNumber,
+                facilities.PageSize);
+
+            return Results.Ok(response);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     private static async Task<IResult> GetFacilityById(Guid facilityId, ISender sender, CancellationToken ct)
@@ -88,13 +108,6 @@ public sealed class FacilitiesEndpoints : ICarterModule
         }
     }
 
-    private static FacilityResponse MapFacility(Facility facility)
-        => new(
-            facility.Id.Value,
-            facility.Name,
-            facility.Address,
-            facility.OpeningHours.OpenTime,
-            facility.OpeningHours.CloseTime);
 }
 
 public sealed record CreateFacilityRequest(
