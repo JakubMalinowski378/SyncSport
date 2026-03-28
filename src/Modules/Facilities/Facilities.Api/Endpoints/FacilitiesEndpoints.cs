@@ -1,5 +1,6 @@
 using Carter;
 using Facilities.Application.Facilities.Commands.CreateFacility;
+using Facilities.Application.Facilities.Commands.EditFacility;
 using Facilities.Application.Facilities.Commands.GetAllFacilities;
 using Facilities.Application.Facilities.Commands.GetFacilityById;
 using Facilities.Application.Facilities.Commands.RemoveFacility;
@@ -37,6 +38,13 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .WithName("RemoveFacility")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPut("/{facilityId:guid}", EditFacility)
+            .WithName("EditFacility")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
@@ -134,9 +142,45 @@ public sealed class FacilitiesEndpoints : ICarterModule
         }
     }
 
+    private static async Task<IResult> EditFacility(Guid facilityId, EditFacilityRequest request, ISender sender, CancellationToken ct)
+    {
+        try
+        {
+            var edited = await sender.Send(
+                new EditFacilityCommand(
+                    facilityId,
+                    request.Name,
+                    request.Address,
+                    request.OpenTime,
+                    request.CloseTime),
+                ct);
+
+            if (!edited)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+    }
+
 }
 
 public sealed record CreateFacilityRequest(
+    string Name,
+    string Address,
+    TimeSpan OpenTime,
+    TimeSpan CloseTime);
+
+public sealed record EditFacilityRequest(
     string Name,
     string Address,
     TimeSpan OpenTime,
