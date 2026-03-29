@@ -1,8 +1,10 @@
 using Facilities.Infrastructure.Persistence;
+using Facilities.Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Persistence;
+using Shared.Seeding;
 
 namespace Facilities.Infrastructure;
 
@@ -18,6 +20,8 @@ public static class DependencyInjection
 
         services.AddScoped<DbContext>(serviceProvider => serviceProvider.GetRequiredService<FacilitiesDbContext>());
         services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+
+        services.AddScoped<IDataSeeder, FacilitySeeder>();
 
         return services;
     }

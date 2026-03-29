@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
@@ -20,13 +21,10 @@ public sealed class GetFacilityByIdCommandHandler(
             return null;
         }
 
-        var mondayHours = facility.WeeklyOpeningHours.GetHoursForDay(DayOfWeek.Monday);
-
         return new GetFacilityByIdResult(
             facility.Id.Value,
             facility.Name,
             facility.Address,
-            mondayHours.OpenTime,
-            mondayHours.CloseTime);
+            OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours));
     }
 }

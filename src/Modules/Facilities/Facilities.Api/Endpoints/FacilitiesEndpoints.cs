@@ -81,8 +81,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
                     x.Id,
                     x.Name,
                     x.Address,
-                    x.OpenTime,
-                    x.CloseTime))
+                    x.OpeningHours))
                 .ToList();
 
             var response = new PagedResult<FacilityResponse>(
@@ -114,8 +113,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
                 facility.Id,
                 facility.Name,
                 facility.Address,
-                facility.OpenTime,
-                facility.CloseTime));
+                facility.OpeningHours));
         }
         catch (ArgumentException ex)
         {
@@ -190,5 +188,4 @@ public sealed record FacilityResponse(
     Guid Id,
     string Name,
     string Address,
-    TimeSpan OpenTime,
-    TimeSpan CloseTime);
+    List<Facilities.Application.Facilities.Common.DailyOpeningHoursDto> OpeningHours);

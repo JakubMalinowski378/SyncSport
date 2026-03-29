@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
@@ -31,17 +32,11 @@ public sealed class GetAllFacilitiesCommandHandler(
             ct: cancellationToken);
 
         var mappedItems = items
-            .Select(facility =>
-            {
-                var mondayHours = facility.WeeklyOpeningHours.GetHoursForDay(DayOfWeek.Monday);
-
-                return new GetAllFacilitiesResult(
-                    facility.Id.Value,
-                    facility.Name,
-                    facility.Address,
-                    mondayHours.OpenTime,
-                    mondayHours.CloseTime);
-            })
+            .Select(facility => new GetAllFacilitiesResult(
+                facility.Id.Value,
+                facility.Name,
+                facility.Address,
+                OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours)))
             .ToList();
 
         return new PagedResult<GetAllFacilitiesResult>(

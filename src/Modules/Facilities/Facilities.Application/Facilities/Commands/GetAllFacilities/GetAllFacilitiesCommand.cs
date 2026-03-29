@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using FluentValidation;
 using MediatR;
 using Shared.Pagination;
@@ -28,5 +29,4 @@ public sealed record GetAllFacilitiesResult(
     Guid Id,
     string Name,
     string Address,
-    TimeSpan OpenTime,
-    TimeSpan CloseTime);
+    List<DailyOpeningHoursDto> OpeningHours);
