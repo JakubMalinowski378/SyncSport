@@ -142,4 +142,18 @@ public class Repository<TEntity, TId>(DbContext dbContext) : IRepository<TEntity
 
         return await query.CountAsync(ct);
     }
+
+    public async Task<bool> AnyAsync(
+        Expression<Func<TEntity, bool>>? predicate = null,
+        CancellationToken ct = default)
+    {
+        IQueryable<TEntity> query = _dbSet;
+
+        if (predicate is not null)
+        {
+            return await query.AnyAsync(predicate, ct);
+        }
+
+        return await query.AnyAsync(ct);
+    }
 }

@@ -42,6 +42,10 @@ public interface IRepository<TEntity, TId>
         Expression<Func<TEntity, bool>>? predicate = null,
         bool asNoTracking = false,
         CancellationToken ct = default);
+        
+    Task<bool> AnyAsync(
+        Expression<Func<TEntity, bool>>? predicate = null,
+        CancellationToken ct = default);
     
     Task AddAsync(TEntity entity, CancellationToken ct = default);
     
