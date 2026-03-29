@@ -9,6 +9,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Modules\Facilities\Facilities.Api\Facilities.Api.csproj" />
+		<ProjectReference Include="..\Modules\Users\Users.Api\Users.Api.csproj" />
 	</ItemGroup>
 
 </Project>
