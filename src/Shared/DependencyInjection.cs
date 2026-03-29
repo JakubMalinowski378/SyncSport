@@ -11,6 +11,7 @@ public static class DependencyInjection
     public static IServiceCollection AddSharedFramework(this IServiceCollection services)
     {
         services.AddCarter();
+        services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
         services.AddTransient<DataSeederRunner>();
@@ -22,6 +23,7 @@ public static class DependencyInjection
     {
         app.UseSwagger();
         app.UseSwaggerUI();
+        
         app.MapCarter();
 
         return app;
