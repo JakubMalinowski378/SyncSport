@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.Persistence;
+using Users.Infrastructure.Persistence;
 
 namespace Users.Infrastructure;
 
@@ -7,6 +10,15 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddUsersInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string is missing.");
+
+        services.AddDbContext<UsersDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        services.AddScoped<DbContext>(serviceProvider => serviceProvider.GetRequiredService<UsersDbContext>());
+        services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+
         return services;
     }
 }
