@@ -9,5 +9,6 @@ builder.Services.AddFacilitiesModule(builder.Configuration);
 var app = builder.Build();
 
 app.UseSharedFramework();
+await app.SeedDataAsync();
 
 app.Run();
