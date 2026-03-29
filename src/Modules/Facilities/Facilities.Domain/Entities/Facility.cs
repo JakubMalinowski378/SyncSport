@@ -9,6 +9,6 @@ public partial class Facility : AggregateRoot<FacilityId>
 
     public string Name { get; private set; } = string.Empty;
     public string Address { get; private set; } = string.Empty;
-    public OpeningHours OpeningHours { get; private set; } = default!;
+    public WeeklyOpeningHours WeeklyOpeningHours { get; private set; } = default!;
     public IReadOnlyCollection<Court> Courts => _courts.AsReadOnly();
 }

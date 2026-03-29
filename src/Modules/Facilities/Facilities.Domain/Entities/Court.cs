@@ -8,4 +8,11 @@ public partial class Court : Entity<CourtId>
     public string Name { get; private set; } = string.Empty;
     public string SurfaceType { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
+    
+    public WeeklyOpeningHours? OverrideWeeklyOpeningHours { get; private set; }
+
+    public WeeklyOpeningHours? GetEffectiveOpeningHours(Facility facility)
+    {
+        return OverrideWeeklyOpeningHours ?? facility.WeeklyOpeningHours;
+    }
 }
