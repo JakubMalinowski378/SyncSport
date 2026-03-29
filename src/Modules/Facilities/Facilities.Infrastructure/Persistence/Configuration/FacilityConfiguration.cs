@@ -2,6 +2,7 @@ using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Text.Json;
 
 namespace Facilities.Infrastructure.Persistence.Configuration;
 
@@ -27,20 +28,41 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
             .HasMaxLength(300)
             .IsRequired();
 
-        builder.OwnsOne(x => x.OpeningHours, openingHours =>
-        {
-            openingHours.Property(x => x.OpenTime)
-                .HasColumnName("open_time")
-                .IsRequired();
-
-            openingHours.Property(x => x.CloseTime)
-                .HasColumnName("close_time")
-                .IsRequired();
-        });
+        builder.Property(x => x.WeeklyOpeningHours)
+            .HasConversion(
+                weekly => SerializeWeeklyHours(weekly),
+                json => DeserializeWeeklyHours(json))
+            .HasColumnName("weekly_opening_hours")
+            .HasColumnType("jsonb")
+            .IsRequired();
 
         builder.HasMany(x => x.Courts)
             .WithOne()
             .HasForeignKey("FacilityId")
             .OnDelete(DeleteBehavior.Cascade);
     }
+
+    private static string SerializeWeeklyHours(WeeklyOpeningHours weekly)
+    {
+        var items = weekly.HoursPerDay
+            .Values
+            .OrderBy(x => x.DayOfWeek)
+            .Select(x => new DailyHoursDto(x.DayOfWeek, x.OpenTime, x.CloseTime, x.IsClosed))
+            .ToList();
+
+        return JsonSerializer.Serialize(items);
+    }
+
+    private static WeeklyOpeningHours DeserializeWeeklyHours(string json)
+    {
+        var items = JsonSerializer.Deserialize<List<DailyHoursDto>>(json) ?? [];
+
+        var daily = items.Select(x => x.IsClosed
+            ? DailyOpeningHours.CreateClosed(x.DayOfWeek)
+            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime, x.CloseTime));
+
+        return WeeklyOpeningHours.Create(daily);
+    }
+
+    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
 }

@@ -27,6 +27,11 @@ public class DailyOpeningHours : ValueObject
         return new DailyOpeningHours(dayOfWeek, openTime, closeTime, isClosed: false);
     }
 
+    public static DailyOpeningHours CreateClosed(DayOfWeek dayOfWeek)
+    {
+        return new DailyOpeningHours(dayOfWeek, TimeSpan.Zero, TimeSpan.Zero, isClosed: true);
+    }
+
     public bool IsWithinHours(TimeSpan time)
     {
         if (IsClosed)

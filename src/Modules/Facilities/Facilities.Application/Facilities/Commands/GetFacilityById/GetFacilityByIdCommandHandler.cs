@@ -20,11 +20,13 @@ public sealed class GetFacilityByIdCommandHandler(
             return null;
         }
 
+        var mondayHours = facility.WeeklyOpeningHours.GetHoursForDay(DayOfWeek.Monday);
+
         return new GetFacilityByIdResult(
             facility.Id.Value,
             facility.Name,
             facility.Address,
-            facility.OpeningHours.OpenTime,
-            facility.OpeningHours.CloseTime);
+            mondayHours.OpenTime,
+            mondayHours.CloseTime);
     }
 }

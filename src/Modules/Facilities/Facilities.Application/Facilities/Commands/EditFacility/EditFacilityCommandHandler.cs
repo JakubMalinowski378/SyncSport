@@ -30,11 +30,11 @@ public sealed class EditFacilityCommandHandler(
             throw new InvalidOperationException("A facility with this name already exists.");
         }
 
-        var openingHours = OpeningHours.Create(request.OpenTime, request.CloseTime);
+        var weeklyOpeningHours = WeeklyOpeningHours.CreateUniform(request.OpenTime, request.CloseTime);
 
         facility.Rename(request.Name);
         facility.ChangeAddress(request.Address);
-        facility.ChangeOpeningHours(openingHours);
+        facility.ChangeOpeningHours(weeklyOpeningHours);
 
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);

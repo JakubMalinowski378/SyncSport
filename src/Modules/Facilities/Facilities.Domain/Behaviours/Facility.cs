@@ -5,7 +5,7 @@ public partial class Facility
 {
     private Facility() { }
 
-    public static Facility Create(string name, string address, OpeningHours openingHours)
+    public static Facility Create(string name, string address, WeeklyOpeningHours weeklyOpeningHours)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -22,7 +22,7 @@ public partial class Facility
             Id = FacilityId.New(),
             Name = name,
             Address = address,
-            OpeningHours = openingHours
+            WeeklyOpeningHours = weeklyOpeningHours
         };
     }
 
@@ -50,9 +50,9 @@ public partial class Facility
         _courts.Remove(court);
     }
 
-    public void ChangeOpeningHours(OpeningHours openingHours)
+    public void ChangeOpeningHours(WeeklyOpeningHours weeklyOpeningHours)
     {
-        OpeningHours = openingHours;
+        WeeklyOpeningHours = weeklyOpeningHours;
     }
 
     public void Rename(string name)

@@ -20,8 +20,8 @@ public sealed class CreateFacilityCommandHandler(
             throw new InvalidOperationException("A facility with this name already exists.");
         }
 
-        var openingHours = OpeningHours.Create(request.OpenTime, request.CloseTime);
-        var facility = Facility.Create(request.Name, request.Address, openingHours);
+        var weeklyOpeningHours = WeeklyOpeningHours.CreateUniform(request.OpenTime, request.CloseTime);
+        var facility = Facility.Create(request.Name, request.Address, weeklyOpeningHours);
 
         await facilityRepository.AddAsync(facility, cancellationToken);
         await facilityRepository.SaveChangesAsync(cancellationToken);
