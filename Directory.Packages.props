@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageVersion Include="Carter" Version="10.0.0" />
     <PackageVersion Include="MediatR" Version="12.5.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />

@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Persistence;
+using Users.Application.Abstractions;
+using Users.Infrastructure.Authentication;
 using Users.Infrastructure.Persistence;
 
 namespace Users.Infrastructure;
@@ -16,7 +18,9 @@ public static class DependencyInjection
         services.AddDbContext<UsersDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        services.AddScoped(typeof(IRepository<,>), typeof(UsersRepository<,>));
+        services.AddScoped(typeof(IRepository<,>), typeof(UsersRepository<,>)); 
+
+        services.AddTransient<IPasswordHasher, PasswordHasher>();
 
         return services;
     }
