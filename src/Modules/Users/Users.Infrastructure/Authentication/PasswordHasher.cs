@@ -1,5 +1,4 @@
 using Users.Application.Abstractions;
-using BCrypt.Net;
 
 namespace Users.Infrastructure.Authentication;
 

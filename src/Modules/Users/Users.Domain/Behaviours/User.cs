@@ -1,14 +1,15 @@
 using Shared.Domain.Exceptions;
 using Users.Domain.Enums;
+using Users.Domain.ValueObjects;
 using Users.Shared.Events;
 
 namespace Users.Domain.Entities;
 
 public partial class User
 {
-    public static User Register(Guid id, ValueObjects.Email email, ValueObjects.FullName name, UserRole role)
+    public static User Register(Email email, FullName name)
     {
-        var user = new User(id, email, name, role);
+        var user = new User(Guid.NewGuid(), email, name, UserRole.User);
 
         user.AddDomainEvent(new UserRegisteredEvent(user.Id, user.Email.Value));
 
@@ -17,7 +18,7 @@ public partial class User
 
     public void AssignToFacility(Guid facilityId)
     {
-        if (Role != UserRole.FacilityManager)
+        if (Role != UserRole.Manager)
             throw new DomainException("Only managers can be assigned to a facility.");
 
         if (!_managedFacilityIds.Contains(facilityId))

@@ -1,7 +1,6 @@
 using Shared.Domain;
 using Users.Domain.Enums;
 using Users.Domain.ValueObjects;
-using Users.Shared.Events;
 
 namespace Users.Domain.Entities;
 

@@ -20,6 +20,8 @@ public static class DependencyInjection
 
         services.AddScoped(typeof(IRepository<,>), typeof(UsersRepository<,>)); 
 
+        services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
+        services.AddTransient<IJwtService, JwtService>();
         services.AddTransient<IPasswordHasher, PasswordHasher>();
 
         return services;
