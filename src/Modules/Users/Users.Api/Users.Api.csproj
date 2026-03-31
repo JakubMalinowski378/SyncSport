@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Carter" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Users.Application\Users.Application.csproj" />
