@@ -29,17 +29,20 @@ internal sealed class SignUpCommandHandler(
 
         var hashedPassword = passwordHasher.Hash(request.Password);
 
-        var account = Account.Create(email, hashedPassword);
-        var user = User.Register(email, FullName.Create(request.FirstName, request.LastName));
+        var id = Guid.NewGuid();
+        var account = Account.Create(id, email, hashedPassword);
+        var user = User.Register(id, email, FullName.Create(request.FirstName, request.LastName));
+
+        var jwtToken = jwtService.GenerateAccessToken(user);
+        var refreshToken = jwtService.GenerateRefreshToken();
+        
+        account.SetRefreshToken(refreshToken.Token, refreshToken.ExpiryTime);
 
         await accountRepository.AddAsync(account, cancellationToken);
         await userRepository.AddAsync(user, cancellationToken);
 
         await accountRepository.SaveChangesAsync(cancellationToken);
 
-        var jwtToken = jwtService.GenerateAccessToken(user);
-        var refreshToken = jwtService.GenerateRefreshToken();
-
-        return new AuthenticationResponse(jwtToken, refreshToken);
+        return new AuthenticationResponse(jwtToken, refreshToken.Token);
     }
 }

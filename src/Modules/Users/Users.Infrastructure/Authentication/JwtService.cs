@@ -46,11 +46,15 @@ internal sealed class JwtService(IOptions<JwtOptions> options) : IJwtService
         return handler.WriteToken(token);
     }
 
-    public string GenerateRefreshToken()
+    public RefreshTokenResult GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
-        return Convert.ToBase64String(randomNumber);
+        var token = Convert.ToBase64String(randomNumber);
+
+        return new RefreshTokenResult(token, DateTime.UtcNow.AddDays(_options.RefreshTokenExpiryDays));
     }
+
+    public int GetPasswordResetTokenExpiryMinutes() => _options.PasswordResetTokenExpiryMinutes;
 }

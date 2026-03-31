@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Users.Domain.Entities;
 using Users.Domain.ValueObjects;
+using Users.Domain.Enums;
 
 namespace Users.Infrastructure.Persistence.Configurations;
 
@@ -10,6 +11,12 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasKey(u => u.Id);
+
+        builder.HasOne<Account>()
+            .WithOne()
+            .HasForeignKey<User>(u => u.Id)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(u => u.Email)
             .HasConversion(
@@ -37,10 +44,12 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Role)
             .HasConversion<string>()
             .HasMaxLength(50)
-            .IsRequired();
+            .IsRequired()
+            .HasDefaultValue(UserRole.User);
 
         builder.Property(u => u.IsActive)
-            .IsRequired();
+            .IsRequired()
+            .HasDefaultValue(true);
 
         builder.Property(u => u.ManagedFacilityIds)
             .HasField("_managedFacilityIds")

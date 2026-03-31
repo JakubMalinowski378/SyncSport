@@ -2,9 +2,9 @@ namespace Users.Domain.Entities;
 
 public partial class Account
 {
-    public static Account Create(ValueObjects.Email email, string passwordHash)
+    public static Account Create(Guid id, ValueObjects.Email email, string passwordHash) 
     {
-        return new Account(Guid.NewGuid(), email, passwordHash);
+        return new Account(id, email, passwordHash);
     }
 
     public void SetRefreshToken(string refreshToken, DateTime expiryTime)

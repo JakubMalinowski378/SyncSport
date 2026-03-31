@@ -5,5 +5,6 @@ namespace Users.Application.Abstractions;
 public interface IJwtService
 {
     string GenerateAccessToken(User user);
-    string GenerateRefreshToken();
+    RefreshTokenResult GenerateRefreshToken();
+    int GetPasswordResetTokenExpiryMinutes();
 }

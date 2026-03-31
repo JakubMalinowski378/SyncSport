@@ -7,9 +7,9 @@ namespace Users.Domain.Entities;
 
 public partial class User
 {
-    public static User Register(Email email, FullName name)
+    public static User Register(Guid id, Email email, FullName name)
     {
-        var user = new User(Guid.NewGuid(), email, name, UserRole.User);
+        var user = new User(id, email, name, UserRole.User);
 
         user.AddDomainEvent(new UserRegisteredEvent(user.Id, user.Email.Value));
 
