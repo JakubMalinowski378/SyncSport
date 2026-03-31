@@ -1,5 +1,6 @@
 using Shared.Domain;
 using System.Text.RegularExpressions;
+using Users.Domain.Exceptions;
 
 namespace Users.Domain.ValueObjects;
 
@@ -22,12 +23,12 @@ public class Email : ValueObject
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("Email address cannot be empty.", nameof(value));
+            throw new InvalidEmailException();
         }
 
         if (!EmailRegex.IsMatch(value))
         {
-            throw new ArgumentException("Invalid email format.", nameof(value));
+            throw new InvalidEmailException(value);
         }
 
         return new Email(value);

@@ -4,6 +4,7 @@ using Shared.Persistence;
 using Users.Application.Abstractions;
 using Users.Application.Accounts.Common;
 using Users.Domain.Entities;
+using Users.Domain.Exceptions;
 using Users.Domain.ValueObjects;
 
 namespace Users.Application.Accounts.Commands.SignUp;
@@ -23,7 +24,7 @@ internal sealed class SignUpCommandHandler(
 
         if (isEmailTaken)
         {
-            throw new DomainException("Email is already taken.");
+            throw new EmailAlreadyTakenException(email.Value);
         }
 
         var hashedPassword = passwordHasher.Hash(request.Password);
