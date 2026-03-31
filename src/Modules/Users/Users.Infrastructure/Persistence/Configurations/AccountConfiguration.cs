@@ -24,5 +24,19 @@ internal class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.Property(a => a.PasswordHash)
             .IsRequired()
             .HasMaxLength(500);
+
+        builder.Property(a => a.RefreshToken)
+            .HasMaxLength(200)
+            .IsRequired(false);
+
+        builder.Property(a => a.PasswordResetToken)
+            .HasMaxLength(200)
+            .IsRequired(false);
+
+        builder.Property(a => a.RefreshTokenExpiryTime)
+            .IsRequired(false);
+
+        builder.Property(a => a.PasswordResetTokenExpiryTime)
+            .IsRequired(false);
     }
 }
