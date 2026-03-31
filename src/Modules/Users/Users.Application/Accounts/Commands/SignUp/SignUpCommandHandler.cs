@@ -1,5 +1,4 @@
 using MediatR;
-using Shared.Domain.Exceptions;
 using Shared.Persistence;
 using Users.Application.Abstractions;
 using Users.Application.Accounts.Common;
@@ -35,7 +34,7 @@ internal sealed class SignUpCommandHandler(
 
         var jwtToken = jwtService.GenerateAccessToken(user);
         var refreshToken = jwtService.GenerateRefreshToken();
-        
+
         account.SetRefreshToken(refreshToken.Token, refreshToken.ExpiryTime);
 
         await accountRepository.AddAsync(account, cancellationToken);

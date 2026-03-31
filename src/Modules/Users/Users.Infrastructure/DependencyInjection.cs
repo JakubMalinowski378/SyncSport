@@ -18,11 +18,12 @@ public static class DependencyInjection
         services.AddDbContext<UsersDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        services.AddScoped(typeof(IRepository<,>), typeof(UsersRepository<,>)); 
+        services.AddScoped(typeof(IRepository<,>), typeof(UsersRepository<,>));
 
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.AddTransient<IJwtService, JwtService>();
-        
+        services.AddTransient<IPasswordHasher, PasswordHasher>();
+
         services.Configure<PasswordHasherOptions>(configuration.GetSection("PasswordHasher"));
         return services;
     }
