@@ -22,8 +22,8 @@ public static class DependencyInjection
 
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.AddTransient<IJwtService, JwtService>();
-        services.AddTransient<IPasswordHasher, PasswordHasher>();
-
+        
+        services.Configure<PasswordHasherOptions>(configuration.GetSection("PasswordHasher"));
         return services;
     }
 }
