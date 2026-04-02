@@ -41,7 +41,7 @@ public class Repository<TEntity, TId>(DbContext dbContext) : IRepository<TEntity
         if (include is not null)
             query = include(query);
 
-        return await query.FirstOrDefaultAsync(e => EqualityComparer<TId>.Default.Equals(e.Id, id), ct);
+        return await query.FirstOrDefaultAsync(e => e.Id!.Equals(id), ct);
     }
 
     public async Task<IEnumerable<TEntity>> GetAllAsync(
