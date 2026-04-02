@@ -16,6 +16,8 @@ public static class DependencyInjection
             configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
 
+        services.AddScoped<Shared.IUsersModuleApi, Services.UsersModuleApi>();
+        
         return services;
     }
 }
