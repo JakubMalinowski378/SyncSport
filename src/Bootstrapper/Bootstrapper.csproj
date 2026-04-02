@@ -10,6 +10,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Modules\Facilities\Facilities.Api\Facilities.Api.csproj" />
 		<ProjectReference Include="..\Modules\Users\Users.Api\Users.Api.csproj" />
+		<ProjectReference Include="..\Modules\Notifications\Notifications.csproj" />
 	</ItemGroup>
 
 </Project>
