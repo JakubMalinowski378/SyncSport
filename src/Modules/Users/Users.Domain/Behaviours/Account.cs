@@ -30,4 +30,9 @@ public partial class Account
         PasswordResetToken = null;
         PasswordResetTokenExpiryTime = null;
     }
+
+    public void ChangePassword(string passwordHash)
+    {
+        PasswordHash = passwordHash;
+    }
 }

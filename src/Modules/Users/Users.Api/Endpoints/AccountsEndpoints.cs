@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Users.Application.Accounts.Commands.Logout;
+using Users.Application.Accounts.Commands.PasswordReset;
 using Users.Application.Accounts.Commands.Refresh;
 using Users.Application.Accounts.Commands.SignIn;
 using Users.Application.Accounts.Commands.SignUp;
@@ -36,6 +37,16 @@ public sealed class AccountsEndpoints : ICarterModule
             .WithName("Logout")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPost("forgot-password", GeneratePasswordResetToken)
+            .WithName("GeneratePasswordResetToken")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPost("reset-password", ResetPassword)
+            .WithName("ResetPassword")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> SignUp(SignUpCommand command, ISender sender)
@@ -60,6 +71,20 @@ public sealed class AccountsEndpoints : ICarterModule
     }
 
     private static async Task<IResult> Logout(LogoutCommand command, ISender sender)
+    {
+        await sender.Send(command);
+
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> GeneratePasswordResetToken(GeneratePasswordResetTokenCommand command, ISender sender)
+    {
+        await sender.Send(command);
+
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> ResetPassword(ResetPasswordCommand command, ISender sender)
     {
         await sender.Send(command);
 
