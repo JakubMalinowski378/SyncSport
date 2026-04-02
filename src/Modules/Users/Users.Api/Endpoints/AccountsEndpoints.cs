@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Users.Application.Accounts.Commands.Logout;
 using Users.Application.Accounts.Commands.Refresh;
 using Users.Application.Accounts.Commands.SignIn;
 using Users.Application.Accounts.Commands.SignUp;
@@ -30,6 +31,11 @@ public sealed class AccountsEndpoints : ICarterModule
             .WithName("RefreshToken")
             .Produces<AuthenticationResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPost("logout", Logout)
+            .WithName("Logout")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> SignUp(SignUpCommand command, ISender sender)
@@ -51,5 +57,12 @@ public sealed class AccountsEndpoints : ICarterModule
         var response = await sender.Send(command);
 
         return Results.Ok(response);
+    }
+
+    private static async Task<IResult> Logout(LogoutCommand command, ISender sender)
+    {
+        await sender.Send(command);
+
+        return Results.NoContent();
     }
 }
