@@ -9,6 +9,7 @@ namespace Users.Application.Accounts.Commands.PasswordReset;
 
 internal sealed class GeneratePasswordResetTokenCommandHandler(
     IRepository<Account, Guid> accountRepository,
+    IRepository<User, Guid> userRepository,
     IJwtService jwtService)
     : IRequestHandler<GeneratePasswordResetTokenCommand>
 {
@@ -22,14 +23,22 @@ internal sealed class GeneratePasswordResetTokenCommandHandler(
             return;
         }
 
+        var user = await userRepository.GetByIdAsync(account.Id, ct: cancellationToken);
+        if (user is null)
+        {
+            return;
+        }
+
         var resetToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         var expiryTime = DateTime.UtcNow.AddMinutes(jwtService.GetPasswordResetTokenExpiryMinutes());
 
         account.SetPasswordResetToken(resetToken, expiryTime);
+        user.RequestPasswordReset(resetToken);
 
         accountRepository.Update(account);
-        await accountRepository.SaveChangesAsync(cancellationToken);
+        userRepository.Update(user);
 
-        // TODO: Send resetToken to user's email address.
+        await accountRepository.SaveChangesAsync(cancellationToken);
+        await userRepository.SaveChangesAsync(cancellationToken);
     }
 }

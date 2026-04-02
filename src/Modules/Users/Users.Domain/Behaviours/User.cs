@@ -32,4 +32,9 @@ public partial class User
         IsActive = false;
         AddDomainEvent(new UserDeactivatedEvent(Id));
     }
+
+    public void RequestPasswordReset(string resetToken)
+    {
+        AddDomainEvent(new PasswordResetRequestedEvent(Id, Email.Value, Name.FirstName, resetToken));
+    }
 }
