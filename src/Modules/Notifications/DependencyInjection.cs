@@ -1,5 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Notifications.Interfaces;
+using Notifications.Options;
+using Notifications.Services;
 
 namespace Notifications;
 

@@ -1,9 +1,11 @@
-using System.Net;
-using System.Net.Mail;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Notifications.Interfaces;
+using Notifications.Options;
+using System.Net;
+using System.Net.Mail;
 
-namespace Notifications;
+namespace Notifications.Services;
 
 internal sealed class EmailSender(
     IOptions<SmtpOptions> options,
@@ -36,9 +38,9 @@ internal sealed class EmailSender(
             mailMessage.To.Add(to);
 
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             await client.SendMailAsync(mailMessage, cancellationToken);
-            
+
             logger.LogInformation("Email sent successfully to {To}", to);
         }
         catch (Exception ex)

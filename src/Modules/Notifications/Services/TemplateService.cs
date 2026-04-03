@@ -1,7 +1,8 @@
 using Scriban;
 using System.Collections.Concurrent;
+using Notifications.Interfaces;
 
-namespace Notifications;
+namespace Notifications.Services;
 
 internal sealed class TemplateService : ITemplateService
 {

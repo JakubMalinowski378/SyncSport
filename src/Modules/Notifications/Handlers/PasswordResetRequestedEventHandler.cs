@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.Extensions.Options;
 using Users.Shared.Events;
+using Notifications.Interfaces;
+using Notifications.Options;
 
 namespace Notifications.Handlers;
 

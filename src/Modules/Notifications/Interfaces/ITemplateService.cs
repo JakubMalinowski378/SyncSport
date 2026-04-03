@@ -1,4 +1,4 @@
-namespace Notifications;
+namespace Notifications.Interfaces;
 
 public interface ITemplateService
 {
