@@ -8,10 +8,11 @@ public static class DependencyInjection
     public static IServiceCollection AddNotificationsModule(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<SmtpOptions>(configuration.GetSection("Smtp"));
-
+        services.Configure<FrontendOptions>(configuration.GetSection("Frontend"));
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddSingleton<ITemplateService, TemplateService>();
-
+        services.AddMediatR(config =>
+            config.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
         return services;
     }
 }
