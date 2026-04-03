@@ -1,5 +1,5 @@
 using Shared.Domain.Exceptions;
-using Users.Domain.Enums;
+using Shared.Domain.Enums;
 using Users.Domain.ValueObjects;
 using Users.Shared.Events;
 

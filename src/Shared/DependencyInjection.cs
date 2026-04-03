@@ -2,6 +2,7 @@ using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shared.Authorization;
 using Shared.Persistence.Interceptors;
 using Shared.Seeding;
 
@@ -12,6 +13,14 @@ public static class DependencyInjection
     public static IServiceCollection AddSharedFramework(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
+        services.AddAuthentication();
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(Policies.Admin, policy => policy.RequireRole(Domain.Enums.UserRole.Admin.ToString()));
+            options.AddPolicy(Policies.Manager, policy => policy.RequireRole(Domain.Enums.UserRole.Manager.ToString()));
+            options.AddPolicy(Policies.User, policy => policy.RequireRole(Domain.Enums.UserRole.User.ToString()));
+        });
+
         services.AddCarter();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
@@ -26,7 +35,10 @@ public static class DependencyInjection
     {
         app.UseSwagger();
         app.UseSwaggerUI();
-        
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.MapCarter();
 
         return app;

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Users.Domain.Entities;
 using Users.Domain.ValueObjects;
-using Users.Domain.Enums;
+using Shared.Domain.Enums;
 
 namespace Users.Infrastructure.Persistence.Configurations;
 

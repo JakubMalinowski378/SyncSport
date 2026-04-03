@@ -1,5 +1,5 @@
 using Shared.Domain;
-using Users.Domain.Enums;
+using Shared.Domain.Enums;
 using Users.Domain.ValueObjects;
 
 namespace Users.Domain.Entities;
