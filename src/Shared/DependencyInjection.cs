@@ -2,6 +2,7 @@ using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi;
 using Shared.Authorization;
 using Shared.Persistence.Interceptors;
 using Shared.Seeding;
@@ -23,7 +24,19 @@ public static class DependencyInjection
 
         services.AddCarter();
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            var bearerSecurityScheme = new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header
+            };
+
+            options.AddSecurityDefinition("Bearer", bearerSecurityScheme);
+        });
 
         services.AddTransient<DataSeederRunner>();
         services.AddScoped<PublishDomainEventsInterceptor>();
