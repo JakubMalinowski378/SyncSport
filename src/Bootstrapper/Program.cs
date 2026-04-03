@@ -6,7 +6,7 @@ using Shared.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSharedFramework();
+builder.Services.AddSharedFramework(builder.Configuration);
 builder.Services.AddFacilitiesModule(builder.Configuration);
 builder.Services.AddUsersModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
