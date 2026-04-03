@@ -33,6 +33,11 @@ public partial class User
         AddDomainEvent(new UserDeactivatedEvent(Id));
     }
 
+    public void UpdateName(FullName name)
+    {
+        Name = name;
+    }
+
     public void RequestPasswordReset(string resetToken)
     {
         AddDomainEvent(new PasswordResetRequestedEvent(Id, Email.Value, Name.FirstName, resetToken));
