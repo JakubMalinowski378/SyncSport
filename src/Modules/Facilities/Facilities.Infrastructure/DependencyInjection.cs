@@ -1,10 +1,9 @@
 using Facilities.Infrastructure.Persistence;
-using Facilities.Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Persistence;
-using Shared.Seeding;
+using Shared.Persistence.Interceptors;
 
 namespace Facilities.Infrastructure;
 
@@ -15,8 +14,11 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string is missing.");
 
-        services.AddDbContext<FacilitiesDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddDbContext<FacilitiesDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(connectionString);
+            options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
+        });
 
         services.AddScoped(typeof(IRepository<,>), typeof(FacilitiesRepository<,>));
         return services;

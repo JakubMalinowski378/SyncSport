@@ -2,6 +2,7 @@ using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shared.Persistence.Interceptors;
 using Shared.Seeding;
 
 namespace Shared;
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddSwaggerGen();
 
         services.AddTransient<DataSeederRunner>();
+        services.AddScoped<PublishDomainEventsInterceptor>();
 
         return services;
     }
