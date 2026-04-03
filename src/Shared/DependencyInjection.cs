@@ -11,6 +11,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddSharedFramework(this IServiceCollection services)
     {
+        services.AddHttpContextAccessor();
         services.AddCarter();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();

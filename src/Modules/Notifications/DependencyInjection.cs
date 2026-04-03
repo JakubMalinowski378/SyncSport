@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Notifications.Interfaces;
 using Notifications.Options;
 using Notifications.Services;
+using Shared.Behaviors;
 
 namespace Notifications;
 
@@ -15,7 +16,11 @@ public static class DependencyInjection
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddSingleton<ITemplateService, TemplateService>();
         services.AddMediatR(config =>
-            config.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+        {
+            config.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            config.AddOpenBehavior(typeof(UserContextBehavior<,>));
+        });
         return services;
     }
 }
