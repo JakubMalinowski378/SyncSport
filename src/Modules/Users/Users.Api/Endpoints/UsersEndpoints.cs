@@ -7,6 +7,7 @@ using Shared.Authorization;
 using Shared.Pagination;
 using Users.Application.Users.Commands.AssignFacilityToUser;
 using Users.Application.Users.Commands.ChangeUserRole;
+using Users.Application.Users.Commands.RemoveFacilityAssignmentFromUser;
 using Users.Application.Users.Commands.UpdateCurrentUser;
 using Users.Application.Users.Queries.GetCurrentUser;
 using Users.Application.Users.Queries.GetUser;
@@ -53,6 +54,11 @@ public sealed class UsersEndpoints : ICarterModule
 
         group.MapPost("{id:guid}/facility-assignments", AssignFacilityToUser)
             .WithName("AssignFacilityToUser")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("{id:guid}/facility-assignments/{facilityId:guid}", RemoveFacilityAssignmentFromUser)
+            .WithName("RemoveFacilityAssignmentFromUser")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
     }
@@ -104,6 +110,12 @@ public sealed class UsersEndpoints : ICarterModule
     private static async Task<IResult> AssignFacilityToUser(Guid id, AssignFacilityToUserRequest request, ISender sender)
     {
         await sender.Send(new AssignFacilityToUserCommand(id, request.FacilityId));
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> RemoveFacilityAssignmentFromUser(Guid id, Guid facilityId, ISender sender)
+    {
+        await sender.Send(new RemoveFacilityAssignmentFromUserCommand(id, facilityId));
         return Results.NoContent();
     }
 }

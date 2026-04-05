@@ -27,6 +27,14 @@ public partial class User
         }
     }
 
+    public void RemoveFacilityAssignment(Guid facilityId)
+    {
+        if (_managedFacilityIds.Contains(facilityId))
+        {
+            _managedFacilityIds.Remove(facilityId);
+        }
+    }
+
     public void Deactivate()
     {
         IsActive = false;
