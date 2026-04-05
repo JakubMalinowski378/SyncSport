@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Users.Application.Users.Commands.UpdateCurrentUser;
 using Users.Application.Users.Queries.GetCurrentUser;
+using Users.Application.Users.Queries.GetUser;
 
 namespace Users.Api.Endpoints;
 
@@ -28,6 +29,11 @@ public sealed class UsersEndpoints : ICarterModule
         group.MapGet("me/reservations", GetCurrentUserReservations)
             .WithName("GetCurrentUserReservations")
             .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("{id:guid}", GetUser)
+            .WithName("GetUser")
+            .Produces<GetUserResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     private static async Task<IResult> GetCurrentUser(ISender sender)
@@ -48,5 +54,17 @@ public sealed class UsersEndpoints : ICarterModule
         // TODO
         await Task.CompletedTask;
         return Results.Ok();
+    }
+
+    private static async Task<IResult> GetUser(Guid id, ISender sender)
+    {
+        var response = await sender.Send(new GetUserQuery(id));
+
+        if (response is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Ok(response);
     }
 }
