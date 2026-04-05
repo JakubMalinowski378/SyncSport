@@ -7,8 +7,10 @@ using Shared.Authorization;
 using Shared.Pagination;
 using Users.Application.Users.Commands.AssignFacilityToUser;
 using Users.Application.Users.Commands.ChangeUserRole;
+using Users.Application.Users.Commands.DeleteUser;
 using Users.Application.Users.Commands.RemoveFacilityAssignmentFromUser;
 using Users.Application.Users.Commands.UpdateCurrentUser;
+using Users.Application.Users.Commands.UpdateUser;
 using Users.Application.Users.Queries.GetCurrentUser;
 using Users.Application.Users.Queries.GetUser;
 
@@ -20,15 +22,15 @@ public sealed class UsersEndpoints : ICarterModule
     {
         var group = app.MapGroup("/api/users").WithTags("Users");
 
+        group.MapGet(string.Empty, GetUsers)
+            .WithName("GetUsers")
+            .Produces<PagedResult<GetUserResponse>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(Policies.Admin);
+
         group.MapGet("me", GetCurrentUser)
             .WithName("GetCurrentUser")
             .Produces<GetCurrentUserResponse>(StatusCodes.Status200OK)
-            .RequireAuthorization();
-
-        group.MapPut("me", UpdateCurrentUser)
-            .WithName("UpdateCurrentUser")
-            .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequireAuthorization();
 
         group.MapGet("me/reservations", GetCurrentUserReservations)
@@ -40,10 +42,22 @@ public sealed class UsersEndpoints : ICarterModule
             .Produces<GetUserResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapGet(string.Empty, GetUsers)
-            .WithName("GetUsers")
-            .Produces<PagedResult<GetUserResponse>>(StatusCodes.Status200OK)
+        group.MapPost("{id:guid}/facility-assignments", AssignFacilityToUser)
+            .WithName("AssignFacilityToUser")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPut("me", UpdateCurrentUser)
+            .WithName("UpdateCurrentUser")
+            .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
+
+        group.MapPut("{id:guid}", UpdateUser)
+            .WithName("UpdateUser")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(Policies.Admin);
 
         group.MapPatch("{id:guid}/role", ChangeUserRole)
@@ -52,10 +66,11 @@ public sealed class UsersEndpoints : ICarterModule
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(Policies.Admin);
 
-        group.MapPost("{id:guid}/facility-assignments", AssignFacilityToUser)
-            .WithName("AssignFacilityToUser")
+        group.MapDelete("{id:guid}", DeleteUser)
+            .WithName("DeleteUser")
             .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(Policies.Admin);
 
         group.MapDelete("{id:guid}/facility-assignments/{facilityId:guid}", RemoveFacilityAssignmentFromUser)
             .WithName("RemoveFacilityAssignmentFromUser")
@@ -63,17 +78,17 @@ public sealed class UsersEndpoints : ICarterModule
             .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
+    private static async Task<IResult> GetUsers(ISender sender, int pageNumber = 1, int pageSize = 10)
+    {
+        var result = await sender.Send(new Users.Application.Users.Queries.GetUsers.GetUsersQuery(pageNumber, pageSize));
+        return Results.Ok(result);
+    }
+
     private static async Task<IResult> GetCurrentUser(ISender sender)
     {
         var response = await sender.Send(new GetCurrentUserQuery());
 
         return Results.Ok(response);
-    }
-
-    private static async Task<IResult> UpdateCurrentUser(UpdateCurrentUserCommand command, ISender sender)
-    {
-        await sender.Send(command);
-        return Results.NoContent();
     }
 
     private static async Task<IResult> GetCurrentUserReservations(ISender sender)
@@ -95,10 +110,22 @@ public sealed class UsersEndpoints : ICarterModule
         return Results.Ok(response);
     }
 
-    private static async Task<IResult> GetUsers(ISender sender, int pageNumber = 1, int pageSize = 10)
+    private static async Task<IResult> AssignFacilityToUser(Guid id, AssignFacilityToUserRequest request, ISender sender)
     {
-        var result = await sender.Send(new Users.Application.Users.Queries.GetUsers.GetUsersQuery(pageNumber, pageSize));
-        return Results.Ok(result);
+        await sender.Send(new AssignFacilityToUserCommand(id, request.FacilityId));
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UpdateCurrentUser(UpdateCurrentUserCommand command, ISender sender)
+    {
+        await sender.Send(command);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UpdateUser(Guid id, UpdateUserRequest request, ISender sender)
+    {
+        await sender.Send(new UpdateUserCommand(id, request.FirstName, request.LastName));
+        return Results.NoContent();
     }
 
     private static async Task<IResult> ChangeUserRole(Guid id, ChangeUserRoleRequest request, ISender sender)
@@ -107,9 +134,9 @@ public sealed class UsersEndpoints : ICarterModule
         return Results.NoContent();
     }
 
-    private static async Task<IResult> AssignFacilityToUser(Guid id, AssignFacilityToUserRequest request, ISender sender)
+    private static async Task<IResult> DeleteUser(Guid id, ISender sender)
     {
-        await sender.Send(new AssignFacilityToUserCommand(id, request.FacilityId));
+        await sender.Send(new DeleteUserCommand(id));
         return Results.NoContent();
     }
 
