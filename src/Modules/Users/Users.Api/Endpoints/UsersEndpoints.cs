@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorization;
 using Shared.Pagination;
+using Users.Application.Users.Commands.AssignFacilityToUser;
 using Users.Application.Users.Commands.ChangeUserRole;
 using Users.Application.Users.Commands.UpdateCurrentUser;
 using Users.Application.Users.Queries.GetCurrentUser;
@@ -49,6 +50,11 @@ public sealed class UsersEndpoints : ICarterModule
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(Policies.Admin);
+
+        group.MapPost("{id:guid}/facility-assignments", AssignFacilityToUser)
+            .WithName("AssignFacilityToUser")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     private static async Task<IResult> GetCurrentUser(ISender sender)
@@ -92,6 +98,12 @@ public sealed class UsersEndpoints : ICarterModule
     private static async Task<IResult> ChangeUserRole(Guid id, ChangeUserRoleRequest request, ISender sender)
     {
         await sender.Send(new ChangeUserRoleCommand(id, request.Role));
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> AssignFacilityToUser(Guid id, AssignFacilityToUserRequest request, ISender sender)
+    {
+        await sender.Send(new AssignFacilityToUserCommand(id, request.FacilityId));
         return Results.NoContent();
     }
 }
