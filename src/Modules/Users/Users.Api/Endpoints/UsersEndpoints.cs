@@ -3,6 +3,8 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Shared.Authorization;
+using Shared.Pagination;
 using Users.Application.Users.Commands.UpdateCurrentUser;
 using Users.Application.Users.Queries.GetCurrentUser;
 using Users.Application.Users.Queries.GetUser;
@@ -34,6 +36,12 @@ public sealed class UsersEndpoints : ICarterModule
             .WithName("GetUser")
             .Produces<GetUserResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet(string.Empty, GetUsers)
+            .WithName("GetUsers")
+            .Produces<PagedResult<GetUserResponse>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(Policies.Admin);
     }
 
     private static async Task<IResult> GetCurrentUser(ISender sender)
@@ -66,5 +74,11 @@ public sealed class UsersEndpoints : ICarterModule
         }
 
         return Results.Ok(response);
+    }
+
+    private static async Task<IResult> GetUsers(ISender sender, int pageNumber = 1, int pageSize = 10)
+    {
+        var result = await sender.Send(new Users.Application.Users.Queries.GetUsers.GetUsersQuery(pageNumber, pageSize));
+        return Results.Ok(result);
     }
 }
