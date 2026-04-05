@@ -22,4 +22,12 @@
     <Project Path="src/Modules/Notifications/Notifications.csproj" />
   </Folder>
 
+  <Folder Name="/Modules/Reservations/">
+    <Project Path="src/Modules/Reservations/Reservations.Api/Reservations.Api.csproj" />
+    <Project Path="src/Modules/Reservations/Reservations.Infrastructure/Reservations.Infrastructure.csproj" />
+    <Project Path="src/Modules/Reservations/Reservations.Application/Reservations.Application.csproj" />
+    <Project Path="src/Modules/Reservations/Reservations.Domain/Reservations.Domain.csproj" />
+    <Project Path="src/Modules/Reservations/Reservations.Shared/Reservations.Shared.csproj" />
+  </Folder>
+
 </Solution>

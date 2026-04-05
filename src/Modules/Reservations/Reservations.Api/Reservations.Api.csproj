@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Reservations.Application\Reservations.Application.csproj" />
+    <ProjectReference Include="..\Reservations.Infrastructure\Reservations.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Carter" />
+  </ItemGroup>
+
+</Project>

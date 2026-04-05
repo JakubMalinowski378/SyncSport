@@ -1,6 +1,7 @@
 using Facilities.Api;
 using Users.Api;
 using Notifications;
+using Reservations.Api;
 using Shared;
 using Shared.Persistence;
 
@@ -10,6 +11,7 @@ builder.Services.AddSharedFramework(builder.Configuration);
 builder.Services.AddFacilitiesModule(builder.Configuration);
 builder.Services.AddUsersModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
+builder.Services.AddReservationsModule(builder.Configuration);
 
 var app = builder.Build();
 
