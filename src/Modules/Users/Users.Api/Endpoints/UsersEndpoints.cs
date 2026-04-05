@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorization;
 using Shared.Pagination;
+using Users.Application.Users.Commands.ChangeUserRole;
 using Users.Application.Users.Commands.UpdateCurrentUser;
 using Users.Application.Users.Queries.GetCurrentUser;
 using Users.Application.Users.Queries.GetUser;
@@ -41,6 +42,12 @@ public sealed class UsersEndpoints : ICarterModule
             .WithName("GetUsers")
             .Produces<PagedResult<GetUserResponse>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(Policies.Admin);
+
+        group.MapPatch("{id:guid}/role", ChangeUserRole)
+            .WithName("ChangeUserRole")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(Policies.Admin);
     }
 
@@ -80,5 +87,11 @@ public sealed class UsersEndpoints : ICarterModule
     {
         var result = await sender.Send(new Users.Application.Users.Queries.GetUsers.GetUsersQuery(pageNumber, pageSize));
         return Results.Ok(result);
+    }
+
+    private static async Task<IResult> ChangeUserRole(Guid id, ChangeUserRoleRequest request, ISender sender)
+    {
+        await sender.Send(new ChangeUserRoleCommand(id, request.Role));
+        return Results.NoContent();
     }
 }

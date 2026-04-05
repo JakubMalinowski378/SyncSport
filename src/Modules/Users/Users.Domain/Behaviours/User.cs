@@ -42,4 +42,14 @@ public partial class User
     {
         AddDomainEvent(new PasswordResetRequestedEvent(Id, Email.Value, Name.FirstName, resetToken));
     }
+
+    public void ChangeRole(UserRole role)
+    {
+        if (Role == role)
+        {
+            return;
+        }
+
+        Role = role;
+    }
 }
