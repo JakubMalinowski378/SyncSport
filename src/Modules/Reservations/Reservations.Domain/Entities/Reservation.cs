@@ -9,7 +9,7 @@ public partial class Reservation : AggregateRoot<Guid>
     public Guid CourtId { get; private set; }
     public TimeRange Time { get; private set; }
 
-    private Reservation() { }
+    private Reservation() { Time = null!; }
 
     private Reservation(Guid id, Guid userId, Guid courtId, TimeRange time) : base(id)
     {

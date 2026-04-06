@@ -1,5 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Reservations.Infrastructure.Persistence;
+using Shared.Persistence;
+using Shared.Persistence.Interceptors;
 
 namespace Reservations.Infrastructure;
 
@@ -7,6 +11,17 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddReservationsInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string is missing.");
+
+        services.AddDbContext<ReservationsDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(connectionString);
+            options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
+        });
+
+        services.AddScoped(typeof(IRepository<,>), typeof(ReservationsRepository<,>));
+
         return services;
     }
 }
