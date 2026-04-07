@@ -3,8 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Reservations.Application.Reservations.Commands.AdminCreateReservation;
-using Reservations.Application.Reservations.Commands.CreateReservation;
+using Reservations.Application.Reservations.Commands.AdminCreateReservation;using Reservations.Application.Reservations.Commands.AdminDeleteReservation;using Reservations.Application.Reservations.Commands.CreateReservation;
 using Reservations.Application.Reservations.Queries.GetCourtReservations;
 using Reservations.Application.Reservations.Queries.GetReservation;
 using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
@@ -32,11 +31,12 @@ public sealed class ReservationsEndpoints : ICarterModule
             .Produces<Guid>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");     
 
-        group.MapGet("/me", GetUserReservations)
-            .WithName("GetUserReservations")
-            .Produces<PagedResult<ReservationResponse>>(StatusCodes.Status200OK)
+        group.MapDelete("/{id:guid}/facility/{facilityId:guid}", AdminDeleteReservation)
+            .WithName("AdminDeleteReservation")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(Policies.User);
 
         group.MapGet("/courts/{courtId:guid}", GetCourtReservations)
@@ -70,6 +70,16 @@ public sealed class ReservationsEndpoints : ICarterModule
     {
         var id = await sender.Send(command, cancellationToken);
         return Results.Created($"/api/reservations/{id}", id);
+    }
+
+    private static async Task<IResult> AdminDeleteReservation(
+        Guid id,
+        Guid facilityId,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(new AdminDeleteReservationCommand(id, facilityId), cancellationToken);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> GetUserReservations(

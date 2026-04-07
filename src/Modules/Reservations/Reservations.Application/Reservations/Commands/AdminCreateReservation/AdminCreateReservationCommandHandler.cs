@@ -3,31 +3,20 @@ using Reservations.Domain.Entities;
 using Reservations.Domain.Exceptions;
 using Reservations.Domain.Services;
 using Reservations.Domain.ValueObjects;
-using Shared.Domain.Enums;
+using Reservations.Application.Abstractions;
 using Shared.Persistence;
-using Users.Shared;
 
 namespace Reservations.Application.Reservations.Commands.AdminCreateReservation;
 
 internal sealed class AdminCreateReservationCommandHandler(
     IRepository<Reservation, Guid> reservationRepository,
     IReservationChecker reservationChecker,
-    ICurrentUser currentUser)
+    IFacilityAuthorizationService facilityAuthorizationService)
     : IRequestHandler<AdminCreateReservationCommand, Guid>
 {
     public async Task<Guid> Handle(AdminCreateReservationCommand request, CancellationToken cancellationToken)
     {
-        var currentUserState = currentUser.GetState();
-
-        if (currentUserState.Role == UserRole.Manager.ToString())
-        {
-            var isManagerOfFacility = currentUserState.ManagedFacilityIds.Contains(request.FacilityId);
-
-            if (!isManagerOfFacility)
-            {
-                throw new UnauthorizedAccessException("You are not authorized to create a reservation for this facility.");
-            }
-        }
+        facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
 
         var timeRange = TimeRange.Create(request.StartTime, request.EndTime);
 
