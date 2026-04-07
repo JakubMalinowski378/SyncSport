@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Reservations.Application.Reservations.Commands.AdminCreateReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
+using Reservations.Application.Reservations.Queries.GetCourtReservations;
 using Reservations.Application.Reservations.Queries.GetUserReservations;
 using Shared.Authorization;
 using Shared.Pagination;
@@ -35,6 +36,10 @@ public sealed class ReservationsEndpoints : ICarterModule
             .WithName("GetUserReservations")
             .Produces<PagedResult<ReservationResponse>>(StatusCodes.Status200OK)
             .RequireAuthorization(Policies.User);
+
+        group.MapGet("/courts/{courtId:guid}", GetCourtReservations)
+            .WithName("GetCourtReservations")
+            .Produces<IReadOnlyCollection<CourtReservationResponse>>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> CreateReservation(
@@ -57,6 +62,15 @@ public sealed class ReservationsEndpoints : ICarterModule
 
     private static async Task<IResult> GetUserReservations(
         [AsParameters] GetUserReservationsQuery query,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(query, cancellationToken);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetCourtReservations(
+        [AsParameters] GetCourtReservationsQuery query,
         ISender sender,
         CancellationToken cancellationToken)
     {
