@@ -33,10 +33,6 @@ public sealed class UsersEndpoints : ICarterModule
             .Produces<GetCurrentUserResponse>(StatusCodes.Status200OK)
             .RequireAuthorization();
 
-        group.MapGet("me/reservations", GetCurrentUserReservations)
-            .WithName("GetCurrentUserReservations")
-            .Produces(StatusCodes.Status200OK);
-
         group.MapGet("{id:guid}", GetUser)
             .WithName("GetUser")
             .Produces<GetUserResponse>(StatusCodes.Status200OK)
@@ -89,13 +85,6 @@ public sealed class UsersEndpoints : ICarterModule
         var response = await sender.Send(new GetCurrentUserQuery());
 
         return Results.Ok(response);
-    }
-
-    private static async Task<IResult> GetCurrentUserReservations(ISender sender)
-    {
-        // TODO
-        await Task.CompletedTask;
-        return Results.Ok();
     }
 
     private static async Task<IResult> GetUser(Guid id, ISender sender)
