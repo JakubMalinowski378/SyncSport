@@ -6,6 +6,7 @@ using Shared.Persistence.Interceptors;
 using Users.Application.Abstractions;
 using Users.Infrastructure.Authentication;
 using Users.Infrastructure.Persistence;
+using Users.Shared;
 
 namespace Users.Infrastructure;
 
@@ -17,16 +18,17 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string is missing.");
 
         services.AddDbContext<UsersDbContext>((sp, options) =>
-                {
-                    options.UseNpgsql(connectionString);
-                    options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
-                });
+        {
+            options.UseNpgsql(connectionString);
+            options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
+        });
 
         services.AddScoped(typeof(IRepository<,>), typeof(UsersRepository<,>));
 
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.AddTransient<IJwtService, JwtService>();
         services.AddTransient<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
         services.Configure<PasswordHasherOptions>(configuration.GetSection("PasswordHasher"));
         return services;
