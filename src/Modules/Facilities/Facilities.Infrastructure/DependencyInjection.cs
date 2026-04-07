@@ -1,4 +1,6 @@
 using Facilities.Infrastructure.Persistence;
+using Facilities.Infrastructure.Services;
+using Facilities.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +23,8 @@ public static class DependencyInjection
         });
 
         services.AddScoped(typeof(IRepository<,>), typeof(FacilitiesRepository<,>));
+        services.AddScoped<IFacilitiesModuleApi, FacilitiesModuleApi>();
+
         return services;
     }
 }

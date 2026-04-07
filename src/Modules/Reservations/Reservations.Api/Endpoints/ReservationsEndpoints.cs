@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Reservations.Application.Reservations.Commands.AdminCreateReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
 using Reservations.Application.Reservations.Queries.GetCourtReservations;
+using Reservations.Application.Reservations.Queries.GetReservation;
 using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
 using Reservations.Application.Reservations.Queries.GetUserReservations;
 using Shared.Authorization;
@@ -46,6 +47,11 @@ public sealed class ReservationsEndpoints : ICarterModule
             .WithName("GetReservationsByUserId")
             .Produces<PagedResult<UserReservationResponse>>(StatusCodes.Status200OK)
             .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+
+        group.MapGet("/{id:guid}", GetReservationById)
+            .WithName("GetReservationById")
+            .Produces<ReservationDetailsResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     private static async Task<IResult> CreateReservation(
@@ -91,5 +97,14 @@ public sealed class ReservationsEndpoints : ICarterModule
     {
         var result = await sender.Send(query, cancellationToken);
         return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetReservationById(
+        Guid id,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetReservationQuery(id), cancellationToken);
+        return result is null ? Results.NotFound() : Results.Ok(result);
     }
 }
