@@ -17,4 +17,10 @@ public partial class Reservation : AggregateRoot<Guid>
         CourtId = courtId;
         Time = time;
     }
+
+    public static Reservation Create(Guid userId, Guid courtId, TimeRange time)
+    {
+        var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time);
+        return reservation;
+    }
 }

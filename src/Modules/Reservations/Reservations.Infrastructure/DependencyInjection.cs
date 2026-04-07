@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Reservations.Domain.Services;
 using Reservations.Infrastructure.Persistence;
+using Reservations.Infrastructure.Services;
 using Shared.Persistence;
 using Shared.Persistence.Interceptors;
 
@@ -21,6 +23,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped(typeof(IRepository<,>), typeof(ReservationsRepository<,>));
+        services.AddScoped<IReservationChecker, ReservationChecker>();
 
         return services;
     }
