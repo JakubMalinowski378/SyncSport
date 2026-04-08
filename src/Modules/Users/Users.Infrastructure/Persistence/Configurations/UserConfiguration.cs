@@ -44,12 +44,10 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Role)
             .HasConversion<string>()
             .HasMaxLength(50)
-            .IsRequired()
-            .HasDefaultValue(UserRole.User);
+            .IsRequired();
 
         builder.Property(u => u.IsActive)
-            .IsRequired()
-            .HasDefaultValue(true);
+            .IsRequired();
 
         builder.Property(u => u.ManagedFacilityIds)
             .HasField("_managedFacilityIds")
