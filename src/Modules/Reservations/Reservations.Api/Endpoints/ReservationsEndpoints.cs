@@ -3,7 +3,9 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Reservations.Application.Reservations.Commands.AdminCreateReservation;using Reservations.Application.Reservations.Commands.AdminDeleteReservation;using Reservations.Application.Reservations.Commands.CreateReservation;
+using Reservations.Application.Reservations.Commands.AdminCreateReservation;using Reservations.Application.Reservations.Commands.AdminDeleteReservation;
+using Reservations.Application.Reservations.Commands.CancelReservation;
+using Reservations.Application.Reservations.Commands.CreateReservation;
 using Reservations.Application.Reservations.Queries.GetCourtReservations;
 using Reservations.Application.Reservations.Queries.GetReservation;
 using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
@@ -37,6 +39,13 @@ public sealed class ReservationsEndpoints : ICarterModule
             .WithName("AdminDeleteReservation")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+
+        group.MapDelete("/me/{id:guid}", CancelSelfReservation)
+            .WithName("CancelSelfReservation")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequireAuthorization(Policies.User);
 
         group.MapGet("/courts/{courtId:guid}", GetCourtReservations)
@@ -79,6 +88,15 @@ public sealed class ReservationsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         await sender.Send(new AdminDeleteReservationCommand(id, facilityId), cancellationToken);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> CancelSelfReservation(
+        Guid id,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(new CancelReservationCommand(id), cancellationToken);
         return Results.NoContent();
     }
 
