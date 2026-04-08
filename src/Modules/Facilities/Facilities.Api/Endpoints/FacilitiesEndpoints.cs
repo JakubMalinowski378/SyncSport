@@ -1,4 +1,5 @@
 using Carter;
+using Facilities.Application.Facilities.Commands.CreateCourt;
 using Facilities.Application.Facilities.Commands.CreateFacility;
 using Facilities.Application.Facilities.Commands.EditFacility;
 using Facilities.Application.Facilities.Commands.GetAllFacilities;
@@ -43,6 +44,13 @@ public sealed class FacilitiesEndpoints : ICarterModule
         group.MapPut("/{facilityId:guid}", EditFacility)
             .WithName("EditFacility")
             .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/{facilityId:guid}/courts", CreateCourt)
+            .WithName("CreateCourt")
+            .Produces<Guid>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest);
@@ -170,6 +178,30 @@ public sealed class FacilitiesEndpoints : ICarterModule
         }
     }
 
+    private static async Task<IResult> CreateCourt(Guid facilityId, CreateCourtRequest request, ISender sender, CancellationToken ct)
+    {
+        try
+        {
+            var courtId = await sender.Send(
+                new CreateCourtCommand(facilityId, request.Name, request.SurfaceType),
+                ct);
+
+            return Results.Created($"/api/facilities/{facilityId}/courts/{courtId}", courtId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.NotFound(new { message = ex.Message });
+            }
+            return Results.Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+    }
+
 }
 
 public sealed record CreateFacilityRequest(
@@ -183,6 +215,10 @@ public sealed record EditFacilityRequest(
     string Address,
     TimeSpan OpenTime,
     TimeSpan CloseTime);
+
+public sealed record CreateCourtRequest(
+    string Name,
+    string SurfaceType);
 
 public sealed record FacilityResponse(
     Guid Id,

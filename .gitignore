@@ -334,3 +334,4 @@ logs/
 
 .DS_Store
 .github/copilot-instructions.md
+.github/instructions/
