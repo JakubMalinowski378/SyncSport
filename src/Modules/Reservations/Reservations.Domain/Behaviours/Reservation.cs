@@ -1,5 +1,6 @@
 using Reservations.Domain.Exceptions;
 using Reservations.Domain.Services;
+using Reservations.Domain.Enums;
 using Reservations.Domain.ValueObjects;
 
 namespace Reservations.Domain.Entities;
@@ -35,6 +36,6 @@ public partial class Reservation
             throw new ReservationOverlapException();
         }
 
-        return new Reservation(id, userId, courtId, time);
+        return new Reservation(id, userId, courtId, time, ReservationStatus.Pending);
     }
 }

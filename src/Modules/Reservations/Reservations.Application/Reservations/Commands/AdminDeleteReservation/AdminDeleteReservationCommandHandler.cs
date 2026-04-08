@@ -20,7 +20,7 @@ internal sealed class AdminDeleteReservationCommandHandler(
             throw new Exception("Reservation not found.");
         }
 
-        reservationRepository.Remove(reservation);
+        reservation.Cancel();
         await reservationRepository.SaveChangesAsync(cancellationToken);
     }
 }

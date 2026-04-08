@@ -19,6 +19,10 @@ internal sealed class ReservationConfiguration : IEntityTypeConfiguration<Reserv
         builder.Property(x => x.CourtId)
             .IsRequired();
 
+        builder.Property(x => x.Status)
+            .HasConversion<string>()
+            .IsRequired();
+
         builder.OwnsOne(x => x.Time, timeBuilder =>
         {
             timeBuilder.Property(t => t.Start)

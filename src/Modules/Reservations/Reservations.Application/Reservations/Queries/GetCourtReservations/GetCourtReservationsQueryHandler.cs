@@ -19,7 +19,7 @@ internal sealed class GetCourtReservationsQueryHandler(
 
         return reservations
             .OrderBy(r => r.Time.Start)
-            .Select(r => new CourtReservationResponse(r.Id, r.Time.Start, r.Time.End))
+            .Select(r => new CourtReservationResponse(r.Id, r.Time.Start, r.Time.End, r.Status))
             .ToList();
     }
 }

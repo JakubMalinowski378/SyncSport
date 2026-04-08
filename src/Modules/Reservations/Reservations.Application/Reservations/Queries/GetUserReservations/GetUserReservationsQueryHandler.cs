@@ -27,7 +27,8 @@ internal sealed class GetUserReservationsQueryHandler(
             r.Id,
             r.CourtId,
             r.Time.Start,
-            r.Time.End)).ToList();
+            r.Time.End,
+            r.Status)).ToList();
 
         return new PagedResult<ReservationResponse>(
             responseItems, 

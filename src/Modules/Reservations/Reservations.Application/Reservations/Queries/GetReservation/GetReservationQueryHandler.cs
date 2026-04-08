@@ -50,6 +50,7 @@ internal sealed class GetReservationQueryHandler(
             reservation.UserId,
             reservation.CourtId,
             reservation.Time.Start,
-            reservation.Time.End);
+            reservation.Time.End,
+            reservation.Status);
     }
 }

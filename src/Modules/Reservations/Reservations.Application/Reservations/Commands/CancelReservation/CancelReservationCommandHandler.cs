@@ -33,7 +33,9 @@ internal sealed class CancelReservationCommandHandler(
             throw new Exception("Reservation can only be cancelled at least 24 hours before it starts.");
         }
 
-        reservationRepository.Remove(reservation);
+        reservation.Cancel();
+        
+        // reservationRepository.Update(reservation); optionally if tracking is explicit, though typically SaveChanges is enough if entity is tracked.
         await reservationRepository.SaveChangesAsync(cancellationToken);
     }
 }
