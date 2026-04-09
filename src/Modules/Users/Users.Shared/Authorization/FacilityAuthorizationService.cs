@@ -1,16 +1,14 @@
-using Facilities.Application.Abstractions;
 using Shared.Domain.Enums;
-using Users.Shared;
 
-namespace Facilities.Application.Services;
+namespace Users.Shared.Authorization;
 
-internal sealed class FacilityAuthorizationService(ICurrentUser currentUser) : IFacilityAuthorizationService
+public sealed class FacilityAuthorizationService(ICurrentUser currentUser) : IFacilityAuthorizationService
 {
     public void AuthorizeFacilityAccess(Guid facilityId)
     {
         var currentUserState = currentUser.GetState();
 
-        if (currentUserState.Role == UserRole.Manager.ToString() || currentUserState.Role == "Moderator")
+        if (currentUserState.Role == UserRole.Manager.ToString())
         {
             var isManagerOfFacility = currentUserState.ManagedFacilityIds.Contains(facilityId);
 

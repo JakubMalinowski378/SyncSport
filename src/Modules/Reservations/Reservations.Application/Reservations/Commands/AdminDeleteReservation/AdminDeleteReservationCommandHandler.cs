@@ -1,5 +1,5 @@
 using MediatR;
-using Reservations.Application.Abstractions;
+using Users.Shared.Authorization;
 using Reservations.Domain.Entities;
 using Shared.Persistence;
 

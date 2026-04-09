@@ -1,4 +1,4 @@
-namespace Reservations.Application.Abstractions;
+namespace Users.Shared.Authorization;
 
 public interface IFacilityAuthorizationService
 {

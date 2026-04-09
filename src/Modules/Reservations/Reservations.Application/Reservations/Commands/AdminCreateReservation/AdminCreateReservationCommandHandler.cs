@@ -3,7 +3,7 @@ using Reservations.Domain.Entities;
 using Reservations.Domain.Exceptions;
 using Reservations.Domain.Services;
 using Reservations.Domain.ValueObjects;
-using Reservations.Application.Abstractions;
+using Users.Shared.Authorization;
 using Shared.Persistence;
 
 namespace Reservations.Application.Reservations.Commands.AdminCreateReservation;

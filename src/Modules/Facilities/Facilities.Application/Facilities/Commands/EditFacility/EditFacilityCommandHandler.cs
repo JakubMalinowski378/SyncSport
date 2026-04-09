@@ -1,4 +1,4 @@
-using Facilities.Application.Abstractions;
+using Users.Shared.Authorization;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;

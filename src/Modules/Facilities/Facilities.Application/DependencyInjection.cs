@@ -1,5 +1,4 @@
-using Facilities.Application.Abstractions;
-using Facilities.Application.Services;
+using Users.Shared.Authorization;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Behaviors;
