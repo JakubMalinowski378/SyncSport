@@ -5,6 +5,7 @@ using Facilities.Application.Facilities.Commands.EditFacility;
 using Facilities.Application.Facilities.Commands.GetAllFacilities;
 using Facilities.Application.Facilities.Commands.GetFacilityById;
 using Facilities.Application.Facilities.Commands.RemoveFacility;
+using Facilities.Application.Facilities.Queries.GetFacilityCourts;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -53,6 +54,12 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces<Guid>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/{facilityId:guid}/courts", GetFacilityCourts)
+            .WithName("GetFacilityCourts")
+            .Produces<PagedResult<CourtResponse>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
@@ -144,6 +151,29 @@ public sealed class FacilitiesEndpoints : ICarterModule
         return Results.Created($"/api/facilities/{facilityId}/courts/{courtId}", courtId);
     }
 
+    private static async Task<IResult> GetFacilityCourts(Guid facilityId, int? pageNumber, int? pageSize, ISender sender, CancellationToken ct)
+    {
+        var result = await sender.Send(
+            new GetFacilityCourtsQuery(facilityId, pageNumber ?? 1, pageSize ?? 10),
+            ct);
+
+        var responseItems = result.Items
+            .Select(x => new CourtResponse(
+                x.Id,
+                x.Name,
+                x.SurfaceType,
+                x.IsActive))
+            .ToList();
+
+        var response = new PagedResult<CourtResponse>(
+            responseItems,
+            result.TotalCount,
+            result.PageNumber,
+            result.PageSize);
+
+        return Results.Ok(response);
+    }
+
 }
 
 public sealed record CreateFacilityRequest(
@@ -161,6 +191,12 @@ public sealed record EditFacilityRequest(
 public sealed record CreateCourtRequest(
     string Name,
     string SurfaceType);
+
+public sealed record CourtResponse(
+    Guid Id,
+    string Name,
+    string SurfaceType,
+    bool IsActive);
 
 public sealed record FacilityResponse(
     Guid Id,
