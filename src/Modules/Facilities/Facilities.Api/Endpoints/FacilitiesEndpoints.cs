@@ -4,13 +4,16 @@ using Facilities.Application.Facilities.Commands.CreateFacility;
 using Facilities.Application.Facilities.Commands.EditFacility;
 using Facilities.Application.Facilities.Commands.GetAllFacilities;
 using Facilities.Application.Facilities.Commands.GetFacilityById;
+using Facilities.Application.Facilities.Commands.RemoveCourt;
 using Facilities.Application.Facilities.Commands.RemoveFacility;
 using Facilities.Application.Facilities.Queries.GetFacilityCourts;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Shared.Authorization;
 using Shared.Pagination;
+using System.Security.Claims;
 
 namespace Facilities.Api.Endpoints;
 
@@ -61,6 +64,14 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces<PagedResult<CourtResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapDelete("/{facilityId:guid}/courts/{courtId:guid}", RemoveCourt)
+            .WithName("RemoveCourt")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");     
     }
 
     private static async Task<IResult> CreateFacility(CreateFacilityRequest request, ISender sender, CancellationToken ct)
@@ -172,6 +183,35 @@ public sealed class FacilitiesEndpoints : ICarterModule
             result.PageSize);
 
         return Results.Ok(response);
+    }
+
+    private static async Task<IResult> RemoveCourt(Guid facilityId, Guid courtId, ClaimsPrincipal user, ISender sender, CancellationToken ct)
+    {
+        var isAdmin = user.IsInRole("Admin");
+        var isModerator = user.IsInRole("Moderator") || user.IsInRole("Manager");
+
+        if (!isAdmin && !isModerator)
+        {
+            return Results.Forbid();
+        }
+
+        if (isModerator && !isAdmin)
+        {
+            var managedFacilityClaims = user.FindAll("ManagedFacilityId").Select(c => c.Value);
+            if (!managedFacilityClaims.Contains(facilityId.ToString(), StringComparer.OrdinalIgnoreCase))
+            {
+                return Results.Forbid();
+            }
+        }
+
+        var removed = await sender.Send(new RemoveCourtCommand(facilityId, courtId), ct);
+
+        if (!removed)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.NoContent();
     }
 
 }
