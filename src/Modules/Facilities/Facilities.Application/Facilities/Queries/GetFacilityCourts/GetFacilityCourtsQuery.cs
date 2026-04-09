@@ -5,8 +5,8 @@ namespace Facilities.Application.Facilities.Queries.GetFacilityCourts;
 
 public sealed record GetFacilityCourtsQuery(
     Guid FacilityId,
-    int PageNumber,
-    int PageSize) : IRequest<PagedResult<CourtDto>>;
+    int PageNumber = 1,
+    int PageSize = 10) : IRequest<PagedResult<CourtDto>>;
 
 public sealed record CourtDto(
     Guid Id,

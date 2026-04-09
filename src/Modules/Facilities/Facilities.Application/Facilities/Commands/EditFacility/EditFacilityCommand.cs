@@ -8,7 +8,7 @@ public sealed record EditFacilityCommand(
     string Name,
     string Address,
     TimeSpan OpenTime,
-    TimeSpan CloseTime) : IRequest<bool>;
+    TimeSpan CloseTime) : IRequest;
 
 public sealed class EditFacilityCommandValidator : AbstractValidator<EditFacilityCommand>
 {

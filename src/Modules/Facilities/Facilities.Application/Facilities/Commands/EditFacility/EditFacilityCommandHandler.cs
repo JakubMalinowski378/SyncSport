@@ -1,3 +1,4 @@
+using Facilities.Application.Abstractions;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
@@ -6,10 +7,13 @@ using Shared.Persistence;
 namespace Facilities.Application.Facilities.Commands.EditFacility;
 
 public sealed class EditFacilityCommandHandler(
-    IRepository<Facility, FacilityId> facilityRepository) : IRequestHandler<EditFacilityCommand, bool>
+    IRepository<Facility, FacilityId> facilityRepository,
+    IFacilityAuthorizationService facilityAuthorizationService) : IRequestHandler<EditFacilityCommand>
 {
-    public async Task<bool> Handle(EditFacilityCommand request, CancellationToken cancellationToken)
+    public async Task Handle(EditFacilityCommand request, CancellationToken cancellationToken)
     {
+        facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
+
         var facility = await facilityRepository.GetByIdAsync(
             new FacilityId(request.FacilityId),
             asNoTracking: false,
@@ -17,7 +21,7 @@ public sealed class EditFacilityCommandHandler(
 
         if (facility is null)
         {
-            return false;
+            throw new Exception("Facility not found.");
         }
 
         var existingFacility = await facilityRepository.FirstOrDefaultAsync(
@@ -39,6 +43,6 @@ public sealed class EditFacilityCommandHandler(
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);
 
-        return true;
+        
     }
 }

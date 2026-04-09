@@ -10,6 +10,7 @@ using Facilities.Application.Facilities.Queries.GetFacilityCourts;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorization;
 using Shared.Pagination;
@@ -31,37 +32,43 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
         group.MapGet("/", GetFacilities)
             .WithName("GetFacilities")
-            .Produces<PagedResult<FacilityResponse>>(StatusCodes.Status200OK)
+            .Produces<PagedResult<GetAllFacilitiesResult>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapGet("/{facilityId:guid}", GetFacilityById)
             .WithName("GetFacilityById")
-            .Produces<FacilityResponse>(StatusCodes.Status200OK)
+            .Produces<GetFacilityByIdResult>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{facilityId:guid}", RemoveFacility)
             .WithName("RemoveFacility")
             .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
 
         group.MapPut("/{facilityId:guid}", EditFacility)
             .WithName("EditFacility")
             .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
 
         group.MapPost("/{facilityId:guid}/courts", CreateCourt)
             .WithName("CreateCourt")
             .Produces<Guid>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
 
         group.MapGet("/{facilityId:guid}/courts", GetFacilityCourts)
             .WithName("GetFacilityCourts")
-            .Produces<PagedResult<CourtResponse>>(StatusCodes.Status200OK)
+            .Produces<PagedResult<CourtDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
@@ -74,36 +81,18 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");     
     }
 
-    private static async Task<IResult> CreateFacility(CreateFacilityRequest request, ISender sender, CancellationToken ct)
+private static async Task<IResult> CreateFacility(CreateFacilityCommand command, ISender sender, CancellationToken ct)
     {
-        var id = await sender.Send(
-            new CreateFacilityCommand(request.Name, request.Address, request.OpenTime, request.CloseTime),
-            ct);
+        var id = await sender.Send(command, ct);
 
         return Results.Created($"/api/facilities/{id}", id);
     }
 
-    private static async Task<IResult> GetFacilities(int? pageNumber, int? pageSize, ISender sender, CancellationToken ct)
+    private static async Task<IResult> GetFacilities([AsParameters] GetAllFacilitiesCommand query, ISender sender, CancellationToken ct)
     {
-        var facilities = await sender.Send(
-            new GetAllFacilitiesCommand(pageNumber ?? 1, pageSize ?? 10),
-            ct);
+        var facilities = await sender.Send(query, ct);
 
-        var responseItems = facilities.Items
-            .Select(x => new FacilityResponse(
-                x.Id,
-                x.Name,
-                x.Address,
-                x.OpeningHours))
-            .ToList();
-
-        var response = new PagedResult<FacilityResponse>(
-            responseItems,
-            facilities.TotalCount,
-            facilities.PageNumber,
-            facilities.PageSize);
-
-        return Results.Ok(response);
+        return Results.Ok(facilities);
     }
 
     private static async Task<IResult> GetFacilityById(Guid facilityId, ISender sender, CancellationToken ct)
@@ -115,101 +104,40 @@ public sealed class FacilitiesEndpoints : ICarterModule
             return Results.NotFound();
         }
 
-        return Results.Ok(new FacilityResponse(
-            facility.Id,
-            facility.Name,
-            facility.Address,
-            facility.OpeningHours));
+        return Results.Ok(facility);
     }
 
     private static async Task<IResult> RemoveFacility(Guid facilityId, ISender sender, CancellationToken ct)
     {
-        var removed = await sender.Send(new RemoveFacilityCommand(facilityId), ct);
-
-        if (!removed)
-        {
-            return Results.NotFound();
-        }
+        await sender.Send(new RemoveFacilityCommand(facilityId), ct);
 
         return Results.NoContent();
     }
 
-    private static async Task<IResult> EditFacility(Guid facilityId, EditFacilityRequest request, ISender sender, CancellationToken ct)
+    private static async Task<IResult> EditFacility([FromRoute] Guid facilityId, [FromBody] EditFacilityCommand command, ISender sender, CancellationToken ct)
     {
-        var edited = await sender.Send(
-            new EditFacilityCommand(
-                facilityId,
-                request.Name,
-                request.Address,
-                request.OpenTime,
-                request.CloseTime),
-            ct);
-
-        if (!edited)
-        {
-            return Results.NotFound();
-        }
+        await sender.Send(command with { FacilityId = facilityId }, ct);
 
         return Results.NoContent();
     }
 
-    private static async Task<IResult> CreateCourt(Guid facilityId, CreateCourtRequest request, ISender sender, CancellationToken ct)
+    private static async Task<IResult> CreateCourt([FromRoute] Guid facilityId, [FromBody] CreateCourtCommand command, ISender sender, CancellationToken ct)
     {
-        var courtId = await sender.Send(
-            new CreateCourtCommand(facilityId, request.Name, request.SurfaceType),
-            ct);
+        var courtId = await sender.Send(command with { FacilityId = facilityId }, ct);
 
         return Results.Created($"/api/facilities/{facilityId}/courts/{courtId}", courtId);
     }
 
-    private static async Task<IResult> GetFacilityCourts(Guid facilityId, int? pageNumber, int? pageSize, ISender sender, CancellationToken ct)
+    private static async Task<IResult> GetFacilityCourts([AsParameters] GetFacilityCourtsQuery query, ISender sender, CancellationToken ct)
     {
-        var result = await sender.Send(
-            new GetFacilityCourtsQuery(facilityId, pageNumber ?? 1, pageSize ?? 10),
-            ct);
+        var result = await sender.Send(query, ct);
 
-        var responseItems = result.Items
-            .Select(x => new CourtResponse(
-                x.Id,
-                x.Name,
-                x.SurfaceType,
-                x.IsActive))
-            .ToList();
-
-        var response = new PagedResult<CourtResponse>(
-            responseItems,
-            result.TotalCount,
-            result.PageNumber,
-            result.PageSize);
-
-        return Results.Ok(response);
+        return Results.Ok(result);
     }
 
-    private static async Task<IResult> RemoveCourt(Guid facilityId, Guid courtId, ClaimsPrincipal user, ISender sender, CancellationToken ct)
+    private static async Task<IResult> RemoveCourt(Guid facilityId, Guid courtId, ISender sender, CancellationToken ct)
     {
-        var isAdmin = user.IsInRole("Admin");
-        var isModerator = user.IsInRole("Moderator") || user.IsInRole("Manager");
-
-        if (!isAdmin && !isModerator)
-        {
-            return Results.Forbid();
-        }
-
-        if (isModerator && !isAdmin)
-        {
-            var managedFacilityClaims = user.FindAll("ManagedFacilityId").Select(c => c.Value);
-            if (!managedFacilityClaims.Contains(facilityId.ToString(), StringComparer.OrdinalIgnoreCase))
-            {
-                return Results.Forbid();
-            }
-        }
-
-        var removed = await sender.Send(new RemoveCourtCommand(facilityId, courtId), ct);
-
-        if (!removed)
-        {
-            return Results.NotFound();
-        }
+        await sender.Send(new RemoveCourtCommand(facilityId, courtId), ct);
 
         return Results.NoContent();
     }
@@ -231,15 +159,3 @@ public sealed record EditFacilityRequest(
 public sealed record CreateCourtRequest(
     string Name,
     string SurfaceType);
-
-public sealed record CourtResponse(
-    Guid Id,
-    string Name,
-    string SurfaceType,
-    bool IsActive);
-
-public sealed record FacilityResponse(
-    Guid Id,
-    string Name,
-    string Address,
-    List<Facilities.Application.Facilities.Common.DailyOpeningHoursDto> OpeningHours);
