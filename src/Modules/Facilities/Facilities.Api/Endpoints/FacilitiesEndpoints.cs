@@ -58,148 +58,90 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> CreateFacility(CreateFacilityRequest request, ISender sender, CancellationToken ct)
     {
-        try
-        {
-            var id = await sender.Send(
-                new CreateFacilityCommand(request.Name, request.Address, request.OpenTime, request.CloseTime),
-                ct);
+        var id = await sender.Send(
+            new CreateFacilityCommand(request.Name, request.Address, request.OpenTime, request.CloseTime),
+            ct);
 
-            return Results.Created($"/api/facilities/{id}", id);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.Conflict(new { message = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.Created($"/api/facilities/{id}", id);
     }
 
     private static async Task<IResult> GetFacilities(int? pageNumber, int? pageSize, ISender sender, CancellationToken ct)
     {
-        try
-        {
-            var facilities = await sender.Send(
-                new GetAllFacilitiesCommand(pageNumber ?? 1, pageSize ?? 10),
-                ct);
+        var facilities = await sender.Send(
+            new GetAllFacilitiesCommand(pageNumber ?? 1, pageSize ?? 10),
+            ct);
 
-            var responseItems = facilities.Items
-                .Select(x => new FacilityResponse(
-                    x.Id,
-                    x.Name,
-                    x.Address,
-                    x.OpeningHours))
-                .ToList();
+        var responseItems = facilities.Items
+            .Select(x => new FacilityResponse(
+                x.Id,
+                x.Name,
+                x.Address,
+                x.OpeningHours))
+            .ToList();
 
-            var response = new PagedResult<FacilityResponse>(
-                responseItems,
-                facilities.TotalCount,
-                facilities.PageNumber,
-                facilities.PageSize);
+        var response = new PagedResult<FacilityResponse>(
+            responseItems,
+            facilities.TotalCount,
+            facilities.PageNumber,
+            facilities.PageSize);
 
-            return Results.Ok(response);
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.Ok(response);
     }
 
     private static async Task<IResult> GetFacilityById(Guid facilityId, ISender sender, CancellationToken ct)
     {
-        try
-        {
-            var facility = await sender.Send(new GetFacilityByIdCommand(facilityId), ct);
+        var facility = await sender.Send(new GetFacilityByIdCommand(facilityId), ct);
 
-            if (facility is null)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.Ok(new FacilityResponse(
-                facility.Id,
-                facility.Name,
-                facility.Address,
-                facility.OpeningHours));
-        }
-        catch (ArgumentException ex)
+        if (facility is null)
         {
-            return Results.BadRequest(new { message = ex.Message });
+            return Results.NotFound();
         }
+
+        return Results.Ok(new FacilityResponse(
+            facility.Id,
+            facility.Name,
+            facility.Address,
+            facility.OpeningHours));
     }
 
     private static async Task<IResult> RemoveFacility(Guid facilityId, ISender sender, CancellationToken ct)
     {
-        try
-        {
-            var removed = await sender.Send(new RemoveFacilityCommand(facilityId), ct);
+        var removed = await sender.Send(new RemoveFacilityCommand(facilityId), ct);
 
-            if (!removed)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.NoContent();
-        }
-        catch (ArgumentException ex)
+        if (!removed)
         {
-            return Results.BadRequest(new { message = ex.Message });
+            return Results.NotFound();
         }
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> EditFacility(Guid facilityId, EditFacilityRequest request, ISender sender, CancellationToken ct)
     {
-        try
-        {
-            var edited = await sender.Send(
-                new EditFacilityCommand(
-                    facilityId,
-                    request.Name,
-                    request.Address,
-                    request.OpenTime,
-                    request.CloseTime),
-                ct);
+        var edited = await sender.Send(
+            new EditFacilityCommand(
+                facilityId,
+                request.Name,
+                request.Address,
+                request.OpenTime,
+                request.CloseTime),
+            ct);
 
-            if (!edited)
-            {
-                return Results.NotFound();
-            }
+        if (!edited)
+        {
+            return Results.NotFound();
+        }
 
-            return Results.NoContent();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.Conflict(new { message = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.NoContent();
     }
 
     private static async Task<IResult> CreateCourt(Guid facilityId, CreateCourtRequest request, ISender sender, CancellationToken ct)
     {
-        try
-        {
-            var courtId = await sender.Send(
-                new CreateCourtCommand(facilityId, request.Name, request.SurfaceType),
-                ct);
+        var courtId = await sender.Send(
+            new CreateCourtCommand(facilityId, request.Name, request.SurfaceType),
+            ct);
 
-            return Results.Created($"/api/facilities/{facilityId}/courts/{courtId}", courtId);
-        }
-        catch (InvalidOperationException ex)
-        {
-            if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            {
-                return Results.NotFound(new { message = ex.Message });
-            }
-            return Results.Conflict(new { message = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.Created($"/api/facilities/{facilityId}/courts/{courtId}", courtId);
     }
 
 }
