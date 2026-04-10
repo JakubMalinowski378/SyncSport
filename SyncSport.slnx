@@ -30,4 +30,12 @@
     <Project Path="src/Modules/Reservations/Reservations.Shared/Reservations.Shared.csproj" />
   </Folder>
 
+  <Folder Name="/Modules/Pricing/">
+    <Project Path="src/Modules/Pricing/Pricing.Api/Pricing.Api.csproj" />
+    <Project Path="src/Modules/Pricing/Pricing.Infrastructure/Pricing.Infrastructure.csproj" />
+    <Project Path="src/Modules/Pricing/Pricing.Application/Pricing.Application.csproj" />
+    <Project Path="src/Modules/Pricing/Pricing.Domain/Pricing.Domain.csproj" />
+    <Project Path="src/Modules/Pricing/Pricing.Shared/Pricing.Shared.csproj" />
+  </Folder>
+
 </Solution>
