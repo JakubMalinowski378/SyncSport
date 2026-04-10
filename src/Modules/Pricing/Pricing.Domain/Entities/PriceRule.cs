@@ -12,7 +12,7 @@ public class PriceRule : Entity<PriceRuleId>
     public TimeSpan? EndTime { get; private set; }
     public decimal Multiplier { get; private set; }
 
-    internal TariffId TariffId { get; private set; }
+    public TariffId TariffId { get; private set; } = default!;
 
     protected PriceRule() { }
 

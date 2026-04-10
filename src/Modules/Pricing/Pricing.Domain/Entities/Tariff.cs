@@ -9,7 +9,7 @@ public class Tariff : AggregateRoot<TariffId>
 
     public Guid FacilityId { get; private set; }
     public Guid? CourtId { get; private set; }
-    public Money BaseHourlyRate { get; private set; }
+    public Money BaseHourlyRate { get; private set; } = default!;
 
     public IReadOnlyCollection<PriceRule> PriceRules => _priceRules.AsReadOnly();
 
