@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Shared.Authorization;
+using Shared.Exceptions;
 using Shared.Persistence.Interceptors;
 using Shared.Seeding;
 using System.Text;
@@ -67,13 +68,16 @@ public static class DependencyInjection
         services.AddTransient<DataSeederRunner>();
         services.AddScoped<PublishDomainEventsInterceptor>();
 
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
+
         return services;
     }
 
     public static WebApplication UseSharedFramework(this WebApplication app)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseExceptionHandler();
+
 
         app.UseAuthentication();
         app.UseAuthorization();
