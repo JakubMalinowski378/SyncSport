@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pricing.Domain\Pricing.Domain.csproj" />
+    <ProjectReference Include="..\..\Users\Users.Shared\Users.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
