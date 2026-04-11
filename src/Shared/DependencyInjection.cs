@@ -78,6 +78,11 @@ public static class DependencyInjection
     {
         app.UseExceptionHandler();
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseAuthentication();
         app.UseAuthorization();
