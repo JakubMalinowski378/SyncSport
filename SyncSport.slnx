@@ -38,4 +38,7 @@
     <Project Path="src/Modules/Pricing/Pricing.Shared/Pricing.Shared.csproj" />
   </Folder>
 
+  <Folder Name="/Modules/Payments/">
+    <Project Path="src/Modules/Payments/Payments.csproj" />
+  </Folder>
 </Solution>

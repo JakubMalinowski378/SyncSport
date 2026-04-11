@@ -1,5 +1,6 @@
 using Facilities.Api;
 using Notifications;
+using Payments;
 using Pricing.Api;
 using Reservations.Api;
 using Shared;
@@ -14,6 +15,7 @@ builder.Services.AddUsersModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddReservationsModule(builder.Configuration);
 builder.Services.AddPricingModule(builder.Configuration);
+builder.Services.AddPaymentsModule();
 
 var app = builder.Build();
 
