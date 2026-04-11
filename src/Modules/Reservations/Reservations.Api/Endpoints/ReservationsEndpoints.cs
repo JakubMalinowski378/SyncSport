@@ -3,13 +3,16 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Reservations.Application.Reservations.Commands.AdminCreateReservation;using Reservations.Application.Reservations.Commands.AdminDeleteReservation;
+using Microsoft.AspNetCore.Mvc;
+using Reservations.Application.Reservations.Commands.AdminCreateReservation;
+using Reservations.Application.Reservations.Commands.AdminDeleteReservation;        
 using Reservations.Application.Reservations.Commands.CancelReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
-using Reservations.Application.Reservations.Queries.GetCourtReservations;
+using Reservations.Application.Reservations.Queries.GetAvailableSlots;
+using Reservations.Application.Reservations.Queries.GetCourtReservations;       
 using Reservations.Application.Reservations.Queries.GetReservation;
-using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
-using Reservations.Application.Reservations.Queries.GetUserReservations;
+using Reservations.Application.Reservations.Queries.GetReservationsByUserId;    
+using Reservations.Application.Reservations.Queries.GetUserReservations;        
 using Shared.Authorization;
 using Shared.Pagination;
 
@@ -59,8 +62,16 @@ public sealed class ReservationsEndpoints : ICarterModule
 
         group.MapGet("/{id:guid}", GetReservationById)
             .WithName("GetReservationById")
-            .Produces<ReservationDetailsResponse>(StatusCodes.Status200OK)
+.Produces<ReservationDetailsResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        var availabilityGroup = app.MapGroup("/api/facilities").WithTags("Availability");
+
+        availabilityGroup.MapGet("/{id:guid}/available-slots", GetAvailableSlots)
+            .WithName("GetAvailableSlots")
+            .Produces<AvailableSlotsResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> CreateReservation(
@@ -127,12 +138,22 @@ public sealed class ReservationsEndpoints : ICarterModule
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> GetReservationById(
+private static async Task<IResult> GetReservationById(
         Guid id,
         ISender sender,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetReservationQuery(id), cancellationToken);
-        return result is null ? Results.NotFound() : Results.Ok(result);
+        return result is null ? Results.NotFound() : Results.Ok(result);        
+    }
+
+    private static async Task<IResult> GetAvailableSlots(
+        Guid id,
+        DateOnly date,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetAvailableSlotsQuery(id, date), cancellationToken);
+        return Results.Ok(result);
     }
 }
