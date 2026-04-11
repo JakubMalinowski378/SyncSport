@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Pricing.Application.Tariffs.Commands.CreateTariff;
 using Pricing.Application.Tariffs.DTOs;
+using Pricing.Application.Tariffs.Queries.CalculatePrice;
 using Pricing.Application.Tariffs.Queries.GetFacilityTariffs;
 using Shared.Authorization;
 
@@ -27,6 +28,12 @@ public sealed class TariffsEndpoints : ICarterModule
             .WithName("GetFacilityTariffs")
             .Produces<IEnumerable<TariffDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/calculate", CalculatePrice)
+            .WithName("CalculatePrice")
+            .Produces<decimal>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     private static async Task<IResult> CreateTariff(
@@ -44,6 +51,15 @@ public sealed class TariffsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var query = new GetFacilityTariffsQuery(facilityId);
+        var result = await sender.Send(query, cancellationToken);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> CalculatePrice(
+        [FromBody] CalculatePriceQuery query,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
         var result = await sender.Send(query, cancellationToken);
         return Results.Ok(result);
     }
