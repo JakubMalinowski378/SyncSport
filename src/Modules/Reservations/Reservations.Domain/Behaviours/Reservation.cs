@@ -13,6 +13,7 @@ public partial class Reservation
         Guid courtId,
         DateTime start,
         DateTime end,
+        decimal price,
         DateTime now,
         IReservationChecker reservationChecker,
         CancellationToken cancellationToken = default)
@@ -36,6 +37,6 @@ public partial class Reservation
             throw new ReservationOverlapException();
         }
 
-        return new Reservation(id, userId, courtId, time, ReservationStatus.Pending);
+        return new Reservation(id, userId, courtId, time, ReservationStatus.Pending, price);
     }
 }

@@ -23,6 +23,10 @@ internal sealed class ReservationConfiguration : IEntityTypeConfiguration<Reserv
             .HasConversion<string>()
             .IsRequired();
 
+        builder.Property(x => x.Price)
+            .HasColumnType("numeric(18,2)")
+            .IsRequired();
+
         builder.OwnsOne(x => x.Time, timeBuilder =>
         {
             timeBuilder.Property(t => t.Start)

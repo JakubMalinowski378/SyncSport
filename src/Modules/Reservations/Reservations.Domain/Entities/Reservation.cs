@@ -10,20 +10,22 @@ public partial class Reservation : AggregateRoot<Guid>
     public Guid CourtId { get; private set; }
     public TimeRange Time { get; private set; }
     public ReservationStatus Status { get; private set; }
+    public decimal Price { get; private set; }
 
     private Reservation() { Time = null!; }
 
-    private Reservation(Guid id, Guid userId, Guid courtId, TimeRange time, ReservationStatus status) : base(id)
+    private Reservation(Guid id, Guid userId, Guid courtId, TimeRange time, ReservationStatus status, decimal price) : base(id)
     {
         UserId = userId;
         CourtId = courtId;
         Time = time;
         Status = status;
+        Price = price;
     }
 
-    public static Reservation Create(Guid userId, Guid courtId, TimeRange time) 
+    public static Reservation Create(Guid userId, Guid courtId, TimeRange time, decimal price) 
     {
-        var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time, ReservationStatus.Pending);
+        var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time, ReservationStatus.Pending, price);
         return reservation;
     }
 

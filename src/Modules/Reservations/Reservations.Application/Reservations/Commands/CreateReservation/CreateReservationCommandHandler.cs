@@ -1,4 +1,6 @@
+using Facilities.Shared;
 using MediatR;
+using Pricing.Shared;
 using Reservations.Domain.Entities;
 using Reservations.Domain.Exceptions;
 using Reservations.Domain.Services;
@@ -9,7 +11,9 @@ namespace Reservations.Application.Reservations.Commands.CreateReservation;
 
 internal sealed class CreateReservationCommandHandler(
     IRepository<Reservation, Guid> reservationRepository,
-    IReservationChecker reservationChecker)
+    IReservationChecker reservationChecker,
+    IFacilitiesModuleApi facilitiesModuleApi,
+    IPricingModuleApi pricingModuleApi)
     : IRequestHandler<CreateReservationCommand, Guid>
 {
     public async Task<Guid> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
@@ -28,7 +32,15 @@ internal sealed class CreateReservationCommandHandler(
             throw new UserAlreadyHasReservationException();
         }
 
-        var reservation = Reservation.Create(request.UserId, request.CourtId, timeRange);
+        var facilityId = await facilitiesModuleApi.GetFacilityIdByCourtIdAsync(request.CourtId, cancellationToken);
+        if (facilityId is null)
+        {
+            throw new InvalidOperationException("Facility not found for the given court.");
+        }
+
+        var price = await pricingModuleApi.CalculatePriceAsync(facilityId.Value, request.CourtId, request.StartTime, request.EndTime, cancellationToken);
+
+        var reservation = Reservation.Create(request.UserId, request.CourtId, timeRange, price);
 
         await reservationRepository.AddAsync(reservation, cancellationToken);
         await reservationRepository.SaveChangesAsync(cancellationToken);

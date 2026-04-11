@@ -1,4 +1,5 @@
 using MediatR;
+using Pricing.Shared;
 using Reservations.Domain.Entities;
 using Reservations.Domain.Exceptions;
 using Reservations.Domain.Services;
@@ -11,6 +12,7 @@ namespace Reservations.Application.Reservations.Commands.AdminCreateReservation;
 internal sealed class AdminCreateReservationCommandHandler(
     IRepository<Reservation, Guid> reservationRepository,
     IReservationChecker reservationChecker,
+    IPricingModuleApi pricingModuleApi,
     IFacilityAuthorizationService facilityAuthorizationService)
     : IRequestHandler<AdminCreateReservationCommand, Guid>
 {
@@ -33,7 +35,9 @@ internal sealed class AdminCreateReservationCommandHandler(
             throw new UserAlreadyHasReservationException();
         }
 
-        var reservation = Reservation.Create(request.UserId, request.CourtId, timeRange);
+        var price = await pricingModuleApi.CalculatePriceAsync(request.FacilityId, request.CourtId, request.StartTime, request.EndTime, cancellationToken);
+
+        var reservation = Reservation.Create(request.UserId, request.CourtId, timeRange, price);
 
         await reservationRepository.AddAsync(reservation, cancellationToken);
         await reservationRepository.SaveChangesAsync(cancellationToken);
