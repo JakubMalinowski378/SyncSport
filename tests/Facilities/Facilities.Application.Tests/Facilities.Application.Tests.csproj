@@ -10,11 +10,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\..\..\src\Modules\Facilities\Facilities.Application\Facilities.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\Modules\Facilities\Facilities.Application\Facilities.Application.csproj" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
 </Project>
