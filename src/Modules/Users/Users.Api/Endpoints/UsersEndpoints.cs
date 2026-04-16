@@ -7,10 +7,12 @@ using Shared.Authorization;
 using Shared.Pagination;
 using Users.Application.Users.Commands.AssignFacilityToUser;
 using Users.Application.Users.Commands.ChangeUserRole;
+using Users.Application.Users.Commands.ChangeUserStatus;
 using Users.Application.Users.Commands.DeleteUser;
 using Users.Application.Users.Commands.RemoveFacilityAssignmentFromUser;
 using Users.Application.Users.Commands.UpdateCurrentUser;
 using Users.Application.Users.Commands.UpdateUser;
+using Users.Application.Users.Queries.GetUsers;
 using Users.Application.Users.Queries.GetCurrentUser;
 using Users.Application.Users.Queries.GetUser;
 
@@ -62,6 +64,12 @@ public sealed class UsersEndpoints : ICarterModule
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(Policies.Admin);
 
+        group.MapPatch("{id:guid}/status", ChangeUserStatus)
+            .WithName("ChangeUserStatus")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(Policies.Admin);
+
         group.MapDelete("{id:guid}", DeleteUser)
             .WithName("DeleteUser")
             .Produces(StatusCodes.Status204NoContent)
@@ -74,9 +82,9 @@ public sealed class UsersEndpoints : ICarterModule
             .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
-    private static async Task<IResult> GetUsers(ISender sender, int pageNumber = 1, int pageSize = 10)
+    private static async Task<IResult> GetUsers(ISender sender, [AsParameters] GetUsersQuery query)
     {
-        var result = await sender.Send(new Users.Application.Users.Queries.GetUsers.GetUsersQuery(pageNumber, pageSize));
+        var result = await sender.Send(query);
         return Results.Ok(result);
     }
 
@@ -120,6 +128,12 @@ public sealed class UsersEndpoints : ICarterModule
     private static async Task<IResult> ChangeUserRole(Guid id, ChangeUserRoleRequest request, ISender sender)
     {
         await sender.Send(new ChangeUserRoleCommand(id, request.Role));
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> ChangeUserStatus(Guid id, ChangeUserStatusRequest request, ISender sender)
+    {
+        await sender.Send(new ChangeUserStatusCommand(id, request.IsActive));
         return Results.NoContent();
     }
 

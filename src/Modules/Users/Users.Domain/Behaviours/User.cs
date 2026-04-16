@@ -41,6 +41,12 @@ public partial class User
         AddDomainEvent(new UserDeactivatedEvent(Id));
     }
 
+    public void Activate()
+    {
+        IsActive = true;
+        AddDomainEvent(new UserActivatedEvent(Id));
+    }
+
     public void UpdateName(FullName name)
     {
         Name = name;
