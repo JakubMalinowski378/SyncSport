@@ -29,7 +29,7 @@ internal sealed class GeneratePasswordResetTokenCommandHandler(
             return;
         }
 
-        var resetToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        var resetToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var expiryTime = DateTime.UtcNow.AddMinutes(jwtService.GetPasswordResetTokenExpiryMinutes());
 
         account.SetPasswordResetToken(resetToken, expiryTime);

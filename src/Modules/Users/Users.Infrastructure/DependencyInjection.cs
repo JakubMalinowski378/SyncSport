@@ -23,7 +23,8 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
         });
 
-        services.AddScoped(typeof(IRepository<,>), typeof(UsersRepository<,>));
+        services.AddScoped<IRepository<Users.Domain.Entities.User, Guid>, UsersRepository<Users.Domain.Entities.User, Guid>>();
+        services.AddScoped<IRepository<Users.Domain.Entities.Account, Guid>, UsersRepository<Users.Domain.Entities.Account, Guid>>();
 
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.AddTransient<IJwtService, JwtService>();

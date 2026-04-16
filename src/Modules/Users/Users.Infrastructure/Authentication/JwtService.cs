@@ -51,7 +51,7 @@ internal sealed class JwtService(IOptions<JwtOptions> options) : IJwtService
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
-        var token = Convert.ToBase64String(randomNumber);
+        var token = Convert.ToHexString(randomNumber);
 
         return new RefreshTokenResult(token, DateTime.UtcNow.AddDays(_options.RefreshTokenExpiryDays));
     }

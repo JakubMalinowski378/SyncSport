@@ -22,7 +22,7 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
         });
 
-        services.AddScoped(typeof(IRepository<,>), typeof(ReservationsRepository<,>));
+        services.AddScoped<IRepository<Reservations.Domain.Entities.Reservation, Guid>, ReservationsRepository<Reservations.Domain.Entities.Reservation, Guid>>();
         services.AddScoped<IReservationChecker, ReservationChecker>();
 
         return services;

@@ -22,7 +22,8 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
         });
 
-        services.AddScoped(typeof(IRepository<,>), typeof(FacilitiesRepository<,>));
+        services.AddScoped<IRepository<Facilities.Domain.Entities.Facility, Facilities.Domain.ValueObjects.FacilityId>, FacilitiesRepository<Facilities.Domain.Entities.Facility, Facilities.Domain.ValueObjects.FacilityId>>();
+        services.AddScoped<IRepository<Facilities.Domain.Entities.Court, Facilities.Domain.ValueObjects.CourtId>, FacilitiesRepository<Facilities.Domain.Entities.Court, Facilities.Domain.ValueObjects.CourtId>>();
         services.AddScoped<IFacilitiesModuleApi, FacilitiesModuleApi>();
 
         return services;

@@ -46,6 +46,21 @@ public static class DependencyInjection
             options.AddPolicy(Policies.User, policy => policy.RequireRole(Domain.Enums.UserRole.User.ToString()));
         });
 
+        services.AddCors(options =>
+        {
+            var frontendUrl = configuration["Frontend:Url"];
+            if (!string.IsNullOrEmpty(frontendUrl))
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins(frontendUrl)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            }
+        });
+
         services.AddCarter();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
@@ -77,6 +92,8 @@ public static class DependencyInjection
     public static WebApplication UseSharedFramework(this WebApplication app)
     {
         app.UseExceptionHandler();
+
+        app.UseCors();
 
         if (app.Environment.IsDevelopment())
         {

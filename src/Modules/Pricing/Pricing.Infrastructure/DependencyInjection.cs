@@ -22,7 +22,8 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
         });
 
-        services.AddScoped(typeof(IRepository<,>), typeof(PricingRepository<,>));
+        services.AddScoped<IRepository<Pricing.Domain.Entities.PriceRule, Pricing.Domain.ValueObjects.PriceRuleId>, PricingRepository<Pricing.Domain.Entities.PriceRule, Pricing.Domain.ValueObjects.PriceRuleId>>();
+        services.AddScoped<IRepository<Pricing.Domain.Entities.Tariff, Pricing.Domain.ValueObjects.TariffId>, PricingRepository<Pricing.Domain.Entities.Tariff, Pricing.Domain.ValueObjects.TariffId>>();
         services.AddScoped<IPricingModuleApi, PricingModuleApi>();
 
         return services;
