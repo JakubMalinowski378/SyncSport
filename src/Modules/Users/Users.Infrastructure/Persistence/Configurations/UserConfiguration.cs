@@ -18,15 +18,15 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(u => u.Email)
-            .HasConversion(
-                email => email.Value,
-                value => Email.Create(value))
-            .HasColumnName("Email")
-            .HasMaxLength(255)
-            .IsRequired();
-
-        builder.HasIndex(u => u.Email).IsUnique();
+        builder.OwnsOne(u => u.Email, emailBuilder =>
+        {
+            emailBuilder.Property(e => e.Value)
+                .HasColumnName("Email")
+                .HasMaxLength(255)
+                .IsRequired();
+                
+            emailBuilder.HasIndex(e => e.Value).IsUnique();
+        });
 
         builder.ComplexProperty(u => u.Name, nameBuilder =>
         {
@@ -34,7 +34,7 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
                 .HasColumnName("FirstName")
                 .HasMaxLength(100)
                 .IsRequired();
-                
+
             nameBuilder.Property(n => n.LastName)
                 .HasColumnName("LastName")
                 .HasMaxLength(100)
