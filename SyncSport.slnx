@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/src/">
     <Project Path="src/Bootstrapper/Bootstrapper.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
@@ -46,6 +46,7 @@
 
   <Folder Name="/tests/Facilities/">
     <Project Path="tests/Facilities/Facilities.Application.Tests/Facilities.Application.Tests.csproj" />
+    <Project Path="tests/Facilities/Facilities.Domain.Tests/Facilities.Domain.Tests.csproj" />
   </Folder>
 
 </Solution>
