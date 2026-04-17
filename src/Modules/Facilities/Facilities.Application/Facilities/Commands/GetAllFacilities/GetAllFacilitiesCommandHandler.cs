@@ -10,24 +10,22 @@ namespace Facilities.Application.Facilities.Commands.GetAllFacilities;
 public sealed class GetAllFacilitiesCommandHandler(
     IRepository<Facility, FacilityId> facilityRepository) : IRequestHandler<GetAllFacilitiesCommand, PagedResult<GetAllFacilitiesResult>>
 {
-    private static readonly int[] AllowedPageSizes = [5, 10, 15, 20, 25, 30];
-
     public async Task<PagedResult<GetAllFacilitiesResult>> Handle(GetAllFacilitiesCommand request, CancellationToken cancellationToken)
     {
-        if (request.PageNumber < 1)
+        Func<IQueryable<Facility>, IOrderedQueryable<Facility>> orderBy = request.SortColumn?.ToLower() switch
         {
-            throw new ArgumentException("PageNumber must be greater than 0.");
-        }
+            "address" => request.SortOrder?.ToLower() == "desc" ? q => q.OrderByDescending(x => x.Address) : q => q.OrderBy(x => x.Address),
+            _ => request.SortOrder?.ToLower() == "desc" ? q => q.OrderByDescending(x => x.Name) : q => q.OrderBy(x => x.Name)
+        };
 
-        if (!AllowedPageSizes.Contains(request.PageSize))
-        {
-            throw new ArgumentException("PageSize must be one of: 5, 10, 15, 20, 25, 30.");
-        }
-
-        var (items, totalCount) = await facilityRepository.GetPagedAsync(
+        var (items, totalCount) = await facilityRepository.GetPagedAsync(       
             request.PageNumber,
             request.PageSize,
-            orderBy: query => query.OrderBy(x => x.Name),
+            filter: x =>
+                string.IsNullOrWhiteSpace(request.SearchTerm) || 
+                x.Name.Contains(request.SearchTerm) || 
+                x.Address.Contains(request.SearchTerm),
+            orderBy: orderBy,
             asNoTracking: true,
             ct: cancellationToken);
 
@@ -36,7 +34,7 @@ public sealed class GetAllFacilitiesCommandHandler(
                 facility.Id.Value,
                 facility.Name,
                 facility.Address,
-                OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours)))
+                OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours)))      
             .ToList();
 
         return new PagedResult<GetAllFacilitiesResult>(
