@@ -40,7 +40,7 @@ public sealed class UsersEndpoints : ICarterModule
             .Produces<GetUserResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapPost("{id:guid}/facility-assignments", AssignFacilityToUser)
+        group.MapPost("{id:guid}/facility-assignments/{facilityId:guid}", AssignFacilityToUser)
             .WithName("AssignFacilityToUser")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -107,9 +107,9 @@ public sealed class UsersEndpoints : ICarterModule
         return Results.Ok(response);
     }
 
-    private static async Task<IResult> AssignFacilityToUser(Guid id, AssignFacilityToUserRequest request, ISender sender)
+    private static async Task<IResult> AssignFacilityToUser(Guid id, Guid facilityId, ISender sender)
     {
-        await sender.Send(new AssignFacilityToUserCommand(id, request.FacilityId));
+        await sender.Send(new AssignFacilityToUserCommand(id, facilityId));
         return Results.NoContent();
     }
 
