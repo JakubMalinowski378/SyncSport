@@ -83,14 +83,21 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
     private static List<DateSpecificOpeningHours> DeserializeCustomDateHours(string? json)
     {
-        if (string.IsNullOrWhiteSpace(json)) return [];
+        if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith("[")) return [];
 
-        var items = JsonSerializer.Deserialize<List<DateSpecificHoursDto>>(json) ?? [];
+        try
+        {
+            var items = JsonSerializer.Deserialize<List<DateSpecificHoursDto>>(json) ?? [];
 
-        return items.Select(x => x.IsClosed
-            ? DateSpecificOpeningHours.CreateClosed(x.Date)
-            : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime))
-            .ToList();
+            return items.Select(x => x.IsClosed
+                ? DateSpecificOpeningHours.CreateClosed(x.Date)
+                : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime))
+                .ToList();
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 
     private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
