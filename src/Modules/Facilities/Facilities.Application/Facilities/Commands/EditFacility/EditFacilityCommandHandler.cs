@@ -34,15 +34,28 @@ public sealed class EditFacilityCommandHandler(
             throw new InvalidOperationException("A facility with this name already exists.");
         }
 
-        var weeklyOpeningHours = WeeklyOpeningHours.CreateUniform(request.OpenTime, request.CloseTime);
+        var dailyHours = request.WeeklyHours?.Select(x => x.IsClosed
+            ? DailyOpeningHours.CreateClosed(x.DayOfWeek)
+            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime, x.CloseTime)).ToList();
+
+        var weeklyOpeningHours = dailyHours?.Count == 7 
+            ? WeeklyOpeningHours.Create(dailyHours) 
+            : WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)); // Default fallback
+
+        var customDateHours = request.CustomDateHours?.Select(x => x.IsClosed
+            ? DateSpecificOpeningHours.CreateClosed(x.Date)
+            : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime)).ToList();
 
         facility.Rename(request.Name);
         facility.ChangeAddress(request.Address);
         facility.ChangeOpeningHours(weeklyOpeningHours);
 
+        if (customDateHours is not null)
+        {
+            facility.ChangeCustomDateHours(customDateHours);
+        }
+
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);
-
-        
     }
 }

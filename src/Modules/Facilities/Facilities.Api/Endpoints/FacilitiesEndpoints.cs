@@ -147,14 +147,14 @@ private static async Task<IResult> CreateFacility(CreateFacilityCommand command,
 public sealed record CreateFacilityRequest(
     string Name,
     string Address,
-    TimeSpan OpenTime,
-    TimeSpan CloseTime);
+    List<DailyHoursDto>? WeeklyHours = null,
+    List<DateSpecificHoursDto>? CustomDateHours = null);
 
 public sealed record EditFacilityRequest(
     string Name,
     string Address,
-    TimeSpan OpenTime,
-    TimeSpan CloseTime);
+    List<DailyHoursDto>? WeeklyHours = null,
+    List<DateSpecificHoursDto>? CustomDateHours = null);
 
 public sealed record CreateCourtRequest(
     string Name,

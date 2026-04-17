@@ -1,14 +1,16 @@
 using FluentValidation;
 using MediatR;
 
+using Facilities.Application.Facilities.Commands.CreateFacility;
+
 namespace Facilities.Application.Facilities.Commands.EditFacility;
 
 public sealed record EditFacilityCommand(
     Guid FacilityId,
     string Name,
     string Address,
-    TimeSpan OpenTime,
-    TimeSpan CloseTime) : IRequest;
+    List<DailyHoursDto>? WeeklyHours = null,
+    List<DateSpecificHoursDto>? CustomDateHours = null) : IRequest;
 
 public sealed class EditFacilityCommandValidator : AbstractValidator<EditFacilityCommand>
 {
@@ -25,12 +27,22 @@ public sealed class EditFacilityCommandValidator : AbstractValidator<EditFacilit
             .NotEmpty()
             .MaximumLength(300);
 
-        RuleFor(x => x.OpenTime)
-            .LessThan(x => x.CloseTime)
-            .WithMessage("OpenTime must be before CloseTime.");
+        RuleForEach(x => x.WeeklyHours)
+            .ChildRules(daily =>
+            {
+                daily.RuleFor(x => x.OpenTime)
+                    .LessThan(x => x.CloseTime)
+                    .When(x => !x.IsClosed)
+                    .WithMessage("OpenTime must be before CloseTime.");
+            });
 
-        RuleFor(x => x.CloseTime)
-            .GreaterThan(x => x.OpenTime)
-            .WithMessage("CloseTime must be after OpenTime.");
+        RuleForEach(x => x.CustomDateHours)
+            .ChildRules(custom =>
+            {
+                custom.RuleFor(x => x.OpenTime)
+                    .LessThan(x => x.CloseTime)
+                    .When(x => !x.IsClosed)
+                    .WithMessage("OpenTime must be before CloseTime.");
+            });
     }
 }

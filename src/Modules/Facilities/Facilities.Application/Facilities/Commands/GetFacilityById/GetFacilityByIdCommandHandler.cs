@@ -25,6 +25,9 @@ public sealed class GetFacilityByIdCommandHandler(
             facility.Id.Value,
             facility.Name,
             facility.Address,
-            OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours));
+            OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours),
+            facility.CustomDateHours.Select(x => new DateSpecificOpeningHoursDto(
+                x.Date, x.OpenTime, x.CloseTime, x.IsClosed
+            )).ToList());
     }
 }

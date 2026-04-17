@@ -36,6 +36,16 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
             .HasColumnType("jsonb")
             .IsRequired();
 
+        builder.Property(x => x.CustomDateHours)
+            .HasConversion(
+                custom => SerializeCustomDateHours(custom),
+                json => DeserializeCustomDateHours(json))
+            .HasColumnName("custom_date_hours")
+            .HasColumnType("jsonb");
+
+        builder.Navigation(x => x.CustomDateHours)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.HasMany(x => x.Courts)
             .WithOne()
             .HasForeignKey("FacilityId")
@@ -63,6 +73,27 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
         return WeeklyOpeningHours.Create(daily);
     }
+    private static string SerializeCustomDateHours(IEnumerable<DateSpecificOpeningHours> custom)
+    {
+        var items = custom
+            .OrderBy(x => x.Date)
+            .Select(x => new DateSpecificHoursDto(x.Date, x.OpenTime, x.CloseTime, x.IsClosed))
+            .ToList();
 
-    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
+        return JsonSerializer.Serialize(items);
+    }
+
+    private static List<DateSpecificOpeningHours> DeserializeCustomDateHours(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return [];
+
+        var items = JsonSerializer.Deserialize<List<DateSpecificHoursDto>>(json) ?? [];
+
+        return items.Select(x => x.IsClosed
+            ? DateSpecificOpeningHours.CreateClosed(x.Date)
+            : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime))
+            .ToList();
+    }
+
+    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);    private sealed record DateSpecificHoursDto(DateOnly Date, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
 }
