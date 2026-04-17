@@ -41,9 +41,7 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
                 custom => SerializeCustomDateHours(custom),
                 json => DeserializeCustomDateHours(json))
             .HasColumnName("custom_date_hours")
-            .HasColumnType("jsonb");
-
-        builder.Navigation(x => x.CustomDateHours)
+            .HasColumnType("jsonb")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(x => x.Courts)
@@ -95,5 +93,6 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
             .ToList();
     }
 
-    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);    private sealed record DateSpecificHoursDto(DateOnly Date, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
+    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
+    private sealed record DateSpecificHoursDto(DateOnly Date, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
 }
