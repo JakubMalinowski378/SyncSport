@@ -7,29 +7,11 @@ using Shared.Persistence;
 
 namespace Facilities.Application.Facilities.Queries.GetFacilityCourts;
 
-public sealed class GetFacilityCourtsQueryHandler : IRequestHandler<GetFacilityCourtsQuery, PagedResult<CourtDto>>
+public sealed class GetFacilityCourtsQueryHandler(IRepository<Facility, FacilityId> facilityRepository) : IRequestHandler<GetFacilityCourtsQuery, PagedResult<CourtDto>>
 {
-    private readonly IRepository<Facility, FacilityId> _facilityRepository;
-    private static readonly int[] AllowedPageSizes = [5, 10, 15, 20, 25, 30];
-
-    public GetFacilityCourtsQueryHandler(IRepository<Facility, FacilityId> facilityRepository)
-    {
-        _facilityRepository = facilityRepository;
-    }
-
     public async Task<PagedResult<CourtDto>> Handle(GetFacilityCourtsQuery request, CancellationToken cancellationToken)
     {
-        if (request.PageNumber < 1)
-        {
-            throw new ArgumentException("PageNumber must be greater than 0.");
-        }
-
-        if (!AllowedPageSizes.Contains(request.PageSize))
-        {
-            throw new ArgumentException("PageSize must be one of: 5, 10, 15, 20, 25, 30.");
-        }
-
-        var facility = await _facilityRepository.GetByIdAsync(
+        var facility = await facilityRepository.GetByIdAsync(
             new FacilityId(request.FacilityId),
             include: query => query.Include(f => f.Courts),
             asNoTracking: true,
