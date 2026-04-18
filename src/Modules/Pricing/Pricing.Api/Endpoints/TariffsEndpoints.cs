@@ -22,7 +22,7 @@ public sealed class TariffsEndpoints : ICarterModule
             .WithName("CreateTariff")
             .Produces<Guid>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+            .RequireAuthorization(Policies.AdminOrManager);
 
         group.MapGet("/facility/{facilityId:guid}", GetFacilityTariffs)
             .WithName("GetFacilityTariffs")

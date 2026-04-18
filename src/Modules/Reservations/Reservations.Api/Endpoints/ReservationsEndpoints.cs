@@ -36,13 +36,13 @@ public sealed class ReservationsEndpoints : ICarterModule
             .Produces<Guid>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");     
+            .RequireAuthorization(Policies.AdminOrManager);     
 
         group.MapDelete("/{id:guid}/facility/{facilityId:guid}", AdminDeleteReservation)
             .WithName("AdminDeleteReservation")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+            .RequireAuthorization(Policies.AdminOrManager);
 
         group.MapDelete("/me/{id:guid}", CancelSelfReservation)
             .WithName("CancelSelfReservation")
@@ -58,7 +58,7 @@ public sealed class ReservationsEndpoints : ICarterModule
         group.MapGet("/users/{userId:guid}", GetReservationsByUserId)
             .WithName("GetReservationsByUserId")
             .Produces<PagedResult<UserReservationResponse>>(StatusCodes.Status200OK)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+            .RequireAuthorization(Policies.AdminOrManager);
 
         group.MapGet("/{id:guid}", GetReservationById)
             .WithName("GetReservationById")

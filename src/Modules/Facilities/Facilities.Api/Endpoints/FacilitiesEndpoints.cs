@@ -46,7 +46,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+            .RequireAuthorization(Policies.AdminOrManager);
 
         group.MapPut("/{facilityId:guid}", EditFacility)
             .WithName("EditFacility")
@@ -55,7 +55,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+            .RequireAuthorization(Policies.AdminOrManager);
 
         group.MapPost("/{facilityId:guid}/courts", CreateCourt)
             .WithName("CreateCourt")
@@ -64,7 +64,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");
+            .RequireAuthorization(Policies.AdminOrManager);
 
         group.MapGet("/{facilityId:guid}/courts", GetFacilityCourts)
             .WithName("GetFacilityCourts")
@@ -78,7 +78,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization($"{Policies.Admin}, {Policies.Manager}");     
+            .RequireAuthorization(Policies.AdminOrManager);     
     }
 
 private static async Task<IResult> CreateFacility(CreateFacilityCommand command, ISender sender, CancellationToken ct)

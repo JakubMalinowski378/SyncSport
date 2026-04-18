@@ -44,6 +44,9 @@ public static class DependencyInjection
             options.AddPolicy(Policies.Admin, policy => policy.RequireRole(Domain.Enums.UserRole.Admin.ToString()));
             options.AddPolicy(Policies.Manager, policy => policy.RequireRole(Domain.Enums.UserRole.Manager.ToString()));
             options.AddPolicy(Policies.User, policy => policy.RequireRole(Domain.Enums.UserRole.User.ToString()));
+            options.AddPolicy(Policies.AdminOrManager, policy => policy.RequireRole(
+                Domain.Enums.UserRole.Admin.ToString(),
+                Domain.Enums.UserRole.Manager.ToString()));
         });
 
         services.AddCors(options =>
