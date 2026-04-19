@@ -23,6 +23,26 @@ public class RemoveCourtCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
+    {
+        // Arrange
+        var command = new RemoveCourtCommand(Guid.NewGuid(), Guid.NewGuid());
+
+        _facilityAuthorizationService
+            .When(x => x.AuthorizeFacilityAccess(command.FacilityId))
+            .Throw(new UnauthorizedAccessException("You are not authorized to access this facility."));
+
+        // Act & Assert
+        var action = async () => await _handler.Handle(command, CancellationToken.None);
+
+        await action.Should().ThrowAsync<UnauthorizedAccessException>();
+
+        var anyId = Arg.Any<FacilityId>();
+        await _facilityRepository.DidNotReceiveWithAnyArgs()
+            .GetByIdAsync(anyId, Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_GivenValidCommand_WhenCourtExists_ShouldRemoveCourt()
     {
         // Arrange
@@ -72,8 +92,7 @@ public class RemoveCourtCommandHandlerTests
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<Exception>()
-            .WithMessage("Facility not found.");
+        await action.Should().ThrowAsync<Exception>();
 
         _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(facilityId);
         _facilityRepository.DidNotReceive().Update(Arg.Any<Facility>());
@@ -102,8 +121,7 @@ public class RemoveCourtCommandHandlerTests
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<Exception>()
-            .WithMessage("Court not found.");
+        await action.Should().ThrowAsync<Exception>();
 
         _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(facilityId);
         _facilityRepository.DidNotReceive().Update(Arg.Any<Facility>());

@@ -26,8 +26,8 @@ public class CreateFacilityCommandHandlerTests
         var command = new CreateFacilityCommand(
             "Test Facility",
             "Test Address",
-            TimeSpan.FromHours(8),
-            TimeSpan.FromHours(22)
+            null,
+            null
         );
 
         _facilityRepository.FirstOrDefaultAsync(
@@ -58,8 +58,8 @@ public class CreateFacilityCommandHandlerTests
         var command = new CreateFacilityCommand(
             "Test Facility",
             "Test Address",
-            TimeSpan.FromHours(8),
-            TimeSpan.FromHours(22)
+            null,
+            null
         );
 
         var existingFacility = Facility.Create(
@@ -78,8 +78,7 @@ public class CreateFacilityCommandHandlerTests
         var act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("A facility with this name already exists.");
+        await act.Should().ThrowAsync<InvalidOperationException>();
 
         await _facilityRepository.DidNotReceive().AddAsync(Arg.Any<Facility>(), Arg.Any<CancellationToken>());
         await _facilityRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());

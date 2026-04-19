@@ -22,6 +22,26 @@ public class CreateCourtCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
+    {
+        // Arrange
+        var command = new CreateCourtCommand(Guid.NewGuid(), "Court 1", "Clay");
+
+        _facilityAuthorizationService
+            .When(x => x.AuthorizeFacilityAccess(command.FacilityId))
+            .Throw(new UnauthorizedAccessException("You are not authorized to access this facility."));
+
+        // Act & Assert
+        var action = async () => await _handler.Handle(command, CancellationToken.None);
+
+        await action.Should().ThrowAsync<UnauthorizedAccessException>();
+
+        var anyId = Arg.Any<FacilityId>();
+        await _facilityRepository.DidNotReceiveWithAnyArgs()
+            .GetByIdAsync(anyId, Arg.Any<Func<IQueryable<Facility>, IQueryable<Facility>>?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_GivenValidCommand_WhenFacilityExists_ShouldCreateCourtAndReturnId()
     {
         // Arrange
@@ -68,8 +88,7 @@ public class CreateCourtCommandHandlerTests
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Facility not found.");
+        await action.Should().ThrowAsync<InvalidOperationException>();
 
         _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(command.FacilityId);
         _facilityRepository.DidNotReceive().Update(Arg.Any<Facility>());

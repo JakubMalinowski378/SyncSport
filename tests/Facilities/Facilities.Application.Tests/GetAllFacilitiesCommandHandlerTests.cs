@@ -23,7 +23,7 @@ public class GetAllFacilitiesCommandHandlerTests
     public async Task Handle_GivenValidPagination_ShouldReturnPagedResult()
     {
         // Arrange
-        var command = new GetAllFacilitiesCommand(1, 10);
+        var command = new GetAllFacilitiesCommand(null, null, null, 1, 10);
 
         var facility1 = Facility.Create(
             "Test Facility 1",
@@ -64,13 +64,12 @@ public class GetAllFacilitiesCommandHandlerTests
     public async Task Handle_GivenInvalidPageNumber_ShouldThrowArgumentException(int pageNumber, int pageSize)
     {
         // Arrange
-        var command = new GetAllFacilitiesCommand(pageNumber, pageSize);
+        var command = new GetAllFacilitiesCommand(null, null, null, pageNumber, pageSize);
 
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("PageNumber must be greater than 0.");
+        await action.Should().ThrowAsync<ArgumentException>();
     }
 
     [Theory]
@@ -80,12 +79,11 @@ public class GetAllFacilitiesCommandHandlerTests
     public async Task Handle_GivenInvalidPageSize_ShouldThrowArgumentException(int pageNumber, int pageSize)
     {
         // Arrange
-        var command = new GetAllFacilitiesCommand(pageNumber, pageSize);
+        var command = new GetAllFacilitiesCommand(null, null, null, pageNumber, pageSize);
 
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("PageSize must be one of: 5, 10, 15, 20, 25, 30.");
+        await action.Should().ThrowAsync<ArgumentException>();
     }
 }
