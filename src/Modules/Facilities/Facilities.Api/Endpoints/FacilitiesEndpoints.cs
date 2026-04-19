@@ -1,6 +1,7 @@
 using Carter;
 using Facilities.Application.Facilities.Commands.CreateCourt;
 using Facilities.Application.Facilities.Commands.CreateFacility;
+using Facilities.Application.Facilities.Commands.EditCourt;
 using Facilities.Application.Facilities.Commands.EditFacility;
 using Facilities.Application.Facilities.Commands.GetAllFacilities;
 using Facilities.Application.Facilities.Commands.GetFacilityById;
@@ -66,6 +67,15 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequireAuthorization(Policies.AdminOrManager);
 
+        group.MapPut("/{facilityId:guid}/courts/{courtId:guid}", EditCourt)
+            .WithName("EditCourt")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(Policies.AdminOrManager);
+
         group.MapGet("/{facilityId:guid}/courts", GetFacilityCourts)
             .WithName("GetFacilityCourts")
             .Produces<PagedResult<CourtDto>>(StatusCodes.Status200OK)
@@ -78,7 +88,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization(Policies.AdminOrManager);     
+            .RequireAuthorization(Policies.AdminOrManager);
     }
 
 private static async Task<IResult> CreateFacility(CreateFacilityCommand command, ISender sender, CancellationToken ct)
@@ -128,6 +138,13 @@ private static async Task<IResult> CreateFacility(CreateFacilityCommand command,
         return Results.Created($"/api/facilities/{facilityId}/courts/{courtId}", courtId);
     }
 
+    private static async Task<IResult> EditCourt([FromRoute] Guid facilityId, [FromRoute] Guid courtId, [FromBody] EditCourtRequest request, ISender sender, CancellationToken ct)
+    {
+        await sender.Send(new EditCourtCommand(facilityId, courtId, request.Name, request.IsActive), ct);
+
+        return Results.NoContent();
+    }
+
     private static async Task<IResult> GetFacilityCourts([AsParameters] GetFacilityCourtsQuery query, ISender sender, CancellationToken ct)
     {
         var result = await sender.Send(query, ct);
@@ -159,3 +176,7 @@ public sealed record EditFacilityRequest(
 public sealed record CreateCourtRequest(
     string Name,
     string SurfaceType);
+
+public sealed record EditCourtRequest(
+    string Name,
+    bool IsActive);

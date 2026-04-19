@@ -46,6 +46,27 @@ public static Facility Create(string name, string address, WeeklyOpeningHours we
         return court;
     }
 
+    public void EditCourt(CourtId courtId, string name, bool isActive)
+    {
+        var court = _courts.FirstOrDefault(c => c.Id == courtId);
+        if (court is null)
+        {
+            throw new InvalidOperationException("Court not found.");
+        }
+
+        if (_courts.Any(c => c.Id != courtId && c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("Another court with this name already exists in this facility.");
+        }
+
+        court.Rename(name);
+        
+        if (isActive && !court.IsActive)
+            court.Activate();
+        else if (!isActive && court.IsActive)
+            court.Deactivate();
+    }
+
     public void RemoveCourt(CourtId courtId)
     {
         var court = _courts.FirstOrDefault(c => c.Id == courtId);
