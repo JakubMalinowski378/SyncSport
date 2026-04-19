@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Users.Domain.Entities;
+using Shared.Persistence;
 
 namespace Users.Infrastructure.Persistence;
 
@@ -7,6 +8,12 @@ public class UsersDbContext(DbContextOptions<UsersDbContext> options) : DbContex
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Account> Accounts { get; set; } = null!;
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        base.ConfigureConventions(configurationBuilder);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
