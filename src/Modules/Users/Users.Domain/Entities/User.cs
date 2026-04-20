@@ -13,14 +13,4 @@ public partial class User : AggregateRoot<Guid>
 
     private readonly List<Guid> _managedFacilityIds = [];
     public IReadOnlyCollection<Guid> ManagedFacilityIds => _managedFacilityIds.AsReadOnly();
-
-    private User() { }
-
-    private User(Guid id, Email email, FullName name, UserRole role) : base(id)
-    {
-        Email = email;
-        Name = name;
-        Role = role;
-        IsActive = true;
-    }
 }

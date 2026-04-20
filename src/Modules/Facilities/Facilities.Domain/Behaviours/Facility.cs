@@ -5,16 +5,16 @@ public partial class Facility
 {
     private Facility() { }
 
-public static Facility Create(string name, string address, WeeklyOpeningHours weeklyOpeningHours, IEnumerable<DateSpecificOpeningHours>? customDateHours = null)
+    public static Facility Create(string name, string address, WeeklyOpeningHours weeklyOpeningHours, IEnumerable<DateSpecificOpeningHours>? customDateHours = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("Facility name cannot be empty.");      
+            throw new ArgumentException("Facility name cannot be empty.");
         }
 
         if (string.IsNullOrWhiteSpace(address))
         {
-            throw new ArgumentException("Facility address cannot be empty.");   
+            throw new ArgumentException("Facility address cannot be empty.");
         }
 
         var facility = new Facility
@@ -60,7 +60,7 @@ public static Facility Create(string name, string address, WeeklyOpeningHours we
         }
 
         court.Rename(name);
-        
+
         if (isActive && !court.IsActive)
             court.Activate();
         else if (!isActive && court.IsActive)
@@ -93,7 +93,7 @@ public static Facility Create(string name, string address, WeeklyOpeningHours we
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("Facility name cannot be empty.");      
+            throw new ArgumentException("Facility name cannot be empty.");
         }
 
         Name = name;

@@ -46,4 +46,9 @@ public partial class Court
 
         Name = name;
     }
+
+    public WeeklyOpeningHours? GetEffectiveOpeningHours(Facility facility)
+    {
+        return OverrideWeeklyOpeningHours ?? facility.WeeklyOpeningHours;
+    }
 }

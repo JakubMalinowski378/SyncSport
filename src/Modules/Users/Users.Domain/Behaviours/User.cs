@@ -1,5 +1,5 @@
-using Shared.Domain.Exceptions;
 using Shared.Domain.Enums;
+using Shared.Domain.Exceptions;
 using Users.Domain.ValueObjects;
 using Users.Shared.Events;
 
@@ -7,6 +7,15 @@ namespace Users.Domain.Entities;
 
 public partial class User
 {
+    private User() { }
+
+    private User(Guid id, Email email, FullName name, UserRole role) : base(id)
+    {
+        Email = email;
+        Name = name;
+        Role = role;
+        IsActive = true;
+    }
     public static User Register(Guid id, Email email, FullName name)
     {
         var user = new User(id, email, name, UserRole.User);
@@ -29,10 +38,7 @@ public partial class User
 
     public void RemoveFacilityAssignment(Guid facilityId)
     {
-        if (_managedFacilityIds.Contains(facilityId))
-        {
-            _managedFacilityIds.Remove(facilityId);
-        }
+        _managedFacilityIds.Remove(facilityId);
     }
 
     public void Deactivate()

@@ -1,82 +1,82 @@
 using Facilities.Shared;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Reservations.Domain.Entities;
-using Reservations.Domain.Enums;
 using Shared.Persistence;
 
 namespace Reservations.Application.Reservations.Queries.GetAvailableSlots;
 
-internal sealed class GetAvailableSlotsQueryHandler(
-    IFacilitiesModuleApi facilitiesModuleApi,
-    IRepository<Reservation, Guid> reservationRepository)
-    : IRequestHandler<GetAvailableSlotsQuery, AvailableSlotsResponse>
+internal sealed class GetAvailableSlotsQueryHandler : IRequestHandler<GetAvailableSlotsQuery, GetAvailableSlotsResponse>
 {
-    public async Task<AvailableSlotsResponse> Handle(GetAvailableSlotsQuery request, CancellationToken cancellationToken)
+    private readonly IRepository<Reservation, Guid> _reservationRepository;
+    private readonly IFacilitiesModuleApi _facilitiesModuleApi;
+
+    public GetAvailableSlotsQueryHandler(
+        IRepository<Reservation, Guid> reservationRepository,
+        IFacilitiesModuleApi facilitiesModuleApi)
     {
-        var facilityInfo = await facilitiesModuleApi.GetFacilityAvailabilityInfoAsync(request.FacilityId, cancellationToken);
+        _reservationRepository = reservationRepository;
+        _facilitiesModuleApi = facilitiesModuleApi;
+    }
+
+    public async Task<GetAvailableSlotsResponse> Handle(GetAvailableSlotsQuery request, CancellationToken cancellationToken)
+    {
+        var facilityInfo = await _facilitiesModuleApi.GetFacilityAvailabilityInfoAsync(request.FacilityId, cancellationToken);
         if (facilityInfo is null)
         {
             throw new Exception("Facility not found.");
         }
 
+        var courtExists = facilityInfo.Courts.Any(c => c.CourtId == request.CourtId);
+        if (!courtExists)
+        {
+            throw new Exception("Court not found in facility.");
+        }
+
         var dayOfWeek = request.Date.DayOfWeek;
         var openingHours = facilityInfo.OpeningHours.FirstOrDefault(h => h.DayOfWeek == dayOfWeek);
 
-        var courtsResult = new List<CourtAvailabilityDto>();
+        var dateStart = request.Date.Date;
+        var dateEnd = dateStart.AddDays(1);
 
-        if (openingHours is null)
-        {
-            // Facility is closed on this day
-            return new AvailableSlotsResponse(request.Date, courtsResult);
-        }
-
-        var courtIds = facilityInfo.Courts.Select(c => c.CourtId).ToList();
-        
-        var dateStart = request.Date.ToDateTime(TimeOnly.MinValue);
-        var dateEnd = request.Date.ToDateTime(TimeOnly.MaxValue);
-
-        var existingReservations = await reservationRepository.FindAsync(
-            predicate: r => courtIds.Contains(r.CourtId) 
-                         && r.Time.Start >= dateStart 
-                         && r.Time.Start <= dateEnd
-                         && r.Status != ReservationStatus.Cancelled,
+        var reservationsTask = await _reservationRepository.FindAsync(
+            r => r.CourtId == request.CourtId &&
+                 r.Time.Start >= dateStart &&
+                 r.Time.End <= dateEnd,
             asNoTracking: true,
             ct: cancellationToken);
 
-        var slotDuration = TimeSpan.FromHours(1);
+        var reservations = reservationsTask
+            .OrderBy(r => r.Time.Start)
+            .ToList();
 
-        foreach (var court in facilityInfo.Courts)
+        var reservationMap = reservations
+            .Select(r => new ReservationSlotResponse(r.Id, r.Time.Start, r.Time.End, r.Status))
+            .ToList();
+
+        var availableSlots = new List<AvailableSlotResponse>();
+
+        if (openingHours != null)
         {
-            var courtReservations = existingReservations.Where(r => r.CourtId == court.CourtId).ToList();
-            var availableStartTimes = new List<TimeSpan>();
+            var currentTime = dateStart.Add(openingHours.OpenTime);
+            var endTime = dateStart.Add(openingHours.CloseTime);
 
-            var currentTime = openingHours.OpenTime;
-            while (currentTime + slotDuration <= openingHours.CloseTime)
+            var slotDuration = TimeSpan.FromMinutes(60);
+
+            while (currentTime.Add(slotDuration) <= endTime)
             {
-                var slotStart = request.Date.ToDateTime(TimeOnly.FromTimeSpan(currentTime));
-                var slotEnd = slotStart.Add(slotDuration);
-
-                // For today, do not allow past slots
-                if (slotStart <= DateTime.UtcNow)
-                {
-                    currentTime += slotDuration;
-                    continue;
-                }
-
-                var isOverlapping = courtReservations.Any(r => r.Time.Start < slotEnd && r.Time.End > slotStart);
+                var slotEnd = currentTime.Add(slotDuration);
                 
+                var isOverlapping = reservations.Any(r => r.Status != Domain.Enums.ReservationStatus.Cancelled && r.Time.Start < slotEnd && r.Time.End > currentTime);
+
                 if (!isOverlapping)
                 {
-                    availableStartTimes.Add(currentTime);
+                    availableSlots.Add(new AvailableSlotResponse(currentTime, slotEnd));
                 }
 
-                currentTime += slotDuration;
+                currentTime = currentTime.AddMinutes(30); // Advance by 30 mins to allow flexible start times
             }
-
-            courtsResult.Add(new CourtAvailabilityDto(court.CourtId, court.Name, availableStartTimes));
         }
 
-        return new AvailableSlotsResponse(request.Date, courtsResult);
+        return new GetAvailableSlotsResponse(reservationMap, availableSlots);
     }
 }

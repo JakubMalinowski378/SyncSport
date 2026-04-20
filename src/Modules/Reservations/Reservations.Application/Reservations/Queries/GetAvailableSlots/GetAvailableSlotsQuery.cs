@@ -1,9 +1,13 @@
 using MediatR;
+using Reservations.Domain.Enums;
 
 namespace Reservations.Application.Reservations.Queries.GetAvailableSlots;
 
-public record GetAvailableSlotsQuery(Guid FacilityId, DateOnly Date) : IRequest<AvailableSlotsResponse>;
+public record ReservationSlotResponse(Guid Id, DateTime StartTime, DateTime EndTime, ReservationStatus Status);
+public record AvailableSlotResponse(DateTime StartTime, DateTime EndTime);
+public record GetAvailableSlotsResponse(
+    IReadOnlyCollection<ReservationSlotResponse> Reservations,
+    IReadOnlyCollection<AvailableSlotResponse> AvailableSlots);
 
-public record AvailableSlotsResponse(DateOnly Date, IReadOnlyCollection<CourtAvailabilityDto> Courts);
-
-public record CourtAvailabilityDto(Guid CourtId, string CourtName, IReadOnlyCollection<TimeSpan> AvailableStartTimes);
+public record GetAvailableSlotsQuery(Guid FacilityId, Guid CourtId, DateTime Date) 
+    : IRequest<GetAvailableSlotsResponse>;
