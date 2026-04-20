@@ -1,14 +1,23 @@
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Shared.Persistence;
 using Shared.Seeding;
 
 namespace Facilities.Infrastructure.Seeding;
 
-internal sealed class FacilitySeeder(IRepository<Facility, FacilityId> repository) : IDataSeeder
+internal sealed class FacilitySeeder(
+    IRepository<Facility, FacilityId> repository,
+    IWebHostEnvironment environment) : IDataSeeder
 {
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
+        if (!environment.IsDevelopment())
+        {
+            return;
+        }
+
         if (await repository.AnyAsync(ct: cancellationToken))
         {
             return;
