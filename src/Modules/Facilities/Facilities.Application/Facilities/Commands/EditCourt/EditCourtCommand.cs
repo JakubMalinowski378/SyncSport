@@ -6,4 +6,5 @@ public sealed record EditCourtCommand(
     Guid FacilityId,
     Guid CourtId,
     string Name,
-    bool IsActive) : IRequest;
+    bool IsActive,
+    int? OverrideReservationDuration = null) : IRequest;

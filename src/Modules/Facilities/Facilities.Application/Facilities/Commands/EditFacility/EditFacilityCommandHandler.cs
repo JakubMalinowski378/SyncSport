@@ -47,8 +47,8 @@ public sealed class EditFacilityCommandHandler(
             : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime)).ToList();
 
         facility.Rename(request.Name);
-        facility.ChangeAddress(request.Address);
-        facility.ChangeOpeningHours(weeklyOpeningHours);
+        facility.ChangeAddress(request.Address);        
+        facility.ChangeReservationDuration(request.ReservationDuration);        facility.ChangeOpeningHours(weeklyOpeningHours);
 
         if (customDateHours is not null)
         {

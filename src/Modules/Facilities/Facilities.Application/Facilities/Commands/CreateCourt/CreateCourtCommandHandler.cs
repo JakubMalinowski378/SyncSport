@@ -24,7 +24,7 @@ public sealed class CreateCourtCommandHandler(
             throw new InvalidOperationException("Facility not found.");
         }
 
-        var court = facility.AddCourt(request.Name, request.SurfaceType);
+        var court = facility.AddCourt(request.Name, request.SurfaceType, request.OverrideReservationDuration);
 
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);

@@ -42,4 +42,5 @@ public sealed record GetAllFacilitiesResult(
     Guid Id,
     string Name,
     string Address,
+    int ReservationDuration,
     List<DailyOpeningHoursDto> OpeningHours);

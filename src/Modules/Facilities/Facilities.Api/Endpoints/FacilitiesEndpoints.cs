@@ -140,7 +140,7 @@ private static async Task<IResult> CreateFacility(CreateFacilityCommand command,
 
     private static async Task<IResult> EditCourt([FromRoute] Guid facilityId, [FromRoute] Guid courtId, [FromBody] EditCourtRequest request, ISender sender, CancellationToken ct)
     {
-        await sender.Send(new EditCourtCommand(facilityId, courtId, request.Name, request.IsActive), ct);
+        await sender.Send(new EditCourtCommand(facilityId, courtId, request.Name, request.IsActive, request.OverrideReservationDuration), ct);
 
         return Results.NoContent();
     }
@@ -164,19 +164,23 @@ private static async Task<IResult> CreateFacility(CreateFacilityCommand command,
 public sealed record CreateFacilityRequest(
     string Name,
     string Address,
+    int ReservationDuration,
     List<DailyHoursDto>? WeeklyHours = null,
     List<DateSpecificHoursDto>? CustomDateHours = null);
 
 public sealed record EditFacilityRequest(
     string Name,
     string Address,
+    int ReservationDuration,
     List<DailyHoursDto>? WeeklyHours = null,
     List<DateSpecificHoursDto>? CustomDateHours = null);
 
 public sealed record CreateCourtRequest(
     string Name,
-    string SurfaceType);
+    string SurfaceType,
+    int? OverrideReservationDuration = null);
 
 public sealed record EditCourtRequest(
     string Name,
-    bool IsActive);
+    bool IsActive,
+    int? OverrideReservationDuration = null);

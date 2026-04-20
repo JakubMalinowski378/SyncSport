@@ -30,7 +30,7 @@ public sealed class EditCourtCommandHandler(
             throw new Exception("Facility not found.");
         }
 
-        facility.EditCourt(courtId, request.Name, request.IsActive);
+        facility.EditCourt(courtId, request.Name, request.IsActive, request.OverrideReservationDuration);
 
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);

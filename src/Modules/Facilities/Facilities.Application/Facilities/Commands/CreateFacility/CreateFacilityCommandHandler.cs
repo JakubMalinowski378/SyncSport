@@ -32,7 +32,7 @@ public sealed class CreateFacilityCommandHandler(
             ? DateSpecificOpeningHours.CreateClosed(x.Date)
             : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime)).ToList();
 
-        var facility = Facility.Create(request.Name, request.Address, weeklyOpeningHours, customDateHours);
+        var facility = Facility.Create(request.Name, request.Address, request.ReservationDuration, weeklyOpeningHours, customDateHours);
 
         await facilityRepository.AddAsync(facility, cancellationToken);
         await facilityRepository.SaveChangesAsync(cancellationToken);

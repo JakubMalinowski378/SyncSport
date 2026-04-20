@@ -9,8 +9,9 @@ public record DateSpecificHoursDto(DateOnly Date, TimeSpan OpenTime, TimeSpan Cl
 public sealed record CreateFacilityCommand(
     string Name,
     string Address,
+    int ReservationDuration,
     List<DailyHoursDto>? WeeklyHours = null,
-    List<DateSpecificHoursDto>? CustomDateHours = null) : IRequest<Guid>;
+    List<DateSpecificHoursDto>? CustomDateHours = null) : IRequest<Guid>;       
 
 public sealed class CreateFacilityCommandValidator : AbstractValidator<CreateFacilityCommand>
 {
@@ -23,6 +24,9 @@ public sealed class CreateFacilityCommandValidator : AbstractValidator<CreateFac
         RuleFor(x => x.Address)
             .NotEmpty()
             .MaximumLength(300);
+
+        RuleFor(x => x.ReservationDuration)
+            .GreaterThan(0);
 
         RuleForEach(x => x.WeeklyHours)
             .ChildRules(daily =>

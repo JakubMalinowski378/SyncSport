@@ -34,6 +34,7 @@ public sealed class GetAllFacilitiesCommandHandler(
                 facility.Id.Value,
                 facility.Name,
                 facility.Address,
+                facility.ReservationDuration,
                 OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours)))      
             .ToList();
 

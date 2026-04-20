@@ -9,5 +9,6 @@ public sealed record GetFacilityByIdResult(
     Guid Id,
     string Name,
     string Address,
+    int ReservationDuration,
     List<DailyOpeningHoursDto> OpeningHours,
     List<DateSpecificOpeningHoursDto> CustomDateHours);

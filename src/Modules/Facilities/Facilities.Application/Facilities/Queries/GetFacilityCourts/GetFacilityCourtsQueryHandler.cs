@@ -7,37 +7,39 @@ using Shared.Persistence;
 
 namespace Facilities.Application.Facilities.Queries.GetFacilityCourts;
 
-public sealed class GetFacilityCourtsQueryHandler(IRepository<Facility, FacilityId> facilityRepository) : IRequestHandler<GetFacilityCourtsQuery, PagedResult<CourtDto>>
+public sealed class GetFacilityCourtsQueryHandler(
+    IRepository<Facility, FacilityId> facilityRepository,
+    IRepository<Court, CourtId> courtRepository) 
+    : IRequestHandler<GetFacilityCourtsQuery, PagedResult<CourtDto>>
 {
     public async Task<PagedResult<CourtDto>> Handle(GetFacilityCourtsQuery request, CancellationToken cancellationToken)
     {
-        var facility = await facilityRepository.GetByIdAsync(
-            new FacilityId(request.FacilityId),
-            include: query => query.Include(f => f.Courts),
-            asNoTracking: true,
-            ct: cancellationToken);
+        var facilityId = new FacilityId(request.FacilityId);
 
-        if (facility is null)
+        var facilityExists = await facilityRepository.AnyAsync(f => f.Id == facilityId, cancellationToken);
+        if (!facilityExists)
         {
             throw new ArgumentException("Facility not found");
         }
 
-        var courts = facility.Courts
-            .OrderBy(c => c.Name)
-            .Skip((request.PageNumber - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .Select(c => new CourtDto(
-                c.Id.Value,
-                c.Name,
-                c.SurfaceType,
-                c.IsActive))
-            .ToList();
+        var pagedResult = await courtRepository.GetPagedAsync(
+            pageNumber: request.PageNumber,
+            pageSize: request.PageSize,
+            filter: c => EF.Property<FacilityId>(c, "FacilityId") == facilityId,
+            orderBy: q => q.OrderBy(c => c.Name),
+            asNoTracking: true,
+            ct: cancellationToken);
 
-        var totalCount = facility.Courts.Count;
+        var courts = pagedResult.Items.Select(c => new CourtDto(
+            c.Id.Value,
+            c.Name,
+            c.SurfaceType,
+            c.IsActive,
+            c.OverrideReservationDuration)).ToList();
 
         return new PagedResult<CourtDto>(
             courts,
-            totalCount,
+            pagedResult.TotalCount,
             request.PageNumber,
             request.PageSize);
     }

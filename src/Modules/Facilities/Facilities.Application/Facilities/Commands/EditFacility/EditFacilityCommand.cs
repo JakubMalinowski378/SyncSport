@@ -9,6 +9,7 @@ public sealed record EditFacilityCommand(
     Guid FacilityId,
     string Name,
     string Address,
+    int ReservationDuration,
     List<DailyHoursDto>? WeeklyHours = null,
     List<DateSpecificHoursDto>? CustomDateHours = null) : IRequest;
 
@@ -26,6 +27,9 @@ public sealed class EditFacilityCommandValidator : AbstractValidator<EditFacilit
         RuleFor(x => x.Address)
             .NotEmpty()
             .MaximumLength(300);
+
+        RuleFor(x => x.ReservationDuration)
+            .GreaterThan(0);
 
         RuleForEach(x => x.WeeklyHours)
             .ChildRules(daily =>

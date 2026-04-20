@@ -12,4 +12,5 @@ public sealed record CourtDto(
     Guid Id,
     string Name,
     string SurfaceType,
-    bool IsActive);
+    bool IsActive,
+    int? OverrideReservationDuration);

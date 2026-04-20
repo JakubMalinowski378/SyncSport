@@ -6,7 +6,8 @@ namespace Facilities.Application.Facilities.Commands.CreateCourt;
 public sealed record CreateCourtCommand(
     Guid FacilityId,
     string Name,
-    string SurfaceType) : IRequest<Guid>;
+    string SurfaceType,
+    int? OverrideReservationDuration = null) : IRequest<Guid>;
 
 public sealed class CreateCourtCommandValidator : AbstractValidator<CreateCourtCommand>
 {
@@ -25,5 +26,10 @@ public sealed class CreateCourtCommandValidator : AbstractValidator<CreateCourtC
             .NotEmpty()
             .MaximumLength(50)
             .WithMessage("Surface type cannot be empty and must not exceed 50 characters.");
+
+        RuleFor(x => x.OverrideReservationDuration)
+            .GreaterThan(0)
+            .When(x => x.OverrideReservationDuration.HasValue)
+            .WithMessage("Override reservation duration must be greater than zero if provided.");
     }
 }
