@@ -32,6 +32,9 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
         builder.Property(x => x.IsActive)
             .IsRequired();
 
+        builder.Property(x => x.OverrideReservationDuration)
+            .HasColumnName("override_reservation_duration");
+
         builder.Property(x => x.OverrideWeeklyOpeningHours)
             .HasConversion(
                 weekly => weekly == null ? null : SerializeWeeklyHours(weekly),

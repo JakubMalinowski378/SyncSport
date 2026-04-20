@@ -6,7 +6,7 @@ public partial class Court
 {
     private Court() { }
 
-    public static Court Create(string name, string surfaceType)
+    public static Court Create(string name, string surfaceType, int? overrideReservationDuration = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -18,12 +18,18 @@ public partial class Court
             throw new ArgumentException("Surface type cannot be empty.");
         }
 
+        if (overrideReservationDuration.HasValue && overrideReservationDuration.Value <= 0)
+        {
+            throw new ArgumentException("Reservation duration must be greater than zero.");
+        }
+
         return new Court
         {
             Id = CourtId.New(),
             Name = name,
             SurfaceType = surfaceType,
-            IsActive = true
+            IsActive = true,
+            OverrideReservationDuration = overrideReservationDuration
         };
     }
 
@@ -47,8 +53,22 @@ public partial class Court
         Name = name;
     }
 
+    public void ChangeReservationDuration(int? overrideReservationDuration)
+    {
+        if (overrideReservationDuration.HasValue && overrideReservationDuration.Value <= 0)
+        {
+            throw new ArgumentException("Reservation duration must be greater than zero.");
+        }
+        
+        OverrideReservationDuration = overrideReservationDuration;
+    }
     public WeeklyOpeningHours? GetEffectiveOpeningHours(Facility facility)
     {
         return OverrideWeeklyOpeningHours ?? facility.WeeklyOpeningHours;
+    }
+
+    public int GetEffectiveReservationDuration(Facility facility)
+    {
+        return OverrideReservationDuration ?? facility.ReservationDuration;
     }
 }

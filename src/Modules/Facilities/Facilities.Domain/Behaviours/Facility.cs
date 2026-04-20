@@ -5,7 +5,7 @@ public partial class Facility
 {
     private Facility() { }
 
-    public static Facility Create(string name, string address, WeeklyOpeningHours weeklyOpeningHours, IEnumerable<DateSpecificOpeningHours>? customDateHours = null)
+    public static Facility Create(string name, string address, int reservationDuration, WeeklyOpeningHours weeklyOpeningHours, IEnumerable<DateSpecificOpeningHours>? customDateHours = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -17,11 +17,17 @@ public partial class Facility
             throw new ArgumentException("Facility address cannot be empty.");
         }
 
+        if (reservationDuration <= 0)
+        {
+            throw new ArgumentException("Reservation duration must be greater than zero.");
+        }
+
         var facility = new Facility
         {
             Id = FacilityId.New(),
             Name = name,
             Address = address,
+            ReservationDuration = reservationDuration,
             WeeklyOpeningHours = weeklyOpeningHours
         };
 
@@ -33,20 +39,20 @@ public partial class Facility
         return facility;
     }
 
-    public Court AddCourt(string name, string surfaceType)
+    public Court AddCourt(string name, string surfaceType, int? overrideReservationDuration = null)
     {
         if (_courts.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException("A court with this name already exists in this facility.");
         }
 
-        var court = Court.Create(name, surfaceType);
+        var court = Court.Create(name, surfaceType, overrideReservationDuration);
         _courts.Add(court);
 
         return court;
     }
 
-    public void EditCourt(CourtId courtId, string name, bool isActive)
+    public void EditCourt(CourtId courtId, string name, bool isActive, int? overrideReservationDuration = null)
     {
         var court = _courts.FirstOrDefault(c => c.Id == courtId);
         if (court is null)
@@ -60,6 +66,8 @@ public partial class Facility
         }
 
         court.Rename(name);
+        
+        court.ChangeReservationDuration(overrideReservationDuration);
 
         if (isActive && !court.IsActive)
             court.Activate();
@@ -107,5 +115,13 @@ public partial class Facility
         }
 
         Address = address;
+    }
+
+    public void ChangeReservationDuration(int duration)
+    {
+        if (duration <= 0)
+            throw new ArgumentException("Reservation duration must be greater than zero.");
+        
+        ReservationDuration = duration;
     }
 }

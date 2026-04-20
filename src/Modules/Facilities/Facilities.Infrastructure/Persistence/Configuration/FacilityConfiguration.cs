@@ -28,6 +28,11 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
             .HasMaxLength(300)
             .IsRequired();
 
+        builder.Property(x => x.ReservationDuration)
+            .HasColumnName("reservation_duration")
+            .IsRequired()
+            .HasDefaultValue(60);
+
         builder.Property(x => x.WeeklyOpeningHours)
             .HasConversion(
                 weekly => SerializeWeeklyHours(weekly),
