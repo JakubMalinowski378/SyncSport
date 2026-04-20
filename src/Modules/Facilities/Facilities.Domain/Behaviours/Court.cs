@@ -71,4 +71,17 @@ public partial class Court
     {
         return OverrideReservationDuration ?? facility.ReservationDuration;
     }
+
+    public void AddImage(ImageUrl imageUrl)
+    {
+        if (!_images.Contains(imageUrl))
+        {
+            _images.Add(imageUrl);
+        }
+    }
+
+    public void RemoveImage(ImageUrl imageUrl)
+    {
+        _images.Remove(imageUrl);
+    }
 }

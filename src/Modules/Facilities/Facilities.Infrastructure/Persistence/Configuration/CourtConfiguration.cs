@@ -41,6 +41,15 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
                 json => string.IsNullOrWhiteSpace(json) ? null : DeserializeWeeklyHours(json))
             .HasColumnName("override_weekly_opening_hours")
             .HasColumnType("jsonb");
+
+        builder.Property(x => x.Images)
+            .HasConversion(
+                images => JsonSerializer.Serialize(images.Select(i => i.Value), (JsonSerializerOptions?)null),
+                json => string.IsNullOrWhiteSpace(json) ? new List<ImageUrl>() : JsonSerializer.Deserialize<List<string>>(json, (JsonSerializerOptions?)null)!.Select(ImageUrl.Create).ToList()
+            )
+            .HasColumnName("images")
+            .HasColumnType("jsonb")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 
     private static string SerializeWeeklyHours(WeeklyOpeningHours weekly)

@@ -124,4 +124,17 @@ public partial class Facility
         
         ReservationDuration = duration;
     }
+
+    public void AddImage(ImageUrl imageUrl)
+    {
+        if (!_images.Contains(imageUrl))
+        {
+            _images.Add(imageUrl);
+        }
+    }
+
+    public void RemoveImage(ImageUrl imageUrl)
+    {
+        _images.Remove(imageUrl);
+    }
 }

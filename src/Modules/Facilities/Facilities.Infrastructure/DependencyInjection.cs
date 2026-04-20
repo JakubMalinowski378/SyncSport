@@ -1,4 +1,7 @@
+using Facilities.Domain.Entities;
+using Facilities.Domain.ValueObjects;
 using Facilities.Infrastructure.Persistence;
+using Facilities.Infrastructure.Seeding;
 using Facilities.Infrastructure.Services;
 using Facilities.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Persistence;
 using Shared.Persistence.Interceptors;
+using Shared.Seeding;
 
 namespace Facilities.Infrastructure;
 
@@ -22,9 +26,11 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
         });
 
-        services.AddScoped<IRepository<Facilities.Domain.Entities.Facility, Facilities.Domain.ValueObjects.FacilityId>, FacilitiesRepository<Facilities.Domain.Entities.Facility, Facilities.Domain.ValueObjects.FacilityId>>();
-        services.AddScoped<IRepository<Facilities.Domain.Entities.Court, Facilities.Domain.ValueObjects.CourtId>, FacilitiesRepository<Facilities.Domain.Entities.Court, Facilities.Domain.ValueObjects.CourtId>>();
+        services.AddScoped<IRepository<Facility, FacilityId>, FacilitiesRepository<Facility, FacilityId>>();
+        services.AddScoped<IRepository<Court, CourtId>, FacilitiesRepository<Court, CourtId>>();
         services.AddScoped<IFacilitiesModuleApi, FacilitiesModuleApi>();
+
+        services.AddScoped<IDataSeeder, FacilitySeeder>();
 
         return services;
     }

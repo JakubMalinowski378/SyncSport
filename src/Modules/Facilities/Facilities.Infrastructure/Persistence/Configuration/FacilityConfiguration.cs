@@ -49,6 +49,15 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
             .HasColumnType("jsonb")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
+        builder.Property(x => x.Images)
+            .HasConversion(
+                images => JsonSerializer.Serialize(images.Select(i => i.Value), (JsonSerializerOptions?)null),
+                json => JsonSerializer.Deserialize<List<string>>(json, (JsonSerializerOptions?)null)!.Select(ImageUrl.Create).ToList()
+            )
+            .HasColumnName("images")
+            .HasColumnType("jsonb")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.HasMany(x => x.Courts)
             .WithOne()
             .HasForeignKey("FacilityId")
