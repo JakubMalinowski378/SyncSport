@@ -14,6 +14,7 @@
 		<ProjectReference Include="..\Modules\Reservations\Reservations.Api\Reservations.Api.csproj" />
 		<ProjectReference Include="..\Modules\Pricing\Pricing.Api\Pricing.Api.csproj" />
 		<ProjectReference Include="..\Modules\Payments\Payments.csproj" />
+		<ProjectReference Include="..\Modules\Storage\Storage.csproj" />
 	</ItemGroup>
 
 </Project>

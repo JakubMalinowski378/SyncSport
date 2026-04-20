@@ -7,7 +7,7 @@ namespace Facilities.Infrastructure.Seeding;
 
 internal sealed class FacilitySeeder(IRepository<Facility, FacilityId> repository) : IDataSeeder
 {
-    public async Task SeedAsync(CancellationToken cancellationToken = default)  
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         if (await repository.AnyAsync(ct: cancellationToken))
         {
@@ -20,11 +20,11 @@ internal sealed class FacilitySeeder(IRepository<Facility, FacilityId> repositor
 
         var facility1 = Facility.Create(
             "Centralna Hala Sportowa",
-            "ul. Gl�wna 123, Warszawa",
+            "ul. Glówna 123, Warszawa",
             60,
             standardHours);
 
-        facility1.AddCourt("Glówne Boisko do Koszykówki", "Parkiet");        
+        facility1.AddCourt("Główne Boisko do Koszykówki", "Parkiet");
         facility1.AddCourt("Kort Tenisowy 1", "Twarda");
         facility1.AddCourt("Kort Tenisowy 2", "Twarda");
 

@@ -39,6 +39,7 @@
   <Folder Name="/src/Modules/">
     <Project Path="src/Modules/Payments/Payments.csproj" />
     <Project Path="src/Modules/Notifications/Notifications.csproj" />
+    <Project Path="src/Modules/Storage/Storage.csproj" />
   </Folder>
 
   <Folder Name="/tests/">
