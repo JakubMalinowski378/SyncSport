@@ -1,3 +1,4 @@
+using System.Text;
 using Carter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -10,7 +11,6 @@ using Shared.Authorization;
 using Shared.Exceptions;
 using Shared.Persistence.Interceptors;
 using Shared.Seeding;
-using System.Text;
 
 namespace Shared;
 
@@ -101,7 +101,7 @@ public static class DependencyInjection
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(options => options.DisplayOperationId());
         }
 
         app.UseAuthentication();
