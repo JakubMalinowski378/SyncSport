@@ -1,0 +1,40 @@
+version: '3'
+
+volumes:
+  postgres:
+  azurite:
+  smtp4dev:
+
+services:
+  azurite:
+    container_name: azurite
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: "azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck --location /workspace"
+    ports:
+      - "10000:10000"
+    environment:
+      - AZURITE_ACCOUNTS=devstoreaccount1:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+    volumes:
+      - azurite:/workspace
+  
+  postgres:
+    container_name: postgres
+    image: postgres
+    shm_size: '4gb'
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    container_name: smtp4dev
+    restart: always
+    ports:
+      - "5000:80"
+      - "2525:25"
+    volumes:
+      - smtp4dev:/smtp4dev
