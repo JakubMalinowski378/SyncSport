@@ -10,6 +10,7 @@ using Facilities.Application.Facilities.Commands.GetFacilityById;
 using Facilities.Application.Facilities.Commands.RemoveCourt;
 using Facilities.Application.Facilities.Commands.RemoveFacility;
 using Facilities.Application.Facilities.Queries.GetFacilityCourts;
+using Facilities.Application.Facilities.Queries.GetFacilityCourtById;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -80,6 +81,11 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequireAuthorization(Policies.AdminOrManager)
             .DisableAntiforgery();
+
+        group.MapGet("/{facilityId:guid}/courts/{courtId:guid}", GetCourtById)
+            .WithName("GetCourtById")
+            .Produces<CourtDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet("/{facilityId:guid}/courts", GetFacilityCourts)
             .WithName("GetFacilityCourts")
@@ -207,6 +213,18 @@ public sealed class FacilitiesEndpoints : ICarterModule
         await sender.Send(new RemoveCourtCommand(facilityId, courtId), ct);
 
         return Results.NoContent();
+    }
+
+    private static async Task<IResult> GetCourtById(Guid facilityId, Guid courtId, ISender sender, CancellationToken ct)
+    {
+        var court = await sender.Send(new GetFacilityCourtByIdQuery(facilityId, courtId), ct);
+
+        if (court is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Ok(court);
     }
 
 }
