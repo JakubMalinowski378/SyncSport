@@ -13,4 +13,5 @@ public sealed record CourtDto(
     string Name,
     string SurfaceType,
     bool IsActive,
-    int? OverrideReservationDuration);
+    int? OverrideReservationDuration,
+    List<string> Images);

@@ -35,7 +35,8 @@ public sealed class GetFacilityCourtsQueryHandler(
             c.Name,
             c.SurfaceType,
             c.IsActive,
-            c.OverrideReservationDuration)).ToList();
+            c.OverrideReservationDuration,
+            c.Images.Select(img => img.Value).ToList())).ToList();
 
         return new PagedResult<CourtDto>(
             courts,

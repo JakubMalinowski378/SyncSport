@@ -26,6 +26,14 @@ public sealed class CreateCourtCommandHandler(
 
         var court = facility.AddCourt(request.Name, request.SurfaceType, request.OverrideReservationDuration);
 
+        if (request.Images is not null)
+        {
+            foreach (var img in request.Images)
+            {
+                court.AddImage(ImageUrl.Create(img));
+            }
+        }
+
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);
 

@@ -11,4 +11,5 @@ public sealed record GetFacilityByIdResult(
     string Address,
     int ReservationDuration,
     List<DailyOpeningHoursDto> OpeningHours,
-    List<DateSpecificOpeningHoursDto> CustomDateHours);
+    List<DateSpecificOpeningHoursDto> CustomDateHours,
+    List<string> Images);

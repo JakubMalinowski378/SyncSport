@@ -55,6 +55,20 @@ public sealed class EditFacilityCommandHandler(
             facility.ChangeCustomDateHours(customDateHours);
         }
 
+        if (request.Images is not null)
+        {
+            var currentImages = facility.Images.ToList();
+            foreach (var img in currentImages)
+            {
+                facility.RemoveImage(img);
+            }
+
+            foreach (var newImg in request.Images)
+            {
+                facility.AddImage(ImageUrl.Create(newImg));
+            }
+        }
+
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);
     }

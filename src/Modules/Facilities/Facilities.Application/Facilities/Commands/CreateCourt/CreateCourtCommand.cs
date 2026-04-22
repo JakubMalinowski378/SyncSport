@@ -7,7 +7,8 @@ public sealed record CreateCourtCommand(
     Guid FacilityId,
     string Name,
     string SurfaceType,
-    int? OverrideReservationDuration = null) : IRequest<Guid>;
+    int? OverrideReservationDuration = null,
+    List<string>? Images = null) : IRequest<Guid>;
 
 public sealed class CreateCourtCommandValidator : AbstractValidator<CreateCourtCommand>
 {

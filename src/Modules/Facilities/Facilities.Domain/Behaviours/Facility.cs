@@ -52,7 +52,7 @@ public partial class Facility
         return court;
     }
 
-    public void EditCourt(CourtId courtId, string name, bool isActive, int? overrideReservationDuration = null)
+    public void EditCourt(CourtId courtId, string name, bool isActive, int? overrideReservationDuration = null, List<string>? newImages = null)
     {
         var court = _courts.FirstOrDefault(c => c.Id == courtId);
         if (court is null)
@@ -73,6 +73,19 @@ public partial class Facility
             court.Activate();
         else if (!isActive && court.IsActive)
             court.Deactivate();
+
+        if (newImages is null) return;
+
+        var currentImages = court.Images.ToList();
+        foreach (var img in currentImages)
+        {
+            court.RemoveImage(img);
+        }
+
+        foreach (var newImg in newImages)
+        {
+            court.AddImage(ImageUrl.Create(newImg));
+        }
     }
 
     public void RemoveCourt(CourtId courtId)

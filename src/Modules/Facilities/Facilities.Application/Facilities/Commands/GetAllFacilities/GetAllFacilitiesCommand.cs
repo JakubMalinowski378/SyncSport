@@ -43,4 +43,5 @@ public sealed record GetAllFacilitiesResult(
     string Name,
     string Address,
     int ReservationDuration,
-    List<DailyOpeningHoursDto> OpeningHours);
+    List<DailyOpeningHoursDto> OpeningHours,
+    List<string> Images);

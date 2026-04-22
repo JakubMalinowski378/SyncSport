@@ -12,6 +12,7 @@
 		<ProjectReference Include="..\Facilities.Application\Facilities.Application.csproj" />
 		<ProjectReference Include="..\Facilities.Infrastructure\Facilities.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Users\Users.Shared\Users.Shared.csproj" />
+		<ProjectReference Include="..\..\Storage\Storage.csproj" />
 	</ItemGroup>
 
 </Project>

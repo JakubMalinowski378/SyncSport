@@ -34,6 +34,14 @@ public sealed class CreateFacilityCommandHandler(
 
         var facility = Facility.Create(request.Name, request.Address, request.ReservationDuration, weeklyOpeningHours, customDateHours);
 
+        if (request.Images is not null)
+        {
+            foreach (var img in request.Images)
+            {
+                facility.AddImage(ImageUrl.Create(img));
+            }
+        }
+
         await facilityRepository.AddAsync(facility, cancellationToken);
         await facilityRepository.SaveChangesAsync(cancellationToken);
 

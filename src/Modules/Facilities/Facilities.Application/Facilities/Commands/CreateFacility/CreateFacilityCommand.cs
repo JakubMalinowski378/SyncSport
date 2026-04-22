@@ -11,7 +11,8 @@ public sealed record CreateFacilityCommand(
     string Address,
     int ReservationDuration,
     List<DailyHoursDto>? WeeklyHours = null,
-    List<DateSpecificHoursDto>? CustomDateHours = null) : IRequest<Guid>;       
+    List<DateSpecificHoursDto>? CustomDateHours = null,
+    List<string>? Images = null) : IRequest<Guid>;       
 
 public sealed class CreateFacilityCommandValidator : AbstractValidator<CreateFacilityCommand>
 {
