@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using System.Text.Json;
 using Carter;
 using Facilities.Application.Facilities.Commands.CreateCourt;
 using Facilities.Application.Facilities.Commands.CreateFacility;
@@ -15,7 +17,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Shared.Authorization;
 using Shared.Pagination;
-using System.Security.Claims;
 
 namespace Facilities.Api.Endpoints;
 
@@ -95,7 +96,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .RequireAuthorization(Policies.AdminOrManager);
     }
 
-private static async Task<IResult> CreateFacility([FromForm] CreateFacilityRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
+    private static async Task<IResult> CreateFacility([FromForm] CreateFacilityRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
         var imageUrls = new List<string>();
         if (request.Images is not null && request.Images.Any())
@@ -104,7 +105,16 @@ private static async Task<IResult> CreateFacility([FromForm] CreateFacilityReque
             imageUrls = (await imageStorageService.AddRangeAsync(files, ct)).ToList();
         }
 
-        var id = await sender.Send(new CreateFacilityCommand(request.Name, request.Address, request.ReservationDuration, request.WeeklyHours, request.CustomDateHours, imageUrls), ct);
+        var jsonSerializer = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var weeklyHours = !string.IsNullOrWhiteSpace(request.WeeklyHours)
+            ? JsonSerializer.Deserialize<List<DailyHoursDto>>(request.WeeklyHours, jsonSerializer)
+            : null;
+
+        var customDateHours = !string.IsNullOrWhiteSpace(request.CustomDateHours)
+            ? JsonSerializer.Deserialize<List<DateSpecificHoursDto>>(request.CustomDateHours, jsonSerializer)
+            : null;
+
+        var id = await sender.Send(new CreateFacilityCommand(request.Name, request.Address, request.ReservationDuration, weeklyHours, customDateHours, imageUrls), ct);
 
         return Results.Created($"/api/facilities/{id}", id);
     }
@@ -144,7 +154,15 @@ private static async Task<IResult> CreateFacility([FromForm] CreateFacilityReque
             imageUrls = (await imageStorageService.AddRangeAsync(files, ct)).ToList();
         }
 
-        await sender.Send(new EditFacilityCommand(facilityId, request.Name, request.Address, request.ReservationDuration, request.WeeklyHours, request.CustomDateHours, imageUrls), ct);
+        var weeklyHours = !string.IsNullOrWhiteSpace(request.WeeklyHours)
+            ? System.Text.Json.JsonSerializer.Deserialize<List<DailyHoursDto>>(request.WeeklyHours, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            : null;
+
+        var customDateHours = !string.IsNullOrWhiteSpace(request.CustomDateHours)
+            ? System.Text.Json.JsonSerializer.Deserialize<List<DateSpecificHoursDto>>(request.CustomDateHours, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            : null;
+
+        await sender.Send(new EditFacilityCommand(facilityId, request.Name, request.Address, request.ReservationDuration, weeklyHours, customDateHours, imageUrls), ct);
 
         return Results.NoContent();
     }
@@ -193,30 +211,38 @@ private static async Task<IResult> CreateFacility([FromForm] CreateFacilityReque
 
 }
 
-public sealed record CreateFacilityRequest(
-    string Name,
-    string Address,
-    int ReservationDuration,
-    List<DailyHoursDto>? WeeklyHours = null,
-    List<DateSpecificHoursDto>? CustomDateHours = null,
-    IFormFileCollection? Images = null);
+public sealed class CreateFacilityRequest
+{
+    public string Name { get; init; } = string.Empty;
+    public string Address { get; init; } = string.Empty;
+    public int ReservationDuration { get; init; }
+    public string? WeeklyHours { get; init; }
+    public string? CustomDateHours { get; init; }
+    public IFormFileCollection? Images { get; init; }
+}
 
-public sealed record EditFacilityRequest(
-    string Name,
-    string Address,
-    int ReservationDuration,
-    List<DailyHoursDto>? WeeklyHours = null,
-    List<DateSpecificHoursDto>? CustomDateHours = null,
-    IFormFileCollection? Images = null);
+public sealed class EditFacilityRequest
+{
+    public string Name { get; init; } = string.Empty;
+    public string Address { get; init; } = string.Empty;
+    public int ReservationDuration { get; init; }
+    public string? WeeklyHours { get; init; }
+    public string? CustomDateHours { get; init; }
+    public IFormFileCollection? Images { get; init; }
+}
 
-public sealed record CreateCourtRequest(
-    string Name,
-    string SurfaceType,
-    int? OverrideReservationDuration = null,
-    IFormFileCollection? Images = null);
+public sealed class CreateCourtRequest
+{
+    public string Name { get; init; } = string.Empty;
+    public string SurfaceType { get; init; } = string.Empty;
+    public int? OverrideReservationDuration { get; init; }
+    public IFormFileCollection? Images { get; init; }
+}
 
-public sealed record EditCourtRequest(
-    string Name,
-    bool IsActive,
-    int? OverrideReservationDuration = null,
-    IFormFileCollection? Images = null);
+public sealed class EditCourtRequest
+{
+    public string Name { get; init; } = string.Empty;
+    public bool IsActive { get; init; }
+    public int? OverrideReservationDuration { get; init; }
+    public IFormFileCollection? Images { get; init; }
+}
