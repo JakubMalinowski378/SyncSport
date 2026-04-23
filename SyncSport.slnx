@@ -1,53 +1,48 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Bootstrapper/Bootstrapper.csproj" />
-    <Project Path="src/Shared/Shared.csproj" />
+    <Project Path="src/Bootstrapper/Bootstrapper.csproj"/>
+    <Project Path="src/Shared/Shared.csproj"/>
   </Folder>
-
   <Folder Name="/src/Modules/Facilities/">
-    <Project Path="src/Modules/Facilities/Facilities.Api/Facilities.Api.csproj" />
-    <Project Path="src/Modules/Facilities/Facilities.Infrastructure/Facilities.Infrastructure.csproj" />
-    <Project Path="src/Modules/Facilities/Facilities.Application/Facilities.Application.csproj" />
-    <Project Path="src/Modules/Facilities/Facilities.Domain/Facilities.Domain.csproj" />
-    <Project Path="src/Modules/Facilities/Facilities.Shared/Facilities.Shared.csproj" />
+    <Project Path="src/Modules/Facilities/Facilities.Api/Facilities.Api.csproj"/>
+    <Project Path="src/Modules/Facilities/Facilities.Infrastructure/Facilities.Infrastructure.csproj"/>
+    <Project Path="src/Modules/Facilities/Facilities.Application/Facilities.Application.csproj"/>
+    <Project Path="src/Modules/Facilities/Facilities.Domain/Facilities.Domain.csproj"/>
+    <Project Path="src/Modules/Facilities/Facilities.Shared/Facilities.Shared.csproj"/>
   </Folder>
-
   <Folder Name="/src/Modules/Users/">
-    <Project Path="src/Modules/Users/Users.Api/Users.Api.csproj" />
-    <Project Path="src/Modules/Users/Users.Infrastructure/Users.Infrastructure.csproj" />
-    <Project Path="src/Modules/Users/Users.Application/Users.Application.csproj" />
-    <Project Path="src/Modules/Users/Users.Domain/Users.Domain.csproj" />
-    <Project Path="src/Modules/Users/Users.Shared/Users.Shared.csproj" />
+    <Project Path="src/Modules/Users/Users.Api/Users.Api.csproj"/>
+    <Project Path="src/Modules/Users/Users.Infrastructure/Users.Infrastructure.csproj"/>
+    <Project Path="src/Modules/Users/Users.Application/Users.Application.csproj"/>
+    <Project Path="src/Modules/Users/Users.Domain/Users.Domain.csproj"/>
+    <Project Path="src/Modules/Users/Users.Shared/Users.Shared.csproj"/>
   </Folder>
-
   <Folder Name="/src/Modules/Reservations/">
-    <Project Path="src/Modules/Reservations/Reservations.Api/Reservations.Api.csproj" />
-    <Project Path="src/Modules/Reservations/Reservations.Infrastructure/Reservations.Infrastructure.csproj" />
-    <Project Path="src/Modules/Reservations/Reservations.Application/Reservations.Application.csproj" />
-    <Project Path="src/Modules/Reservations/Reservations.Domain/Reservations.Domain.csproj" />
-    <Project Path="src/Modules/Reservations/Reservations.Shared/Reservations.Shared.csproj" />
+    <Project Path="src/Modules/Reservations/Reservations.Api/Reservations.Api.csproj"/>
+    <Project Path="src/Modules/Reservations/Reservations.Infrastructure/Reservations.Infrastructure.csproj"/>
+    <Project Path="src/Modules/Reservations/Reservations.Application/Reservations.Application.csproj"/>
+    <Project Path="src/Modules/Reservations/Reservations.Domain/Reservations.Domain.csproj"/>
+    <Project Path="src/Modules/Reservations/Reservations.Shared/Reservations.Shared.csproj"/>
   </Folder>
-
   <Folder Name="/src/Modules/Pricing/">
-    <Project Path="src/Modules/Pricing/Pricing.Api/Pricing.Api.csproj" />
-    <Project Path="src/Modules/Pricing/Pricing.Infrastructure/Pricing.Infrastructure.csproj" />
-    <Project Path="src/Modules/Pricing/Pricing.Application/Pricing.Application.csproj" />
-    <Project Path="src/Modules/Pricing/Pricing.Domain/Pricing.Domain.csproj" />
-    <Project Path="src/Modules/Pricing/Pricing.Shared/Pricing.Shared.csproj" />
+    <Project Path="src/Modules/Pricing/Pricing.Api/Pricing.Api.csproj"/>
+    <Project Path="src/Modules/Pricing/Pricing.Infrastructure/Pricing.Infrastructure.csproj"/>
+    <Project Path="src/Modules/Pricing/Pricing.Application/Pricing.Application.csproj"/>
+    <Project Path="src/Modules/Pricing/Pricing.Domain/Pricing.Domain.csproj"/>
+    <Project Path="src/Modules/Pricing/Pricing.Shared/Pricing.Shared.csproj"/>
   </Folder>
-
   <Folder Name="/src/Modules/">
-    <Project Path="src/Modules/Payments/Payments.csproj" />
-    <Project Path="src/Modules/Notifications/Notifications.csproj" />
-    <Project Path="src/Modules/Storage/Storage.csproj" />
+    <Project Path="src/Modules/Payments/Payments.csproj"/>
+    <Project Path="src/Modules/Notifications/Notifications.csproj"/>
+    <Project Path="src/Modules/Storage/Storage.csproj"/>
   </Folder>
-
-  <Folder Name="/tests/">
+  <Folder Name="/tests/"/>
+  <Folder Name="/tests/Users/">
+    <Project Path="tests/Users/Users.Application.Tests/Users.Application.Tests.csproj"/>
+    <Project Path="tests/Users/Users.Domain.Tests/Users.Domain.Tests.csproj"/>
   </Folder>
-
   <Folder Name="/tests/Facilities/">
-    <Project Path="tests/Facilities/Facilities.Application.Tests/Facilities.Application.Tests.csproj" />
-    <Project Path="tests/Facilities/Facilities.Domain.Tests/Facilities.Domain.Tests.csproj" />
+    <Project Path="tests/Facilities/Facilities.Application.Tests/Facilities.Application.Tests.csproj"/>
+    <Project Path="tests/Facilities/Facilities.Domain.Tests/Facilities.Domain.Tests.csproj"/>
   </Folder>
-
 </Solution>
