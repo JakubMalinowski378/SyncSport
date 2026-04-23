@@ -102,13 +102,39 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .RequireAuthorization(Policies.AdminOrManager);
     }
 
-    private static async Task<IResult> CreateFacility([FromForm] CreateFacilityRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
+    private static async Task<(List<string>? Urls, IResult? Error)> ProcessImagesAsync(IFormFileCollection? images, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
         var imageUrls = new List<string>();
-        if (request.Images is not null && request.Images.Any())
+        if (images is null || !images.Any())
         {
-            var files = request.Images.Select(f => (f.OpenReadStream(), f.ContentType, f.FileName));
-            imageUrls = (await imageStorageService.AddRangeAsync(files, ct)).ToList();
+            return (imageUrls, null);
+        }
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        var filesToUpload = new List<(Stream Stream, string ContentType, string FileName)>();
+
+        foreach (var file in images)
+        {
+            var extension = System.IO.Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                return (null, Results.BadRequest(new { Error = $"Invalid image format for file '{file.FileName}'. Allowed extensions are: {string.Join(", ", allowedExtensions)}" }));
+            }
+
+            var newFileName = $"{Guid.NewGuid()}{extension}";
+            filesToUpload.Add((file.OpenReadStream(), file.ContentType, newFileName));
+        }
+
+        imageUrls = (await imageStorageService.AddRangeAsync(filesToUpload, ct)).ToList();
+        return (imageUrls, null);
+    }
+
+    private static async Task<IResult> CreateFacility([FromForm] CreateFacilityRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
+    {
+        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        if (error is not null)
+        {
+            return error;
         }
 
         var jsonSerializer = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -153,11 +179,10 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> EditFacility([FromRoute] Guid facilityId, [FromForm] EditFacilityRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
-        var imageUrls = new List<string>();
-        if (request.Images is not null && request.Images.Any())
+        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        if (error is not null)
         {
-            var files = request.Images.Select(f => (f.OpenReadStream(), f.ContentType, f.FileName));
-            imageUrls = (await imageStorageService.AddRangeAsync(files, ct)).ToList();
+            return error;
         }
 
         var weeklyHours = !string.IsNullOrWhiteSpace(request.WeeklyHours)
@@ -175,11 +200,10 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> CreateCourt([FromRoute] Guid facilityId, [FromForm] CreateCourtRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
-        var imageUrls = new List<string>();
-        if (request.Images is not null && request.Images.Any())
+        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        if (error is not null)
         {
-            var files = request.Images.Select(f => (f.OpenReadStream(), f.ContentType, f.FileName));
-            imageUrls = (await imageStorageService.AddRangeAsync(files, ct)).ToList();
+            return error;
         }
 
         var courtId = await sender.Send(new CreateCourtCommand(facilityId, request.Name, request.SurfaceType, request.OverrideReservationDuration, imageUrls), ct);
@@ -189,11 +213,10 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> EditCourt([FromRoute] Guid facilityId, [FromRoute] Guid courtId, [FromForm] EditCourtRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
-        var imageUrls = new List<string>();
-        if (request.Images is not null && request.Images.Any())
+        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        if (error is not null)
         {
-            var files = request.Images.Select(f => (f.OpenReadStream(), f.ContentType, f.FileName));
-            imageUrls = (await imageStorageService.AddRangeAsync(files, ct)).ToList();
+            return error;
         }
 
         await sender.Send(new EditCourtCommand(facilityId, courtId, request.Name, request.IsActive, request.OverrideReservationDuration, imageUrls), ct);
