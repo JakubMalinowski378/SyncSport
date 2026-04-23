@@ -51,8 +51,8 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
         builder.Property(x => x.Images)
             .HasConversion(
-                images => JsonSerializer.Serialize(images.Select(i => i.Value), (JsonSerializerOptions?)null),
-                json => JsonSerializer.Deserialize<List<string>>(json, (JsonSerializerOptions?)null)!.Select(ImageUrl.Create).ToList()
+                images => JsonSerializer.Serialize(images != null ? images.Select(i => i.Value).ToList() : new List<string>(), (JsonSerializerOptions?)null),
+                json => DeserializeImages(json)
             )
             .HasColumnName("images")
             .HasColumnType("jsonb")
@@ -116,4 +116,20 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
     private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
     private sealed record DateSpecificHoursDto(DateOnly Date, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
+
+    private static List<ImageUrl> DeserializeImages(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json) || json == "[]" || json == "null" || !json.TrimStart().StartsWith("["))
+            return new List<ImageUrl>();
+
+        try
+        {
+            var urls = JsonSerializer.Deserialize<List<string>>(json, (JsonSerializerOptions?)null) ?? new List<string>();
+            return urls.Select(ImageUrl.Create).ToList();
+        }
+        catch (JsonException)
+        {
+            return new List<ImageUrl>();
+        }
+    }
 }
