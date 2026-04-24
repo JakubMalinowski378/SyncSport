@@ -3,10 +3,11 @@ namespace Facilities.Domain.ValueObjects;
 public sealed record ImageUrl
 {
     public string Value { get; } = null!;
+    public bool IsMain { get; init; }
 
     private ImageUrl() { }
 
-    private ImageUrl(string value)
+    private ImageUrl(string value, bool isMain = false)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -19,12 +20,13 @@ public sealed record ImageUrl
         }
 
         Value = value;
+        IsMain = isMain;
     }
 
-    public static ImageUrl Create(string value) => new(value);
+    public static ImageUrl Create(string value, bool isMain = false) => new(value, isMain);
 
     public override string ToString() => Value;
 
     public static implicit operator string(ImageUrl url) => url.Value;
-    public static implicit operator ImageUrl(string value) => new(value);
+    public static implicit operator ImageUrl(string value) => new(value, false);
 }

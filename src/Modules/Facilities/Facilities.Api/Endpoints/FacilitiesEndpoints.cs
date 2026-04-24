@@ -9,6 +9,7 @@ using Facilities.Application.Facilities.Commands.GetAllFacilities;
 using Facilities.Application.Facilities.Commands.GetFacilityById;
 using Facilities.Application.Facilities.Commands.RemoveCourt;
 using Facilities.Application.Facilities.Commands.RemoveFacility;
+using Facilities.Application.Facilities.Common;
 using Facilities.Application.Facilities.Queries.GetFacilityCourts;
 using Facilities.Application.Facilities.Queries.GetFacilityCourtById;
 using MediatR;
@@ -102,12 +103,17 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .RequireAuthorization(Policies.AdminOrManager);
     }
 
-    private static async Task<(List<string>? Urls, IResult? Error)> ProcessImagesAsync(IFormFileCollection? images, Storage.IImageStorageService imageStorageService, CancellationToken ct)
+    private static async Task<(List<ImageDto>? Images, IResult? Error)> ProcessImagesAsync(IFormFileCollection? images, int? mainImageIndex, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
         var imageUrls = new List<string>();
         if (images is null || !images.Any())
         {
-            return (imageUrls, null);
+            return (new List<ImageDto>(), null);
+        }
+
+        if (mainImageIndex.HasValue && (mainImageIndex.Value < 0 || mainImageIndex.Value >= images.Count))
+        {
+            return (null, Results.BadRequest(new { Error = $"MainImageIndex must be between 0 and {images.Count - 1}." }));
         }
 
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
@@ -126,12 +132,18 @@ public sealed class FacilitiesEndpoints : ICarterModule
         }
 
         imageUrls = (await imageStorageService.AddRangeAsync(filesToUpload, ct)).ToList();
-        return (imageUrls, null);
+
+        var selectedMainIndex = mainImageIndex ?? 0;
+        var mappedImages = imageUrls
+            .Select((url, index) => new ImageDto(url, index == selectedMainIndex))
+            .ToList();
+
+        return (mappedImages, null);
     }
 
     private static async Task<IResult> CreateFacility([FromForm] CreateFacilityRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
-        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        var (images, error) = await ProcessImagesAsync(request.Images, request.MainImageIndex, imageStorageService, ct);
         if (error is not null)
         {
             return error;
@@ -146,7 +158,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             ? JsonSerializer.Deserialize<List<DateSpecificHoursDto>>(request.CustomDateHours, jsonSerializer)
             : null;
 
-        var id = await sender.Send(new CreateFacilityCommand(request.Name, request.Address, request.ReservationDuration, weeklyHours, customDateHours, imageUrls), ct);
+        var id = await sender.Send(new CreateFacilityCommand(request.Name, request.Address, request.ReservationDuration, weeklyHours, customDateHours, images), ct);
 
         return Results.Created($"/api/facilities/{id}", id);
     }
@@ -179,7 +191,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> EditFacility([FromRoute] Guid facilityId, [FromForm] EditFacilityRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
-        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        var (images, error) = await ProcessImagesAsync(request.Images, request.MainImageIndex, imageStorageService, ct);
         if (error is not null)
         {
             return error;
@@ -193,33 +205,33 @@ public sealed class FacilitiesEndpoints : ICarterModule
             ? System.Text.Json.JsonSerializer.Deserialize<List<DateSpecificHoursDto>>(request.CustomDateHours, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             : null;
 
-        await sender.Send(new EditFacilityCommand(facilityId, request.Name, request.Address, request.ReservationDuration, weeklyHours, customDateHours, imageUrls), ct);
+        await sender.Send(new EditFacilityCommand(facilityId, request.Name, request.Address, request.ReservationDuration, weeklyHours, customDateHours, images), ct);
 
         return Results.NoContent();
     }
 
     private static async Task<IResult> CreateCourt([FromRoute] Guid facilityId, [FromForm] CreateCourtRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
-        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        var (images, error) = await ProcessImagesAsync(request.Images, request.MainImageIndex, imageStorageService, ct);
         if (error is not null)
         {
             return error;
         }
 
-        var courtId = await sender.Send(new CreateCourtCommand(facilityId, request.Name, request.SurfaceType, request.OverrideReservationDuration, imageUrls), ct);
+        var courtId = await sender.Send(new CreateCourtCommand(facilityId, request.Name, request.SurfaceType, request.OverrideReservationDuration, images), ct);
 
         return Results.Created($"/api/facilities/{facilityId}/courts/{courtId}", courtId);
     }
 
     private static async Task<IResult> EditCourt([FromRoute] Guid facilityId, [FromRoute] Guid courtId, [FromForm] EditCourtRequest request, ISender sender, Storage.IImageStorageService imageStorageService, CancellationToken ct)
     {
-        var (imageUrls, error) = await ProcessImagesAsync(request.Images, imageStorageService, ct);
+        var (images, error) = await ProcessImagesAsync(request.Images, request.MainImageIndex, imageStorageService, ct);
         if (error is not null)
         {
             return error;
         }
 
-        await sender.Send(new EditCourtCommand(facilityId, courtId, request.Name, request.IsActive, request.OverrideReservationDuration, imageUrls), ct);
+        await sender.Send(new EditCourtCommand(facilityId, courtId, request.Name, request.IsActive, request.OverrideReservationDuration, images), ct);
 
         return Results.NoContent();
     }
@@ -260,6 +272,7 @@ public sealed class CreateFacilityRequest
     public string? WeeklyHours { get; init; }
     public string? CustomDateHours { get; init; }
     public IFormFileCollection? Images { get; init; }
+    public int? MainImageIndex { get; init; }
 }
 
 public sealed class EditFacilityRequest
@@ -270,6 +283,7 @@ public sealed class EditFacilityRequest
     public string? WeeklyHours { get; init; }
     public string? CustomDateHours { get; init; }
     public IFormFileCollection? Images { get; init; }
+    public int? MainImageIndex { get; init; }
 }
 
 public sealed class CreateCourtRequest
@@ -278,6 +292,7 @@ public sealed class CreateCourtRequest
     public string SurfaceType { get; init; } = string.Empty;
     public int? OverrideReservationDuration { get; init; }
     public IFormFileCollection? Images { get; init; }
+    public int? MainImageIndex { get; init; }
 }
 
 public sealed class EditCourtRequest
@@ -286,4 +301,5 @@ public sealed class EditCourtRequest
     public bool IsActive { get; init; }
     public int? OverrideReservationDuration { get; init; }
     public IFormFileCollection? Images { get; init; }
+    public int? MainImageIndex { get; init; }
 }

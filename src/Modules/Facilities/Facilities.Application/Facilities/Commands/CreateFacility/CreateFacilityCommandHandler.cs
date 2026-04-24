@@ -38,7 +38,7 @@ public sealed class CreateFacilityCommandHandler(
         {
             foreach (var img in request.Images)
             {
-                facility.AddImage(ImageUrl.Create(img));
+                facility.AddImage(ImageUrl.Create(img.Url, img.IsMain));
             }
         }
 

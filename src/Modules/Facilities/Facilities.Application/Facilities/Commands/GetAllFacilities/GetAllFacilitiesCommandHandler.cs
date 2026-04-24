@@ -36,7 +36,7 @@ public sealed class GetAllFacilitiesCommandHandler(
                 facility.Address,
                 facility.ReservationDuration,
                 OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours),
-                facility.Images.Select(img => img.Value).ToList()))
+                facility.Images.Select(img => new ImageDto(img.Value, img.IsMain)).ToList()))
             .ToList();
 
         return new PagedResult<GetAllFacilitiesResult>(

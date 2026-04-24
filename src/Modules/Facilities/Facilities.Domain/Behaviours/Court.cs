@@ -74,9 +74,26 @@ public partial class Court
 
     public void AddImage(ImageUrl imageUrl)
     {
-        if (!_images.Contains(imageUrl))
+        var existingIndex = _images.FindIndex(x => x.Value == imageUrl.Value);
+
+        if (existingIndex >= 0)
+        {
+            _images[existingIndex] = imageUrl;
+        }
+        else
         {
             _images.Add(imageUrl);
+        }
+
+        if (imageUrl.IsMain)
+        {
+            for (var i = 0; i < _images.Count; i++)
+            {
+                if (_images[i].Value != imageUrl.Value && _images[i].IsMain)
+                {
+                    _images[i] = ImageUrl.Create(_images[i].Value, false);
+                }
+            }
         }
     }
 

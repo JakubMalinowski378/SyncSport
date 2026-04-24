@@ -52,7 +52,7 @@ public partial class Facility
         return court;
     }
 
-    public void EditCourt(CourtId courtId, string name, bool isActive, int? overrideReservationDuration = null, List<string>? newImages = null)
+    public void EditCourt(CourtId courtId, string name, bool isActive, int? overrideReservationDuration = null, List<ImageUrl>? newImages = null)
     {
         var court = _courts.FirstOrDefault(c => c.Id == courtId);
         if (court is null)
@@ -66,7 +66,7 @@ public partial class Facility
         }
 
         court.Rename(name);
-        
+
         court.ChangeReservationDuration(overrideReservationDuration);
 
         if (isActive && !court.IsActive)
@@ -84,7 +84,7 @@ public partial class Facility
 
         foreach (var newImg in newImages)
         {
-            court.AddImage(ImageUrl.Create(newImg));
+            court.AddImage(newImg);
         }
     }
 
@@ -134,15 +134,32 @@ public partial class Facility
     {
         if (duration <= 0)
             throw new ArgumentException("Reservation duration must be greater than zero.");
-        
+
         ReservationDuration = duration;
     }
 
     public void AddImage(ImageUrl imageUrl)
     {
-        if (!_images.Contains(imageUrl))
+        var existingIndex = _images.FindIndex(x => x.Value == imageUrl.Value);
+
+        if (existingIndex >= 0)
+        {
+            _images[existingIndex] = imageUrl;
+        }
+        else
         {
             _images.Add(imageUrl);
+        }
+
+        if (imageUrl.IsMain)
+        {
+            for (var i = 0; i < _images.Count; i++)
+            {
+                if (_images[i].Value != imageUrl.Value && _images[i].IsMain)
+                {
+                    _images[i] = ImageUrl.Create(_images[i].Value, false);
+                }
+            }
         }
     }
 

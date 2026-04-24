@@ -65,7 +65,7 @@ public sealed class EditFacilityCommandHandler(
 
             foreach (var newImg in request.Images)
             {
-                facility.AddImage(ImageUrl.Create(newImg));
+                facility.AddImage(ImageUrl.Create(newImg.Url, newImg.IsMain));
             }
         }
 

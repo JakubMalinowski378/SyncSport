@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
@@ -36,7 +37,7 @@ public sealed class GetFacilityCourtsQueryHandler(
             c.SurfaceType,
             c.IsActive,
             c.OverrideReservationDuration,
-            c.Images.Select(img => img.Value).ToList())).ToList();
+            c.Images.Select(img => new ImageDto(img.Value, img.IsMain)).ToList())).ToList();
 
         return new PagedResult<CourtDto>(
             courts,

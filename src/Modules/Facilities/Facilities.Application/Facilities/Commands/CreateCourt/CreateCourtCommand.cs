@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using FluentValidation;
 using MediatR;
 
@@ -8,7 +9,7 @@ public sealed record CreateCourtCommand(
     string Name,
     string SurfaceType,
     int? OverrideReservationDuration = null,
-    List<string>? Images = null) : IRequest<Guid>;
+    List<ImageDto>? Images = null) : IRequest<Guid>;
 
 public sealed class CreateCourtCommandValidator : AbstractValidator<CreateCourtCommand>
 {
@@ -32,5 +33,10 @@ public sealed class CreateCourtCommandValidator : AbstractValidator<CreateCourtC
             .GreaterThan(0)
             .When(x => x.OverrideReservationDuration.HasValue)
             .WithMessage("Override reservation duration must be greater than zero if provided.");
+
+        RuleFor(x => x.Images)
+            .Must(images => images is null || images.Count(i => i.IsMain) <= 1)
+            .WithMessage("Only one image can be marked as main.");
     }
 }
+

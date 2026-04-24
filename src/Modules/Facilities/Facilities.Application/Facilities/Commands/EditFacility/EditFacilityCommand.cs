@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using FluentValidation;
 using MediatR;
 
@@ -12,7 +13,7 @@ public sealed record EditFacilityCommand(
     int ReservationDuration,
     List<DailyHoursDto>? WeeklyHours = null,
     List<DateSpecificHoursDto>? CustomDateHours = null,
-    List<string>? Images = null) : IRequest;
+    List<ImageDto>? Images = null) : IRequest;
 
 public sealed class EditFacilityCommandValidator : AbstractValidator<EditFacilityCommand>
 {
@@ -49,5 +50,10 @@ public sealed class EditFacilityCommandValidator : AbstractValidator<EditFacilit
                     .When(x => !x.IsClosed)
                     .WithMessage("OpenTime must be before CloseTime.");
             });
+
+        RuleFor(x => x.Images)
+            .Must(images => images is null || images.Count(i => i.IsMain) <= 1)
+            .WithMessage("Only one image can be marked as main.");
     }
 }
+

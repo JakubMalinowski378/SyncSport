@@ -1,4 +1,4 @@
-using Facilities.Domain.Entities;
+﻿using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +30,11 @@ public sealed class EditCourtCommandHandler(
             throw new Exception("Facility not found.");
         }
 
-        facility.EditCourt(courtId, request.Name, request.IsActive, request.OverrideReservationDuration, request.Images);
+        var images = request.Images?
+            .Select(x => ImageUrl.Create(x.Url, x.IsMain))
+            .ToList();
+
+        facility.EditCourt(courtId, request.Name, request.IsActive, request.OverrideReservationDuration, images);
 
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);

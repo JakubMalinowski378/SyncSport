@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using Facilities.Application.Facilities.Queries.GetFacilityCourts;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
@@ -35,6 +36,6 @@ public sealed class GetFacilityCourtByIdQueryHandler(
             court.SurfaceType,
             court.IsActive,
             court.OverrideReservationDuration,
-            court.Images.Select(img => img.Value).ToList());
+            court.Images.Select(img => new ImageDto(img.Value, img.IsMain)).ToList());
     }
 }

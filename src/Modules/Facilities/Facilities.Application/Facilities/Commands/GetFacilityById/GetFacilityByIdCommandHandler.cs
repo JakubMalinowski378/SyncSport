@@ -30,6 +30,6 @@ public sealed class GetFacilityByIdCommandHandler(
             facility.CustomDateHours.Select(x => new DateSpecificOpeningHoursDto(
                 x.Date, x.OpenTime, x.CloseTime, x.IsClosed
             )).ToList(),
-            facility.Images.Select(img => img.Value).ToList());
+            facility.Images.Select(img => new ImageDto(img.Value, img.IsMain)).ToList());
     }
 }

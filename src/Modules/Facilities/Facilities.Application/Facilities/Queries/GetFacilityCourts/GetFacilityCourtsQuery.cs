@@ -1,3 +1,4 @@
+using Facilities.Application.Facilities.Common;
 using MediatR;
 using Shared.Pagination;
 
@@ -14,4 +15,5 @@ public sealed record CourtDto(
     string SurfaceType,
     bool IsActive,
     int? OverrideReservationDuration,
-    List<string> Images);
+    List<ImageDto> Images);
+

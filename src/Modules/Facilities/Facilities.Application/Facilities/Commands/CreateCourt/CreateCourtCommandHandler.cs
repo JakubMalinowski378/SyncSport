@@ -30,7 +30,7 @@ public sealed class CreateCourtCommandHandler(
         {
             foreach (var img in request.Images)
             {
-                court.AddImage(ImageUrl.Create(img));
+                court.AddImage(ImageUrl.Create(img.Url, img.IsMain));
             }
         }
 

@@ -51,7 +51,7 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
         builder.Property(x => x.Images)
             .HasConversion(
-                images => JsonSerializer.Serialize(images != null ? images.Select(i => i.Value).ToList() : new List<string>(), (JsonSerializerOptions?)null),
+                images => JsonSerializer.Serialize(images != null ? images.Select(i => new StoredImageDto(i.Value, i.IsMain)).ToList() : new List<StoredImageDto>(), (JsonSerializerOptions?)null),
                 json => DeserializeImages(json)
             )
             .HasColumnName("images")
@@ -124,12 +124,20 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
         try
         {
+            var storedImages = JsonSerializer.Deserialize<List<StoredImageDto>>(json, (JsonSerializerOptions?)null);
+            if (storedImages is not null && storedImages.Count > 0)
+            {
+                return storedImages.Select(x => ImageUrl.Create(x.Url, x.IsMain)).ToList();
+            }
+
             var urls = JsonSerializer.Deserialize<List<string>>(json, (JsonSerializerOptions?)null) ?? new List<string>();
-            return urls.Select(ImageUrl.Create).ToList();
+            return urls.Select((url, index) => ImageUrl.Create(url, index == 0)).ToList();
         }
         catch (JsonException)
         {
             return new List<ImageUrl>();
         }
     }
+
+    private sealed record StoredImageDto(string Url, bool IsMain);
 }
