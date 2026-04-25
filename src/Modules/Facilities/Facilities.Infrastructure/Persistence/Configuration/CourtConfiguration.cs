@@ -49,7 +49,8 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
             )
             .HasColumnName("images")
             .HasColumnType("jsonb")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
+            .Metadata.SetValueComparer(CollectionValueComparers.CreateCollectionComparer<ImageUrl>());
     }
 
     private static string SerializeWeeklyHours(WeeklyOpeningHours weekly)

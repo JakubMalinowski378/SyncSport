@@ -47,7 +47,8 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
                 json => DeserializeCustomDateHours(json))
             .HasColumnName("custom_date_hours")
             .HasColumnType("jsonb")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
+            .Metadata.SetValueComparer(CollectionValueComparers.CreateCollectionComparer<DateSpecificOpeningHours>());
 
         builder.Property(x => x.Images)
             .HasConversion(
@@ -56,7 +57,8 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
             )
             .HasColumnName("images")
             .HasColumnType("jsonb")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
+            .Metadata.SetValueComparer(CollectionValueComparers.CreateCollectionComparer<ImageUrl>());
 
         builder.HasMany(x => x.Courts)
             .WithOne()
