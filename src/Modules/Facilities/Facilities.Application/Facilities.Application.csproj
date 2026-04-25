@@ -8,12 +8,17 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Facilities.Domain\Facilities.Domain.csproj" />
 		<ProjectReference Include="..\..\Users\Users.Shared\Users.Shared.csproj" />
+		<ProjectReference Include="..\..\Storage\Storage.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="MediatR" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
 </Project>

@@ -3,14 +3,17 @@ using Facilities.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain.Exceptions;
+using Shared.Extensions;
 using Shared.Persistence;
+using Storage;
 using Users.Shared.Authorization;
 
 namespace Facilities.Application.Facilities.Commands.EditCourt;
 
 public sealed class EditCourtCommandHandler(
     IRepository<Facility, FacilityId> facilityRepository,
-    IFacilityAuthorizationService facilityAuthorizationService) : IRequestHandler<EditCourtCommand>
+    IFacilityAuthorizationService facilityAuthorizationService,
+    IImageStorageService imageStorageService) : IRequestHandler<EditCourtCommand>
 {
     public async Task Handle(EditCourtCommand request, CancellationToken cancellationToken)
     {
@@ -30,9 +33,18 @@ public sealed class EditCourtCommandHandler(
             throw new Exception("Facility not found.");
         }
 
-        var images = request.Images?
-            .Select(x => ImageUrl.Create(x.Url, x.IsMain))
-            .ToList();
+        List<ImageUrl>? images = null;
+        if (request.Images is not null && request.Images.Count > 0)
+        {
+            var imageUrls = (await imageStorageService.AddRangeAsync(request.Images.ToUploadStreams(), cancellationToken)).ToList();
+            var selectedMainIndex = request.MainImageIndex ?? 0;
+            images = new List<ImageUrl>(imageUrls.Count);
+
+            for (var index = 0; index < imageUrls.Count; index++)
+            {
+                images.Add(ImageUrl.Create(imageUrls[index], index == selectedMainIndex));
+            }
+        }
 
         facility.EditCourt(courtId, request.Name, request.IsActive, request.OverrideReservationDuration, images);
 

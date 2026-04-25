@@ -1,16 +1,21 @@
 using Facilities.Application.Facilities.Common;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Http;
+using Shared.FluentValidation;
 
 namespace Facilities.Application.Facilities.Commands.EditCourt;
 
-public sealed record EditCourtCommand(
-    Guid FacilityId,
-    Guid CourtId,
-    string Name,
-    bool IsActive,
-    int? OverrideReservationDuration = null,
-    List<ImageDto>? Images = null) : IRequest;
+public sealed class EditCourtCommand : IRequest
+{
+    public Guid FacilityId { get; set; }
+    public Guid CourtId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public int? OverrideReservationDuration { get; set; }
+    public IFormFileCollection? Images { get; set; }
+    public int? MainImageIndex { get; set; }
+}
 
 public sealed class EditCourtCommandValidator : AbstractValidator<EditCourtCommand>
 {
@@ -32,7 +37,11 @@ public sealed class EditCourtCommandValidator : AbstractValidator<EditCourtComma
             .WithMessage("Override reservation duration must be greater than zero if provided.");
 
         RuleFor(x => x.Images)
-            .Must(images => images is null || images.Count(i => i.IsMain) <= 1)
-            .WithMessage("Only one image can be marked as main.");
+            .ValidateImageFormFiles();
+
+        RuleFor(x => x.MainImageIndex)
+            .Must((cmd, index) => !index.HasValue || (cmd.Images is not null && index.Value >= 0 && index.Value < cmd.Images.Count))
+            .WithMessage("MainImageIndex must be valid for the provided images.")
+            .When(x => x.MainImageIndex.HasValue);
     }
 }

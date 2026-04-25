@@ -1,19 +1,20 @@
-using Facilities.Application.Facilities.Common;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Http;
+using Shared.FluentValidation;
 
 namespace Facilities.Application.Facilities.Commands.CreateFacility;
 
-public record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
-public record DateSpecificHoursDto(DateOnly Date, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
-
-public sealed record CreateFacilityCommand(
-    string Name,
-    string Address,
-    int ReservationDuration,
-    List<DailyHoursDto>? WeeklyHours = null,
-    List<DateSpecificHoursDto>? CustomDateHours = null,
-    List<ImageDto>? Images = null) : IRequest<Guid>;
+public sealed class CreateFacilityCommand : IRequest<Guid>
+{
+    public string Name { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public int ReservationDuration { get; set; }
+    public string? WeeklyHours { get; set; }
+    public string? CustomDateHours { get; set; }
+    public IFormFileCollection? Images { get; set; }
+    public int? MainImageIndex { get; set; }
+}
 
 public sealed class CreateFacilityCommandValidator : AbstractValidator<CreateFacilityCommand>
 {
@@ -30,27 +31,13 @@ public sealed class CreateFacilityCommandValidator : AbstractValidator<CreateFac
         RuleFor(x => x.ReservationDuration)
             .GreaterThan(0);
 
-        RuleForEach(x => x.WeeklyHours)
-            .ChildRules(daily =>
-            {
-                daily.RuleFor(x => x.OpenTime)
-                    .LessThan(x => x.CloseTime)
-                    .When(x => !x.IsClosed)
-                    .WithMessage("OpenTime must be before CloseTime.");
-            });
-
-        RuleForEach(x => x.CustomDateHours)
-            .ChildRules(custom =>
-            {
-                custom.RuleFor(x => x.OpenTime)
-                    .LessThan(x => x.CloseTime)
-                    .When(x => !x.IsClosed)
-                    .WithMessage("OpenTime must be before CloseTime.");
-            });
-
         RuleFor(x => x.Images)
-            .Must(images => images is null || images.Count(i => i.IsMain) <= 1)
-            .WithMessage("Only one image can be marked as main.");
+            .ValidateImageFormFiles();
+
+        RuleFor(x => x.MainImageIndex)
+            .Must((cmd, index) => !index.HasValue || (cmd.Images != null && index.Value >= 0 && index.Value < cmd.Images.Count))
+            .WithMessage("MainImageIndex must be valid for the provided images.")
+            .When(x => x.MainImageIndex.HasValue);
     }
 }
 

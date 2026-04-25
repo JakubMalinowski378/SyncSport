@@ -2,13 +2,16 @@ using Users.Shared.Authorization;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
+using Shared.Extensions;
 using Shared.Persistence;
+using Storage;
 
 namespace Facilities.Application.Facilities.Commands.CreateCourt;
 
 public sealed class CreateCourtCommandHandler(
     IRepository<Facility, FacilityId> facilityRepository,
-    IFacilityAuthorizationService facilityAuthorizationService) : IRequestHandler<CreateCourtCommand, Guid>
+    IFacilityAuthorizationService facilityAuthorizationService,
+    IImageStorageService imageStorageService) : IRequestHandler<CreateCourtCommand, Guid>
 {
     public async Task<Guid> Handle(CreateCourtCommand request, CancellationToken cancellationToken)
     {
@@ -26,11 +29,14 @@ public sealed class CreateCourtCommandHandler(
 
         var court = facility.AddCourt(request.Name, request.SurfaceType, request.OverrideReservationDuration);
 
-        if (request.Images is not null)
+        if (request.Images is not null && request.Images.Count > 0)
         {
-            foreach (var img in request.Images)
+            var imageUrls = (await imageStorageService.AddRangeAsync(request.Images.ToUploadStreams(), cancellationToken)).ToList();
+            var selectedMainIndex = request.MainImageIndex ?? 0;
+
+            for (var index = 0; index < imageUrls.Count; index++)
             {
-                court.AddImage(ImageUrl.Create(img.Url, img.IsMain));
+                court.AddImage(ImageUrl.Create(imageUrls[index], index == selectedMainIndex));
             }
         }
 
