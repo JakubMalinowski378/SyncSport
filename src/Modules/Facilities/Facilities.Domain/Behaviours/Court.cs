@@ -6,11 +6,16 @@ public partial class Court
 {
     private Court() { }
 
-    public static Court Create(string name, string surfaceType, int? overrideReservationDuration = null)
+    public static Court Create(string name, string slug, string surfaceType, int? overrideReservationDuration = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("Court name cannot be empty.");
+        }
+
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            throw new ArgumentException("Court slug cannot be empty.");
         }
 
         if (string.IsNullOrWhiteSpace(surfaceType))
@@ -27,6 +32,7 @@ public partial class Court
         {
             Id = CourtId.New(),
             Name = name,
+            Slug = slug,
             SurfaceType = surfaceType,
             IsActive = true,
             OverrideReservationDuration = overrideReservationDuration
@@ -51,6 +57,16 @@ public partial class Court
         }
 
         Name = name;
+    }
+
+    public void ChangeSlug(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            throw new ArgumentException("Court slug cannot be empty.");
+        }
+
+        Slug = slug;
     }
 
     public void ChangeReservationDuration(int? overrideReservationDuration)

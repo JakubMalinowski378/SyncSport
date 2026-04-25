@@ -15,13 +15,17 @@ public sealed class GetFacilityCourtsQueryHandler(
 {
     public async Task<PagedResult<CourtDto>> Handle(GetFacilityCourtsQuery request, CancellationToken cancellationToken)
     {
-        var facilityId = new FacilityId(request.FacilityId);
+        var facility = await facilityRepository.FirstOrDefaultAsync(
+            f => f.Slug == request.FacilitySlug,
+            asNoTracking: true,
+            ct: cancellationToken);
 
-        var facilityExists = await facilityRepository.AnyAsync(f => f.Id == facilityId, cancellationToken);
-        if (!facilityExists)
+        if (facility is null)
         {
             throw new ArgumentException("Facility not found");
         }
+
+        var facilityId = facility.Id;
 
         var pagedResult = await courtRepository.GetPagedAsync(
             pageNumber: request.PageNumber,
@@ -34,6 +38,7 @@ public sealed class GetFacilityCourtsQueryHandler(
         var courts = pagedResult.Items.Select(c => new CourtDto(
             c.Id.Value,
             c.Name,
+            c.Slug,
             c.SurfaceType,
             c.IsActive,
             c.OverrideReservationDuration,

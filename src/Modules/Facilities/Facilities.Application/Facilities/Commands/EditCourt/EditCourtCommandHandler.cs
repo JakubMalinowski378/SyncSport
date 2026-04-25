@@ -46,7 +46,13 @@ public sealed class EditCourtCommandHandler(
             }
         }
 
-        facility.EditCourt(courtId, request.Name, request.IsActive, request.OverrideReservationDuration, images);
+        var court = facility.Courts.FirstOrDefault(c => c.Id.Value == request.CourtId);
+        if (court is null)
+        {
+            throw new Exception("Court not found.");
+        }
+
+        facility.EditCourt(courtId, request.Name, court.Slug, request.IsActive, request.OverrideReservationDuration, images);
 
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);

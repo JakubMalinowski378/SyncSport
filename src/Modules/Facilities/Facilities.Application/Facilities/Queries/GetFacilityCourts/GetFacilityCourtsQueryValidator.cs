@@ -8,6 +8,11 @@ public sealed class GetFacilityCourtsQueryValidator : AbstractValidator<GetFacil
 
     public GetFacilityCourtsQueryValidator()
     {
+        RuleFor(x => x.FacilitySlug)
+            .NotEmpty()
+            .Matches("^[a-z0-9]+(?:-[a-z0-9]+)*$")
+            .WithMessage("Facility slug is invalid.");
+
         RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1)
             .WithMessage("PageNumber must be greater than 0.");

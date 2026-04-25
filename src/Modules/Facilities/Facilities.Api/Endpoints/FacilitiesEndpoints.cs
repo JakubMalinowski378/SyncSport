@@ -38,7 +38,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces<PagedResult<GetAllFacilitiesResult>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
-        group.MapGet("/{facilityId:guid}", GetFacilityById)
+        group.MapGet("/{facilitySlug}", GetFacilityById)
             .WithName("GetFacilityById")
             .Produces<GetFacilityByIdResult>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
@@ -81,12 +81,12 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .RequireAuthorization(Policies.AdminOrManager)
             .DisableAntiforgery();
 
-        group.MapGet("/{facilityId:guid}/courts/{courtId:guid}", GetCourtById)
-            .WithName("GetCourtById")
+        group.MapGet("/{facilitySlug}/courts/{courtSlug}", GetCourtBySlug)
+            .WithName("GetCourtBySlug")
             .Produces<CourtDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
-        group.MapGet("/{facilityId:guid}/courts", GetFacilityCourts)
+        group.MapGet("/{facilitySlug}/courts", GetFacilityCourts)
             .WithName("GetFacilityCourts")
             .Produces<PagedResult<CourtDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
@@ -103,9 +103,9 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> CreateFacility([FromForm] CreateFacilityCommand request, ISender sender, CancellationToken ct)
     {
-        var id = await sender.Send(request, ct);
+        var facilityId = await sender.Send(request, ct);
 
-        return Results.Created($"/api/facilities/{id}", id);
+        return Results.Created($"/api/facilities/{facilityId}", facilityId);
     }
 
     private static async Task<IResult> GetFacilities([AsParameters] GetAllFacilitiesCommand query, ISender sender, CancellationToken ct)
@@ -115,9 +115,9 @@ public sealed class FacilitiesEndpoints : ICarterModule
         return Results.Ok(facilities);
     }
 
-    private static async Task<IResult> GetFacilityById(Guid facilityId, ISender sender, CancellationToken ct)
+    private static async Task<IResult> GetFacilityById(string facilitySlug, ISender sender, CancellationToken ct)
     {
-        var facility = await sender.Send(new GetFacilityByIdCommand(facilityId), ct);
+        var facility = await sender.Send(new GetFacilityByIdCommand(facilitySlug), ct);
 
         if (facility is null)
         {
@@ -182,8 +182,9 @@ public sealed class FacilitiesEndpoints : ICarterModule
         return Results.NoContent();
     }
 
-    private static async Task<IResult> GetFacilityCourts([AsParameters] GetFacilityCourtsQuery query, ISender sender, CancellationToken ct)
+    private static async Task<IResult> GetFacilityCourts([FromRoute] string facilitySlug, [AsParameters] GetFacilityCourtsQuery query, ISender sender, CancellationToken ct)
     {
+        query = query with { FacilitySlug = facilitySlug };
         var result = await sender.Send(query, ct);
 
         return Results.Ok(result);
@@ -196,9 +197,9 @@ public sealed class FacilitiesEndpoints : ICarterModule
         return Results.NoContent();
     }
 
-    private static async Task<IResult> GetCourtById(Guid facilityId, Guid courtId, ISender sender, CancellationToken ct)
+    private static async Task<IResult> GetCourtBySlug(string facilitySlug, string courtSlug, ISender sender, CancellationToken ct)
     {
-        var court = await sender.Send(new GetFacilityCourtByIdQuery(facilityId, courtId), ct);
+        var court = await sender.Send(new GetFacilityCourtByIdQuery(facilitySlug, courtSlug), ct);
 
         if (court is null)
         {
@@ -207,5 +208,4 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
         return Results.Ok(court);
     }
-
 }

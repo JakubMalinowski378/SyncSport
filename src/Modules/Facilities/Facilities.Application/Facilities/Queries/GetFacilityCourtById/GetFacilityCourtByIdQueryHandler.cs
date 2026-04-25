@@ -3,27 +3,29 @@ using Facilities.Application.Facilities.Queries.GetFacilityCourts;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Shared.Persistence;
 
 namespace Facilities.Application.Facilities.Queries.GetFacilityCourtById;
 
 public sealed class GetFacilityCourtByIdQueryHandler(
-    IRepository<Facility, FacilityId> facilityRepository,
-    IRepository<Court, CourtId> courtRepository)
+    IRepository<Facility, FacilityId> facilityRepository)
     : IRequestHandler<GetFacilityCourtByIdQuery, CourtDto?>
 {
     public async Task<CourtDto?> Handle(GetFacilityCourtByIdQuery request, CancellationToken cancellationToken)
     {
-        var facilityId = new FacilityId(request.FacilityId);
-        var courtId = new CourtId(request.CourtId);
+        var facility = await facilityRepository.FirstOrDefaultAsync(
+            f => f.Slug == request.FacilitySlug,
+            include: q => q.Include(f => f.Courts),
+            asNoTracking: true,
+            ct: cancellationToken);
 
-        var facilityExists = await facilityRepository.AnyAsync(f => f.Id == facilityId, cancellationToken);
-        if (!facilityExists)
+        if (facility is null)
         {
             throw new ArgumentException("Facility not found");
         }
 
-        var court = await courtRepository.GetByIdAsync(courtId, asNoTracking: true, ct: cancellationToken);
+        var court = facility.Courts.FirstOrDefault(c => c.Slug == request.CourtSlug);
 
         if (court is null)
         {
@@ -33,6 +35,7 @@ public sealed class GetFacilityCourtByIdQueryHandler(
         return new CourtDto(
             court.Id.Value,
             court.Name,
+            court.Slug,
             court.SurfaceType,
             court.IsActive,
             court.OverrideReservationDuration,

@@ -11,8 +11,8 @@ public sealed class GetFacilityByIdCommandHandler(
 {
     public async Task<GetFacilityByIdResult?> Handle(GetFacilityByIdCommand request, CancellationToken cancellationToken)
     {
-        var facility = await facilityRepository.GetByIdAsync(
-            new FacilityId(request.FacilityId),
+        var facility = await facilityRepository.FirstOrDefaultAsync(
+            x => x.Slug == request.FacilitySlug,
             asNoTracking: true,
             ct: cancellationToken);
 
@@ -24,6 +24,7 @@ public sealed class GetFacilityByIdCommandHandler(
         return new GetFacilityByIdResult(
             facility.Id.Value,
             facility.Name,
+            facility.Slug,
             facility.Address,
             facility.ReservationDuration,
             OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours),

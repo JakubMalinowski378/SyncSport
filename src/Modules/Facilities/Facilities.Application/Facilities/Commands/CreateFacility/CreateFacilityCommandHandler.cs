@@ -17,15 +17,9 @@ public sealed class CreateFacilityCommandHandler(
 
     public async Task<Guid> Handle(CreateFacilityCommand request, CancellationToken cancellationToken)
     {
-        var existingFacility = await facilityRepository.FirstOrDefaultAsync(
-            x => x.Name == request.Name,
-            asNoTracking: true,
-            ct: cancellationToken);
-
-        if (existingFacility is not null)
-        {
-            throw new InvalidOperationException("A facility with this name already exists.");
-        }
+        var slug = await UniqueSlugProvider.GenerateAsync(
+            request.Name,
+            async candidate => await facilityRepository.AnyAsync(f => f.Slug == candidate, cancellationToken));
 
         var reqWeeklyHours = request.WeeklyHours.DeserializeJson<List<DailyHoursDto>>(JsonOptions);
 
@@ -43,7 +37,7 @@ public sealed class CreateFacilityCommandHandler(
             ? DateSpecificOpeningHours.CreateClosed(x.Date)
             : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime)).ToList();
 
-        var facility = Facility.Create(request.Name, request.Address, request.ReservationDuration, weeklyOpeningHours, customDateHours);
+        var facility = Facility.Create(request.Name, slug, request.Address, request.ReservationDuration, weeklyOpeningHours, customDateHours);
 
         if (request.Images is not null && request.Images.Any())
         {

@@ -25,6 +25,14 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(x => x.Slug)
+            .HasColumnName("slug")
+            .HasMaxLength(120)
+            .IsRequired();
+
+        builder.HasIndex(x => x.Slug)
+            .IsUnique();
+
         builder.Property(x => x.SurfaceType)
             .HasMaxLength(50)
             .IsRequired();

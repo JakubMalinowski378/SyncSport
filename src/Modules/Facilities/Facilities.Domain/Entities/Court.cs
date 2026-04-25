@@ -8,6 +8,7 @@ public partial class Court : Entity<CourtId>
     private readonly List<ImageUrl> _images = [];
 
     public string Name { get; private set; } = string.Empty;
+    public string Slug { get; private set; } = string.Empty;
     public string SurfaceType { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
 

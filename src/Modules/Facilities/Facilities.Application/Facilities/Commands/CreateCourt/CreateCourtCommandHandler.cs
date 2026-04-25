@@ -1,4 +1,5 @@
 using Users.Shared.Authorization;
+using Facilities.Application.Facilities.Common;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using MediatR;
@@ -10,15 +11,14 @@ namespace Facilities.Application.Facilities.Commands.CreateCourt;
 
 public sealed class CreateCourtCommandHandler(
     IRepository<Facility, FacilityId> facilityRepository,
+    IRepository<Court, CourtId> courtRepository,
     IFacilityAuthorizationService facilityAuthorizationService,
     IImageStorageService imageStorageService) : IRequestHandler<CreateCourtCommand, Guid>
 {
     public async Task<Guid> Handle(CreateCourtCommand request, CancellationToken cancellationToken)
     {
-        facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
-
-        var facility = await facilityRepository.GetByIdAsync(
-            new FacilityId(request.FacilityId),
+        var facility = await facilityRepository.FirstOrDefaultAsync(
+            x => x.Id.Value == request.FacilityId,
             asNoTracking: false,
             ct: cancellationToken);
 
@@ -27,7 +27,13 @@ public sealed class CreateCourtCommandHandler(
             throw new InvalidOperationException("Facility not found.");
         }
 
-        var court = facility.AddCourt(request.Name, request.SurfaceType, request.OverrideReservationDuration);
+        facilityAuthorizationService.AuthorizeFacilityAccess(facility.Id.Value);
+
+        var slug = await UniqueSlugProvider.GenerateAsync(
+            request.Name,
+            async candidate => await courtRepository.AnyAsync(c => c.Slug == candidate, cancellationToken));
+
+        var court = facility.AddCourt(request.Name, slug, request.SurfaceType, request.OverrideReservationDuration);
 
         if (request.Images is not null && request.Images.Count > 0)
         {

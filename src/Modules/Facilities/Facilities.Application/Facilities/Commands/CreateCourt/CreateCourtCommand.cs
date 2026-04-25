@@ -22,7 +22,7 @@ public sealed class CreateCourtCommandValidator : AbstractValidator<CreateCourtC
     {
         RuleFor(x => x.FacilityId)
             .NotEmpty()
-            .WithMessage("Facility ID cannot be empty.");
+            .WithMessage("Facility ID is required.");
 
         RuleFor(x => x.Name)
             .NotEmpty()

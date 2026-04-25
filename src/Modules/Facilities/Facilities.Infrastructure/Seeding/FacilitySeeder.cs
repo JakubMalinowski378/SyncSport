@@ -29,13 +29,14 @@ internal sealed class FacilitySeeder(
 
         var facility1 = Facility.Create(
             "Centralna Hala Sportowa",
+            "centralna-hala-sportowa",
             "ul. Glówna 123, Warszawa",
             60,
             standardHours);
 
-        facility1.AddCourt("Główne Boisko do Koszykówki", "Parkiet");
-        facility1.AddCourt("Kort Tenisowy 1", "Twarda");
-        facility1.AddCourt("Kort Tenisowy 2", "Twarda");
+        facility1.AddCourt("Główne Boisko do Koszykówki", "glowne-boisko-do-koszykowki", "Parkiet");
+        facility1.AddCourt("Kort Tenisowy 1", "kort-tenisowy-1", "Twarda");
+        facility1.AddCourt("Kort Tenisowy 2", "kort-tenisowy-2", "Twarda");
 
         var weekendOnlyHours = WeeklyOpeningHours.Create(
         [
@@ -50,12 +51,13 @@ internal sealed class FacilitySeeder(
 
         var facility2 = Facility.Create(
             "Klub Tenisowy Sródmiescie",
+            "klub-tenisowy-srodmiescie",
             "ul. Wiazowa 456, Kraków",
             60,
             weekendOnlyHours);
 
-        facility2.AddCourt("Kort A", "Maczka");
-        facility2.AddCourt("Kort B", "Trawa");
+        facility2.AddCourt("Kort A", "kort-a", "Maczka");
+        facility2.AddCourt("Kort B", "kort-b", "Trawa");
 
         await repository.AddRangeAsync([facility1, facility2], cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);

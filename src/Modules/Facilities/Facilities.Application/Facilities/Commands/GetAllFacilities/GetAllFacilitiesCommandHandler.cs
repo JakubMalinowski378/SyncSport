@@ -15,6 +15,7 @@ public sealed class GetAllFacilitiesCommandHandler(
         Func<IQueryable<Facility>, IOrderedQueryable<Facility>> orderBy = request.SortColumn?.ToLower() switch
         {
             "address" => request.SortOrder?.ToLower() == "desc" ? q => q.OrderByDescending(x => x.Address) : q => q.OrderBy(x => x.Address),
+            "slug" => request.SortOrder?.ToLower() == "desc" ? q => q.OrderByDescending(x => x.Slug) : q => q.OrderBy(x => x.Slug),
             _ => request.SortOrder?.ToLower() == "desc" ? q => q.OrderByDescending(x => x.Name) : q => q.OrderBy(x => x.Name)
         };
 
@@ -24,6 +25,7 @@ public sealed class GetAllFacilitiesCommandHandler(
             filter: x =>
                 string.IsNullOrWhiteSpace(request.SearchTerm) || 
                 x.Name.Contains(request.SearchTerm) || 
+                x.Slug.Contains(request.SearchTerm) ||
                 x.Address.Contains(request.SearchTerm),
             orderBy: orderBy,
             asNoTracking: true,
@@ -33,6 +35,7 @@ public sealed class GetAllFacilitiesCommandHandler(
             .Select(facility => new GetAllFacilitiesResult(
                 facility.Id.Value,
                 facility.Name,
+                facility.Slug,
                 facility.Address,
                 facility.ReservationDuration,
                 OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours),

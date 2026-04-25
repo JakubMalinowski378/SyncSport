@@ -5,11 +5,16 @@ public partial class Facility
 {
     private Facility() { }
 
-    public static Facility Create(string name, string address, int reservationDuration, WeeklyOpeningHours weeklyOpeningHours, IEnumerable<DateSpecificOpeningHours>? customDateHours = null)
+    public static Facility Create(string name, string slug, string address, int reservationDuration, WeeklyOpeningHours weeklyOpeningHours, IEnumerable<DateSpecificOpeningHours>? customDateHours = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("Facility name cannot be empty.");
+        }
+
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            throw new ArgumentException("Facility slug cannot be empty.");
         }
 
         if (string.IsNullOrWhiteSpace(address))
@@ -26,6 +31,7 @@ public partial class Facility
         {
             Id = FacilityId.New(),
             Name = name,
+            Slug = slug,
             Address = address,
             ReservationDuration = reservationDuration,
             WeeklyOpeningHours = weeklyOpeningHours
@@ -39,20 +45,20 @@ public partial class Facility
         return facility;
     }
 
-    public Court AddCourt(string name, string surfaceType, int? overrideReservationDuration = null)
+    public Court AddCourt(string name, string slug, string surfaceType, int? overrideReservationDuration = null)
     {
-        if (_courts.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+        if (_courts.Any(c => c.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase)))
         {
-            throw new InvalidOperationException("A court with this name already exists in this facility.");
+            throw new InvalidOperationException("A court with this slug already exists in this facility.");
         }
 
-        var court = Court.Create(name, surfaceType, overrideReservationDuration);
+        var court = Court.Create(name, slug, surfaceType, overrideReservationDuration);
         _courts.Add(court);
 
         return court;
     }
 
-    public void EditCourt(CourtId courtId, string name, bool isActive, int? overrideReservationDuration = null, List<ImageUrl>? newImages = null)
+    public void EditCourt(CourtId courtId, string name, string slug, bool isActive, int? overrideReservationDuration = null, List<ImageUrl>? newImages = null)
     {
         var court = _courts.FirstOrDefault(c => c.Id == courtId);
         if (court is null)
@@ -60,11 +66,7 @@ public partial class Facility
             throw new InvalidOperationException("Court not found.");
         }
 
-        if (_courts.Any(c => c.Id != courtId && c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new InvalidOperationException("Another court with this name already exists in this facility.");
-        }
-
+        court.ChangeSlug(slug);
         court.Rename(name);
 
         court.ChangeReservationDuration(overrideReservationDuration);
@@ -118,6 +120,16 @@ public partial class Facility
         }
 
         Name = name;
+    }
+
+    public void ChangeSlug(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            throw new ArgumentException("Facility slug cannot be empty.");
+        }
+
+        Slug = slug;
     }
 
     public void ChangeAddress(string address)

@@ -15,7 +15,7 @@ public sealed record GetAllFacilitiesCommand(
 public sealed class GetAllFacilitiesCommandValidator : AbstractValidator<GetAllFacilitiesCommand>
 {
     private static readonly int[] AllowedPageSizes = [5, 10, 15, 20, 25, 30];   
-    private static readonly string[] AllowedSortColumns = ["name", "address"];
+    private static readonly string[] AllowedSortColumns = ["name", "slug", "address"];
     private static readonly string[] AllowedSortOrders = ["asc", "desc"];
 
     public GetAllFacilitiesCommandValidator()
@@ -30,7 +30,7 @@ public sealed class GetAllFacilitiesCommandValidator : AbstractValidator<GetAllF
 
         RuleFor(x => x.SortColumn)
             .Must(x => string.IsNullOrWhiteSpace(x) || AllowedSortColumns.Contains(x.ToLower()))
-            .WithMessage("SortColumn must be 'name' or 'address'.");
+            .WithMessage("SortColumn must be 'name', 'slug' or 'address'.");
 
         RuleFor(x => x.SortOrder)
             .Must(x => string.IsNullOrWhiteSpace(x) || AllowedSortOrders.Contains(x.ToLower()))
@@ -41,6 +41,7 @@ public sealed class GetAllFacilitiesCommandValidator : AbstractValidator<GetAllF
 public sealed record GetAllFacilitiesResult(
     Guid Id,
     string Name,
+    string Slug,
     string Address,
     int ReservationDuration,
     List<DailyOpeningHoursDto> OpeningHours,
