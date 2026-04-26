@@ -11,31 +11,22 @@ internal sealed class CalculatePriceQueryHandler(IRepository<Tariff, TariffId> r
 {
     public async Task<decimal> Handle(CalculatePriceQuery request, CancellationToken cancellationToken)
     {
-        var courtTariffs = await repository.FindAsync(
-            predicate: t => t.FacilityId == request.FacilityId && t.CourtId == request.CourtId,
-            include: q => q.Include(t => t.PriceRules),
+        var facilityTariffs = await repository.FindAsync(
+            predicate: t => t.FacilityId == request.FacilityId && t.CourtId == null,
+            include: q => q
+                .Include(t => t.PriceRules)
+                .Include(t => t.CourtRateOverrides),
             asNoTracking: true,
             ct: cancellationToken);
 
-        var tariff = courtTariffs.FirstOrDefault();
-
-        if (tariff is null)
-        {
-            var facilityTariffs = await repository.FindAsync(
-                predicate: t => t.FacilityId == request.FacilityId && t.CourtId == null,
-                include: q => q.Include(t => t.PriceRules),
-                asNoTracking: true,
-                ct: cancellationToken);
-            
-            tariff = facilityTariffs.FirstOrDefault();
-        }
+        var tariff = facilityTariffs.FirstOrDefault();
 
         if (tariff is null)
         {
             throw new Exception($"No tariff found for facility {request.FacilityId}");
         }
 
-        var price = tariff.CalculatePrice(request.StartTime, request.EndTime);
+        var price = tariff.CalculatePrice(request.StartTime, request.EndTime, request.CourtId);
 
         return price.Amount;
     }

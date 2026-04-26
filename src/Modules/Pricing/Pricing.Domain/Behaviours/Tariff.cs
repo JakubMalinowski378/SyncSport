@@ -7,17 +7,17 @@ public partial class Tariff : AggregateRoot<TariffId>
 {
     protected Tariff() { }
 
-    private Tariff(TariffId id, Guid facilityId, Guid? courtId, Money baseHourlyRate)
+    private Tariff(TariffId id, Guid facilityId, Money baseHourlyRate)
         : base(id)
     {
         FacilityId = facilityId;
-        CourtId = courtId;
+        CourtId = null;
         BaseHourlyRate = baseHourlyRate;
     }
 
-    public static Tariff Create(Guid facilityId, Guid? courtId, Money baseHourlyRate)
+    public static Tariff Create(Guid facilityId, Money baseHourlyRate)
     {
-        var tariff = new Tariff(TariffId.New(), facilityId, courtId, baseHourlyRate);
+        var tariff = new Tariff(TariffId.New(), facilityId, baseHourlyRate);
 
         return tariff;
     }
@@ -41,7 +41,20 @@ public partial class Tariff : AggregateRoot<TariffId>
         BaseHourlyRate = newRate;
     }
 
-    public Money CalculatePrice(DateTime start, DateTime end)
+    public void SetCourtRateOverride(Guid courtId, Money hourlyRate)
+    {
+        var existingOverride = _courtRateOverrides.FirstOrDefault(x => x.CourtId == courtId);
+
+        if (existingOverride is null)
+        {
+            _courtRateOverrides.Add(CourtRateOverride.Create(courtId, hourlyRate));
+            return;
+        }
+
+        existingOverride.UpdateHourlyRate(hourlyRate);
+    }
+
+    public Money CalculatePrice(DateTime start, DateTime end, Guid? courtId = null)
     {
         var durationInHours = (decimal)(end - start).TotalHours;
 
@@ -50,7 +63,18 @@ public partial class Tariff : AggregateRoot<TariffId>
             throw new ArgumentException("End time must be greater than start time.");
         }
 
-        var basePriceAmount = BaseHourlyRate.Amount * durationInHours;
+        var effectiveHourlyRate = BaseHourlyRate;
+
+        if (courtId.HasValue)
+        {
+            var courtOverride = _courtRateOverrides.FirstOrDefault(x => x.CourtId == courtId.Value);
+            if (courtOverride is not null)
+            {
+                effectiveHourlyRate = courtOverride.HourlyRate;
+            }
+        }
+
+        var basePriceAmount = effectiveHourlyRate.Amount * durationInHours;
         var finalPrice = new Money(basePriceAmount);
 
         foreach (var rule in _priceRules)

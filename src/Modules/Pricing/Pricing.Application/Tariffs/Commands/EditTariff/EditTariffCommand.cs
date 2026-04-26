@@ -1,22 +1,22 @@
 using FluentValidation;
 using MediatR;
 
-namespace Pricing.Application.Tariffs.Commands.CreateTariff;
+namespace Pricing.Application.Tariffs.Commands.EditTariff;
 
-public record CreateTariffCommand(
+public record EditTariffCommand(
     Guid FacilityId,
     decimal BaseHourlyRate,
-    IReadOnlyCollection<CourtRateOverrideRequest>? CourtOverrides
-) : IRequest<Guid>;
+    IReadOnlyCollection<EditCourtRateOverrideRequest>? CourtOverrides
+) : IRequest<bool>;
 
-public record CourtRateOverrideRequest(
+public record EditCourtRateOverrideRequest(
     Guid CourtId,
     decimal HourlyRate
 );
 
-public sealed class CreateTariffCommandValidator : AbstractValidator<CreateTariffCommand>
+public sealed class EditTariffCommandValidator : AbstractValidator<EditTariffCommand>
 {
-    public CreateTariffCommandValidator()
+    public EditTariffCommandValidator()
     {
         RuleFor(x => x.FacilityId)
             .NotEmpty();

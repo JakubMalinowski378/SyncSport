@@ -5,14 +5,14 @@ using Pricing.Domain.ValueObjects;
 using Shared.Persistence;
 using Users.Shared.Authorization;
 
-namespace Pricing.Application.Tariffs.Commands.CreateTariff;
+namespace Pricing.Application.Tariffs.Commands.EditTariff;
 
-internal sealed class CreateTariffCommandHandler(
+internal sealed class EditTariffCommandHandler(
     IRepository<Tariff, TariffId> repository,
-    IFacilityAuthorizationService facilityAuthorizationService) 
-    : IRequestHandler<CreateTariffCommand, Guid>
+    IFacilityAuthorizationService facilityAuthorizationService)
+    : IRequestHandler<EditTariffCommand, bool>
 {
-    public async Task<Guid> Handle(CreateTariffCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(EditTariffCommand request, CancellationToken cancellationToken)
     {
         facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
 
@@ -23,17 +23,12 @@ internal sealed class CreateTariffCommandHandler(
             ct: cancellationToken);
 
         var tariff = tariffs.FirstOrDefault();
-
         if (tariff is null)
         {
-            tariff = Tariff.Create(request.FacilityId, new Money(request.BaseHourlyRate));
-            await repository.AddAsync(tariff, cancellationToken);
+            return false;
         }
-        else
-        {
-            tariff.UpdateBaseRate(new Money(request.BaseHourlyRate));
-            repository.Update(tariff);
-        }
+
+        tariff.UpdateBaseRate(new Money(request.BaseHourlyRate));
 
         if (request.CourtOverrides is not null)
         {
@@ -43,8 +38,9 @@ internal sealed class CreateTariffCommandHandler(
             }
         }
 
+        repository.Update(tariff);
         await repository.SaveChangesAsync(cancellationToken);
 
-        return tariff.Id.Value;
+        return true;
     }
 }

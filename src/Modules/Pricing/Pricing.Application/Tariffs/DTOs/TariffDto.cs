@@ -3,9 +3,14 @@ namespace Pricing.Application.Tariffs.DTOs;
 public record TariffDto(
     Guid Id,
     Guid FacilityId,
-    Guid? CourtId,
     decimal BaseHourlyRate,
+    IEnumerable<CourtRateOverrideDto> CourtOverrides,
     IEnumerable<PriceRuleDto> PriceRules
+);
+
+public record CourtRateOverrideDto(
+    Guid CourtId,
+    decimal HourlyRate
 );
 
 public record PriceRuleDto(
