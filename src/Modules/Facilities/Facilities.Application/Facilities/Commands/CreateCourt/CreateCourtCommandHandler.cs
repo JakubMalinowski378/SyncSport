@@ -17,8 +17,10 @@ public sealed class CreateCourtCommandHandler(
 {
     public async Task<Guid> Handle(CreateCourtCommand request, CancellationToken cancellationToken)
     {
-        var facility = await facilityRepository.FirstOrDefaultAsync(
-            x => x.Id.Value == request.FacilityId,
+        facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
+        
+        var facility = await facilityRepository.GetByIdAsync(
+            new FacilityId(request.FacilityId),
             asNoTracking: false,
             ct: cancellationToken);
 
@@ -26,8 +28,6 @@ public sealed class CreateCourtCommandHandler(
         {
             throw new InvalidOperationException("Facility not found.");
         }
-
-        facilityAuthorizationService.AuthorizeFacilityAccess(facility.Id.Value);
 
         var slug = await UniqueSlugProvider.GenerateAsync(
             request.Name,
