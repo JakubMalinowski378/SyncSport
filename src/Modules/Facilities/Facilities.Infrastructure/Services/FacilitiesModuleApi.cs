@@ -18,7 +18,10 @@ internal sealed class FacilitiesModuleApi(IRepository<Facility, FacilityId> faci
         if (facility is null)
             return null;
 
-        var courts = facility.Courts.Select(c => new CourtAvailabilityInfo(c.Id.Value, c.Name));
+        var courts = facility.Courts.Select(c => new CourtAvailabilityInfo(
+            c.Id.Value,
+            c.Name,
+            c.OverrideReservationDuration ?? facility.ReservationDuration));
         
         var openingHours = facility.WeeklyOpeningHours.HoursPerDay
             .Where(x => !x.Value.IsClosed)

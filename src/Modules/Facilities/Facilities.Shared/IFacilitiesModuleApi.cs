@@ -11,5 +11,5 @@ public record FacilityAvailabilityDto(
     IEnumerable<CourtAvailabilityInfo> Courts,
     IEnumerable<OpeningHoursAvailabilityInfo> OpeningHours);
 
-public record CourtAvailabilityInfo(Guid CourtId, string Name);
+public record CourtAvailabilityInfo(Guid CourtId, string Name, int ReservationDurationMinutes);
 public record OpeningHoursAvailabilityInfo(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime);
