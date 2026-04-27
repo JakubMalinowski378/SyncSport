@@ -53,7 +53,7 @@ public sealed class ReservationsEndpoints : ICarterModule
 
         group.MapGet("/courts/{courtId:guid}", GetCourtReservations)
             .WithName("GetCourtReservations")
-            .Produces<IReadOnlyCollection<CourtReservationResponse>>(StatusCodes.Status200OK);
+            .Produces<GetCourtReservationsResponse>(StatusCodes.Status200OK);
 
         group.MapGet("/users/{userId:guid}", GetReservationsByUserId)
             .WithName("GetReservationsByUserId")
@@ -116,10 +116,12 @@ public sealed class ReservationsEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetCourtReservations(
-        [AsParameters] GetCourtReservationsQuery query,
+        Guid courtId,
+        [FromQuery] DateTime weekDate,
         ISender sender,
         CancellationToken cancellationToken)
     {
+        var query = new GetCourtReservationsQuery(courtId, weekDate);
         var result = await sender.Send(query, cancellationToken);
         return Results.Ok(result);
     }
