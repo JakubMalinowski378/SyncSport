@@ -2,6 +2,7 @@ using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using Facilities.Shared;
 using Shared.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Facilities.Infrastructure.Services;
 
@@ -12,6 +13,7 @@ internal sealed class FacilitiesModuleApi(IRepository<Facility, FacilityId> faci
     {
         var facility = await facilityRepository.GetByIdAsync(
             new FacilityId(facilityId),
+            include: q => q.Include(f => f.Courts),
             asNoTracking: true,
             ct: cancellationToken);
 

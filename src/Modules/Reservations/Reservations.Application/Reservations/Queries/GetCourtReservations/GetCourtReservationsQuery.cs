@@ -1,16 +1,16 @@
 using MediatR;
 using Reservations.Domain.Enums;
 
+using System.Text.Json.Serialization;
+
 namespace Reservations.Application.Reservations.Queries.GetCourtReservations;
 
 public record CourtReservationResponse(Guid Id, DateTime StartTime, DateTime EndTime, ReservationStatus Status);
 
 public record CourtReservationSlotResponse(
-    Guid? ReservationId,
     DateTime StartTime,
     DateTime EndTime,
-    bool IsReserved,
-    ReservationStatus? Status);
+    bool IsReserved);
 
 public record CourtReservationDayResponse(
     DateTime Date,
