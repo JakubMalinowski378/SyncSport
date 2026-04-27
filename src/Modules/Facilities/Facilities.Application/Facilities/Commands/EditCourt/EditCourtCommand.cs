@@ -14,6 +14,7 @@ public sealed class EditCourtCommand : IRequest
     public bool IsActive { get; set; }
     public int? OverrideReservationDuration { get; set; }
     public IFormFileCollection? Images { get; set; }
+    public List<string>? RemovedImageUrls { get; set; }
     public int? MainImageIndex { get; set; }
 }
 
@@ -39,9 +40,14 @@ public sealed class EditCourtCommandValidator : AbstractValidator<EditCourtComma
         RuleFor(x => x.Images)
             .ValidateImageFormFiles();
 
+        RuleForEach(x => x.RemovedImageUrls)
+            .Must(url => Uri.TryCreate(url, UriKind.Absolute, out _))
+            .WithMessage("Each removed image URL must be a valid absolute URI.")
+            .When(x => x.RemovedImageUrls is not null && x.RemovedImageUrls.Count > 0);
+
         RuleFor(x => x.MainImageIndex)
-            .Must((cmd, index) => !index.HasValue || (cmd.Images is not null && index.Value >= 0 && index.Value < cmd.Images.Count))
-            .WithMessage("MainImageIndex must be valid for the provided images.")
+            .Must(index => !index.HasValue || index.Value >= 0)
+            .WithMessage("MainImageIndex must be greater than or equal to 0.")
             .When(x => x.MainImageIndex.HasValue);
     }
 }

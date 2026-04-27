@@ -23,9 +23,16 @@ internal sealed class FacilitySeeder(
             return;
         }
 
-        var standardHours = WeeklyOpeningHours.CreateUniform(
-            new TimeSpan(8, 0, 0),
-            new TimeSpan(22, 0, 0));
+        var standardHours = WeeklyOpeningHours.Create(
+        [
+            DailyOpeningHours.Create(DayOfWeek.Monday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Tuesday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Wednesday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Thursday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Friday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Saturday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Sunday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0))
+        ]);
 
         var facility1 = Facility.Create(
             "Centralna Hala Sportowa",

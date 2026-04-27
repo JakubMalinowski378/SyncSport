@@ -41,14 +41,19 @@ public sealed class EditFacilityCommandHandler(
             throw new InvalidOperationException("A facility with this name already exists.");
         }
 
-        var parsedWeeklyHours = request.WeeklyHours.DeserializeJson<List<DailyHoursDto>>(JsonOptions);
-        var dailyHours = parsedWeeklyHours?.Select(x => x.IsClosed
-            ? DailyOpeningHours.CreateClosed(x.DayOfWeek)
-            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime, x.CloseTime)).ToList();
+        var dailyHours = ParseWeeklyHours(request.WeeklyHours);
 
-        var weeklyOpeningHours = dailyHours?.Count == 7 
-            ? WeeklyOpeningHours.Create(dailyHours) 
-            : WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)); // Default fallback
+        var hasCompleteUniqueWeek =
+            dailyHours is not null &&
+            dailyHours.Count == 7 &&
+            dailyHours.Select(x => x.DayOfWeek).Distinct().Count() == 7;
+
+        if (!hasCompleteUniqueWeek)
+        {
+            throw new ArgumentException("WeeklyHours must contain exactly 7 unique days (Monday-Sunday).", nameof(request.WeeklyHours));
+        }
+
+        var weeklyOpeningHours = WeeklyOpeningHours.Create(dailyHours!);
 
         var parsedCustomDateHours = request.CustomDateHours.DeserializeJson<List<DateSpecificHoursDto>>(JsonOptions);
         var customDateHours = parsedCustomDateHours?.Select(x => x.IsClosed
@@ -65,23 +70,131 @@ public sealed class EditFacilityCommandHandler(
             facility.ChangeCustomDateHours(customDateHours);
         }
 
-        if (request.Images is not null && request.Images.Any())
+        var hasImageChanges =
+            (request.RemovedImageUrls is not null && request.RemovedImageUrls.Count > 0) ||
+            (request.Images is not null && request.Images.Any()) ||
+            request.MainImageIndex.HasValue;
+
+        if (hasImageChanges)
         {
-            var imageUrls = await imageStorageService.AddRangeAsync(request.Images.ToUploadStreams(), cancellationToken);
             var currentImages = facility.Images.ToList();
-            foreach (var img in currentImages)
+            var removedUrls = request.RemovedImageUrls is null
+                ? []
+                : request.RemovedImageUrls.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var removedExistingImages = currentImages
+                .Where(x => removedUrls.Contains(x.Value))
+                .ToList();
+
+            var imagesToKeep = currentImages
+                .Where(x => !removedUrls.Contains(x.Value))
+                .ToList();
+
+            foreach (var removedImage in removedExistingImages)
             {
-                facility.RemoveImage(img);
+                await imageStorageService.DeleteAsync(removedImage.Value, cancellationToken);
             }
 
-            var selectedMainIndex = request.MainImageIndex ?? 0;
-            foreach (var (imageUrl, index) in imageUrls.Select((url, index) => (url, index)))
+            var uploadedImageUrls = request.Images is not null && request.Images.Any()
+                ? (await imageStorageService.AddRangeAsync(request.Images.ToUploadStreams(), cancellationToken)).ToList()
+                : [];
+
+            var finalImages = imagesToKeep
+                .Concat(uploadedImageUrls.Select(url => ImageUrl.Create(url, false)))
+                .ToList();
+
+            if (request.MainImageIndex.HasValue && request.MainImageIndex.Value >= finalImages.Count)
             {
-                facility.AddImage(ImageUrl.Create(imageUrl, index == selectedMainIndex));
+                throw new ArgumentOutOfRangeException(nameof(request.MainImageIndex), "MainImageIndex must point to an existing image after applying image changes.");
+            }
+
+            var mainImageUrl = request.MainImageIndex.HasValue
+                ? finalImages[request.MainImageIndex.Value].Value
+                : finalImages.FirstOrDefault(x => x.IsMain)?.Value ?? finalImages.FirstOrDefault()?.Value;
+
+            foreach (var existingImage in currentImages)
+            {
+                facility.RemoveImage(existingImage);
+            }
+
+            foreach (var finalImage in finalImages)
+            {
+                facility.AddImage(ImageUrl.Create(finalImage.Value, finalImage.Value == mainImageUrl));
             }
         }
 
         facilityRepository.Update(facility);
         await facilityRepository.SaveChangesAsync(cancellationToken);
     }
+
+    private static List<DailyOpeningHours> ParseWeeklyHours(string? weeklyHoursJson)
+    {
+        if (string.IsNullOrWhiteSpace(weeklyHoursJson))
+        {
+            throw new ArgumentException("WeeklyHours must contain exactly 7 unique days (Monday-Sunday).", nameof(weeklyHoursJson));
+        }
+
+        var normalized = weeklyHoursJson.Trim();
+        if (normalized.Length >= 2 && normalized[0] == '\'' && normalized[^1] == '\'')
+        {
+            normalized = normalized[1..^1];
+        }
+
+        List<WeeklyHoursPayloadItem>? items = null;
+
+        try
+        {
+            items = JsonSerializer.Deserialize<List<WeeklyHoursPayloadItem>>(normalized, JsonOptions);
+        }
+        catch (JsonException)
+        {
+            try
+            {
+                var unwrapped = JsonSerializer.Deserialize<string>(normalized, JsonOptions);
+                if (!string.IsNullOrWhiteSpace(unwrapped))
+                {
+                    items = JsonSerializer.Deserialize<List<WeeklyHoursPayloadItem>>(unwrapped, JsonOptions);
+                }
+            }
+            catch (JsonException)
+            {
+                items = null;
+            }
+        }
+
+        if (items is null || items.Count == 0)
+        {
+            throw new ArgumentException("WeeklyHours must contain exactly 7 unique days (Monday-Sunday).", nameof(weeklyHoursJson));
+        }
+
+        return items.Select(x =>
+        {
+            var day = x.DayOfWeek ?? ParseDayOfWeek(x.DayName);
+            return x.IsClosed
+                ? DailyOpeningHours.CreateClosed(day)
+                : DailyOpeningHours.Create(day, x.OpenTime, x.CloseTime);
+        }).ToList();
+    }
+
+    private static DayOfWeek ParseDayOfWeek(string? dayName)
+    {
+        if (string.IsNullOrWhiteSpace(dayName))
+        {
+            throw new ArgumentException("Invalid dayName ''.", nameof(dayName));
+        }
+
+        if (Enum.TryParse<DayOfWeek>(dayName, ignoreCase: true, out var dayOfWeek))
+        {
+            return dayOfWeek;
+        }
+
+        throw new ArgumentException($"Invalid dayName '{dayName}'.", nameof(dayName));
+    }
+
+    private sealed record WeeklyHoursPayloadItem(
+        string? DayName,
+        DayOfWeek? DayOfWeek,
+        TimeSpan OpenTime,
+        TimeSpan CloseTime,
+        bool IsClosed);
 }

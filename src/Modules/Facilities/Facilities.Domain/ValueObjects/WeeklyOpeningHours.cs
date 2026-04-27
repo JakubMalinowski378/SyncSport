@@ -30,18 +30,6 @@ public class WeeklyOpeningHours : ValueObject
         return new WeeklyOpeningHours(hoursDict);
     }
 
-    public static WeeklyOpeningHours CreateUniform(TimeSpan openTime, TimeSpan closeTime)
-    {
-        var days = new List<DailyOpeningHours>();
-
-        foreach (var day in Enum.GetValues<DayOfWeek>())
-        {
-            days.Add(DailyOpeningHours.Create(day, openTime, closeTime));
-        }
-
-        return Create(days);
-    }
-
     public DailyOpeningHours GetHoursForDay(DayOfWeek day)
     {
         return _hoursPerDay[day];

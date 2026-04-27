@@ -145,6 +145,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             WeeklyHours = request.WeeklyHours,
             CustomDateHours = request.CustomDateHours,
             Images = request.Images,
+            RemovedImageUrls = request.RemovedImageUrls,
             MainImageIndex = request.MainImageIndex
         }, ct);
 
@@ -176,6 +177,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
             IsActive = request.IsActive,
             OverrideReservationDuration = request.OverrideReservationDuration,
             Images = request.Images,
+            RemovedImageUrls = request.RemovedImageUrls,
             MainImageIndex = request.MainImageIndex
         }, ct);
 

@@ -41,7 +41,14 @@ internal sealed class AzureBlobStorageService(IOptions<AzureBlobStorageOptions> 
     {
         if (Uri.TryCreate(fileUrl, UriKind.Absolute, out var uri))
         {
-            var blobClient = new BlobClient(uri);
+            var blobName = new BlobUriBuilder(uri).BlobName;
+
+            if (string.IsNullOrWhiteSpace(blobName))
+            {
+                return;
+            }
+
+            var blobClient = _containerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
         }
     }

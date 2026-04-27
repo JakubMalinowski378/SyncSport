@@ -21,15 +21,19 @@ public sealed class CreateFacilityCommandHandler(
             request.Name,
             async candidate => await facilityRepository.AnyAsync(f => f.Slug == candidate, cancellationToken));
 
-        var reqWeeklyHours = request.WeeklyHours.DeserializeJson<List<DailyHoursDto>>(JsonOptions);
+        var dailyHours = ParseWeeklyHours(request.WeeklyHours);
 
-        var dailyHours = reqWeeklyHours?.Select(x => x.IsClosed
-            ? DailyOpeningHours.CreateClosed(x.DayOfWeek)
-            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime, x.CloseTime)).ToList();
+        var hasCompleteUniqueWeek =
+            dailyHours is not null &&
+            dailyHours.Count == 7 &&
+            dailyHours.Select(x => x.DayOfWeek).Distinct().Count() == 7;
 
-        var weeklyOpeningHours = dailyHours?.Count == 7 
-            ? WeeklyOpeningHours.Create(dailyHours) 
-            : WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)); // Default fallback if not provided properly
+        if (!hasCompleteUniqueWeek)
+        {
+            throw new ArgumentException("WeeklyHours must contain exactly 7 unique days (Monday-Sunday).", nameof(request.WeeklyHours));
+        }
+
+        var weeklyOpeningHours = WeeklyOpeningHours.Create(dailyHours!);
 
         var reqCustomDateHours = request.CustomDateHours.DeserializeJson<List<DateSpecificHoursDto>>(JsonOptions);
 
@@ -56,4 +60,75 @@ public sealed class CreateFacilityCommandHandler(
 
         return facility.Id.Value;
     }
+
+    private static List<DailyOpeningHours> ParseWeeklyHours(string? weeklyHoursJson)
+    {
+        if (string.IsNullOrWhiteSpace(weeklyHoursJson))
+        {
+            throw new ArgumentException("WeeklyHours must contain exactly 7 unique days (Monday-Sunday).", nameof(weeklyHoursJson));
+        }
+
+        var normalized = weeklyHoursJson.Trim();
+        if (normalized.Length >= 2 && normalized[0] == '\'' && normalized[^1] == '\'')
+        {
+            normalized = normalized[1..^1];
+        }
+
+        List<WeeklyHoursPayloadItem>? items = null;
+
+        try
+        {
+            items = JsonSerializer.Deserialize<List<WeeklyHoursPayloadItem>>(normalized, JsonOptions);
+        }
+        catch (JsonException)
+        {
+            try
+            {
+                var unwrapped = JsonSerializer.Deserialize<string>(normalized, JsonOptions);
+                if (!string.IsNullOrWhiteSpace(unwrapped))
+                {
+                    items = JsonSerializer.Deserialize<List<WeeklyHoursPayloadItem>>(unwrapped, JsonOptions);
+                }
+            }
+            catch (JsonException)
+            {
+                items = null;
+            }
+        }
+
+        if (items is null || items.Count == 0)
+        {
+            throw new ArgumentException("WeeklyHours must contain exactly 7 unique days (Monday-Sunday).", nameof(weeklyHoursJson));
+        }
+
+        return items.Select(x =>
+        {
+            var day = x.DayOfWeek ?? ParseDayOfWeek(x.DayName);
+            return x.IsClosed
+                ? DailyOpeningHours.CreateClosed(day)
+                : DailyOpeningHours.Create(day, x.OpenTime, x.CloseTime);
+        }).ToList();
+    }
+
+    private static DayOfWeek ParseDayOfWeek(string? dayName)
+    {
+        if (string.IsNullOrWhiteSpace(dayName))
+        {
+            throw new ArgumentException("Invalid dayName ''.", nameof(dayName));
+        }
+
+        if (Enum.TryParse<DayOfWeek>(dayName, ignoreCase: true, out var dayOfWeek))
+        {
+            return dayOfWeek;
+        }
+
+        throw new ArgumentException($"Invalid dayName '{dayName}'.", nameof(dayName));
+    }
+
+    private sealed record WeeklyHoursPayloadItem(
+        string? DayName,
+        DayOfWeek? DayOfWeek,
+        TimeSpan OpenTime,
+        TimeSpan CloseTime,
+        bool IsClosed);
 }
