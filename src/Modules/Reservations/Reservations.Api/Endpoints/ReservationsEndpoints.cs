@@ -9,10 +9,10 @@ using Reservations.Application.Reservations.Commands.AdminDeleteReservation;
 using Reservations.Application.Reservations.Commands.CancelReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
 using Reservations.Application.Reservations.Queries.GetAvailableSlots;
-using Reservations.Application.Reservations.Queries.GetCourtReservations;       
+using Reservations.Application.Reservations.Queries.GetCourtReservations;
 using Reservations.Application.Reservations.Queries.GetReservation;
 using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
-using Reservations.Application.Reservations.Queries.GetUserReservations;        
+using Reservations.Application.Reservations.Queries.GetUserReservations;
 using Shared.Authorization;
 using Shared.Pagination;
 
@@ -117,7 +117,7 @@ public sealed class ReservationsEndpoints : ICarterModule
 
     private static async Task<IResult> GetCourtReservations(
         Guid courtId,
-        [FromQuery] DateTime weekDate,
+        [FromQuery] DateOnly weekDate,
         ISender sender,
         CancellationToken cancellationToken)
     {

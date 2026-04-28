@@ -1,8 +1,6 @@
 using MediatR;
 using Reservations.Domain.Enums;
 
-using System.Text.Json.Serialization;
-
 namespace Reservations.Application.Reservations.Queries.GetCourtReservations;
 
 public record CourtReservationResponse(Guid Id, DateTime StartTime, DateTime EndTime, ReservationStatus Status);
@@ -18,9 +16,9 @@ public record CourtReservationDayResponse(
     IReadOnlyCollection<CourtReservationSlotResponse> Slots);
 
 public record GetCourtReservationsResponse(
-    DateTime WeekStartDate,
-    DateTime WeekEndDate,
+    DateOnly WeekStartDate,
+    DateOnly WeekEndDate,
     IReadOnlyCollection<CourtReservationDayResponse> Days);
 
-public record GetCourtReservationsQuery(Guid CourtId, DateTime WeekDate)
+public record GetCourtReservationsQuery(Guid CourtId, DateOnly WeekDate)
     : IRequest<GetCourtReservationsResponse>;

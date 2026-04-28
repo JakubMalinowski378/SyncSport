@@ -14,10 +14,13 @@ internal sealed class GetCourtReservationsQueryHandler(
         var weekStartDate = GetWeekStartDate(request.WeekDate);
         var weekEndExclusive = weekStartDate.AddDays(7);
 
+        var weekStartDateTime = weekStartDate.ToDateTime(TimeOnly.MinValue);
+        var weekEndExclusiveDateTime = weekEndExclusive.ToDateTime(TimeOnly.MinValue);
+
         var reservations = await reservationRepository.FindAsync(
             r => r.CourtId == request.CourtId &&
-                 r.Time.Start < weekEndExclusive &&
-                 r.Time.End > weekStartDate,
+                 r.Time.Start < weekEndExclusiveDateTime &&
+                 r.Time.End > weekStartDateTime,
             asNoTracking: true,
             ct: cancellationToken);
 
@@ -41,7 +44,8 @@ internal sealed class GetCourtReservationsQueryHandler(
             .Select(offset => weekStartDate.AddDays(offset))
             .Select(dayDate =>
             {
-                var dayReservations = reservationsList.Where(r => r.Time.Start.Date == dayDate.Date).ToList();
+                var dayDateTime = dayDate.ToDateTime(TimeOnly.MinValue);
+                var dayReservations = reservationsList.Where(r => r.Time.Start.Date == dayDateTime).ToList();
 
                 var openingHours = facilityInfo.OpeningHours.FirstOrDefault(h => h.DayOfWeek == dayDate.DayOfWeek);
 
@@ -49,9 +53,8 @@ internal sealed class GetCourtReservationsQueryHandler(
 
                 if (openingHours != null && reservationDurationMinutes > 0)
                 {
-                    var dateStart = dayDate.Date;
-                    var current = dateStart.Add(openingHours.OpenTime);
-                    var endTime = dateStart.Add(openingHours.CloseTime);
+                    var current = dayDateTime.Add(openingHours.OpenTime);
+                    var endTime = dayDateTime.Add(openingHours.CloseTime);
                     var slotDuration = TimeSpan.FromMinutes(reservationDurationMinutes);
 
                     while (current.Add(slotDuration) <= endTime)
@@ -63,26 +66,27 @@ internal sealed class GetCourtReservationsQueryHandler(
                         if (overlapping is null)
                         {
                             slots.Add(new CourtReservationSlotResponse(current, slotEnd, false));
+                            current = current.AddMinutes(reservationDurationMinutes);
                         }
                         else
                         {
                             slots.Add(new CourtReservationSlotResponse(overlapping.Time.Start, overlapping.Time.End, true));
-                        }
 
-                        current = current.AddMinutes(reservationDurationMinutes);
+                            current = overlapping.Time.End > current ? overlapping.Time.End : current.AddMinutes(reservationDurationMinutes);
+                        }
                     }
                 }
 
-                return new CourtReservationDayResponse(dayDate, dayDate.DayOfWeek, slots);
+                return new CourtReservationDayResponse(dayDateTime, dayDate.DayOfWeek, slots);
             })
             .ToList();
 
         return new GetCourtReservationsResponse(weekStartDate, weekStartDate.AddDays(6), days);
     }
 
-    private static DateTime GetWeekStartDate(DateTime date)
+    private static DateOnly GetWeekStartDate(DateOnly date)
     {
         var daysFromMonday = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-        return date.Date.AddDays(-daysFromMonday);
+        return date.AddDays(-daysFromMonday);
     }
 }
