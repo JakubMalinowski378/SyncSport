@@ -2,13 +2,12 @@ using Carter;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Reservations.Application.Reservations.Commands.AdminCreateReservation;
 using Reservations.Application.Reservations.Commands.AdminDeleteReservation;
 using Reservations.Application.Reservations.Commands.CancelReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
-using Reservations.Application.Reservations.Queries.GetAvailableSlots;
 using Reservations.Application.Reservations.Queries.GetCourtReservations;
 using Reservations.Application.Reservations.Queries.GetReservation;
 using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
@@ -23,6 +22,7 @@ public sealed class ReservationsEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/reservations").WithTags("Reservations");
+        var userGroup = app.MapGroup("/api/users").WithTags("Reservations");
 
         group.MapPost("/me", CreateReservation)
             .WithName("CreateSelfReservation")
@@ -65,9 +65,10 @@ public sealed class ReservationsEndpoints : ICarterModule
             .Produces<ReservationDetailsResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapGet("/facilities/{facilityId:guid}/courts/{courtId:guid}/slots", GetAvailableSlots)
-            .WithName("GetAvailableSlots")
-            .Produces<GetAvailableSlotsResponse>(StatusCodes.Status200OK);
+        userGroup.MapGet("{userId:guid}/reservations", GetUserReservations)
+            .WithName("GetUserReservations")
+            .Produces<PagedResult<UserReservationResponse>>(StatusCodes.Status200OK)
+            .RequireAuthorization(Policies.AdminOrManager);
     }
     private static async Task<IResult> CreateReservation(
         CreateReservationCommand command,
@@ -107,10 +108,12 @@ public sealed class ReservationsEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetUserReservations(
+        [FromQuery] Guid userId,
         [AsParameters] GetUserReservationsQuery query,
         ISender sender,
         CancellationToken cancellationToken)
     {
+        query.UserId = userId;
         var result = await sender.Send(query, cancellationToken);
         return Results.Ok(result);
     }
@@ -142,16 +145,5 @@ public sealed class ReservationsEndpoints : ICarterModule
     {
         var result = await sender.Send(new GetReservationQuery(id), cancellationToken);
         return result is null ? Results.NotFound() : Results.Ok(result);
-    }
-
-    private static async Task<IResult> GetAvailableSlots(
-        Guid facilityId,
-        Guid courtId,
-        [FromQuery] DateTime date,
-        ISender sender,
-        CancellationToken cancellationToken)
-    {
-        var result = await sender.Send(new GetAvailableSlotsQuery(facilityId, courtId, date), cancellationToken);
-        return Results.Ok(result);
     }
 }

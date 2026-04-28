@@ -3,22 +3,24 @@ using Reservations.Domain.Entities;
 using Shared.Pagination;
 using Shared.Persistence;
 using Users.Shared;
+using Users.Shared.Authorization;
 
 namespace Reservations.Application.Reservations.Queries.GetUserReservations;
 
 internal sealed class GetUserReservationsQueryHandler(
     IRepository<Reservation, Guid> reservationRepository,
-    ICurrentUser currentUser)
+    IFacilityAuthorizationService facilityAuthorizationService)
     : IRequestHandler<GetUserReservationsQuery, PagedResult<ReservationResponse>>
 {
     public async Task<PagedResult<ReservationResponse>> Handle(GetUserReservationsQuery request, CancellationToken cancellationToken)
     {
-        var currentUserState = currentUser.GetState();
+        // todo: get facility id 
+        // facilityAuthorizationService.AuthorizeUserAccess();
 
         var result = await reservationRepository.GetPagedAsync(
             pageNumber: request.PageNumber,
             pageSize: request.PageSize,
-            filter: r => r.UserId == currentUserState.UserId,
+            filter: r => r.UserId == request.UserId,
             orderBy: q => q.OrderByDescending(r => r.Time.Start),
             asNoTracking: true,
             ct: cancellationToken);
@@ -31,9 +33,9 @@ internal sealed class GetUserReservationsQueryHandler(
             r.Status)).ToList();
 
         return new PagedResult<ReservationResponse>(
-            responseItems, 
-            result.TotalCount, 
-            request.PageNumber, 
+            responseItems,
+            result.TotalCount,
+            request.PageNumber,
             request.PageSize);
     }
 }
