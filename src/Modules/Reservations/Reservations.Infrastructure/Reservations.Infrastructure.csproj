@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Reservations.Application\Reservations.Application.csproj" />
+    <ProjectReference Include="..\Reservations.Shared\Reservations.Shared.csproj" />
     <ProjectReference Include="..\..\..\Shared\Shared.csproj" />
   </ItemGroup>
 

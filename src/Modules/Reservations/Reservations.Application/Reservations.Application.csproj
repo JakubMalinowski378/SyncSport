@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Reservations.Domain\Reservations.Domain.csproj" />
+    <ProjectReference Include="..\Reservations.Shared\Reservations.Shared.csproj" />
     <ProjectReference Include="..\..\Users\Users.Shared\Users.Shared.csproj" />
     <ProjectReference Include="..\..\..\Shared\Shared.csproj" />
     <ProjectReference Include="..\..\Facilities\Facilities.Shared\Facilities.Shared.csproj" />

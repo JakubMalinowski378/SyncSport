@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Reservations.Domain.Services;
 using Reservations.Infrastructure.Persistence;
 using Reservations.Infrastructure.Services;
+using Reservations.Shared;
 using Shared.Persistence;
 using Shared.Persistence.Interceptors;
 
@@ -24,6 +25,7 @@ public static class DependencyInjection
 
         services.AddScoped<IRepository<Reservations.Domain.Entities.Reservation, Guid>, ReservationsRepository<Reservations.Domain.Entities.Reservation, Guid>>();
         services.AddScoped<IReservationChecker, ReservationChecker>();
+        services.AddScoped<IReservationsModuleApi, ReservationsModuleApi>();
 
         return services;
     }
