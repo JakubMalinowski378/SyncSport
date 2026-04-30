@@ -1,4 +1,3 @@
-using Users.Shared.Authorization;
 using Facilities.Application.Facilities.Common;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
@@ -6,6 +5,7 @@ using MediatR;
 using Shared.Extensions;
 using Shared.Persistence;
 using Storage;
+using Users.Shared.Authorization;
 
 namespace Facilities.Application.Facilities.Commands.CreateCourt;
 

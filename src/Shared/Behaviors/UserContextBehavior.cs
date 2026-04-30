@@ -1,11 +1,11 @@
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Shared.Behaviors;
 
 public sealed class UserContextBehavior<TRequest, TResponse>(
-    IHttpContextAccessor httpContextAccessor) 
+    IHttpContextAccessor httpContextAccessor)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
