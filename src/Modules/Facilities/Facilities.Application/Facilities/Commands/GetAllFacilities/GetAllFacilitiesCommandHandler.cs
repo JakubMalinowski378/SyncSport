@@ -19,12 +19,12 @@ public sealed class GetAllFacilitiesCommandHandler(
             _ => request.SortOrder?.ToLower() == "desc" ? q => q.OrderByDescending(x => x.Name) : q => q.OrderBy(x => x.Name)
         };
 
-        var (items, totalCount) = await facilityRepository.GetPagedAsync(       
+        var (items, totalCount) = await facilityRepository.GetPagedAsync(
             request.PageNumber,
             request.PageSize,
             filter: x =>
-                string.IsNullOrWhiteSpace(request.SearchTerm) || 
-                x.Name.Contains(request.SearchTerm) || 
+                string.IsNullOrWhiteSpace(request.SearchTerm) ||
+                x.Name.Contains(request.SearchTerm) ||
                 x.Slug.Contains(request.SearchTerm) ||
                 x.Address.Contains(request.SearchTerm),
             orderBy: orderBy,
@@ -39,7 +39,7 @@ public sealed class GetAllFacilitiesCommandHandler(
                 facility.Address,
                 facility.ReservationDuration,
                 OpeningHoursMapper.MapToDto(facility.WeeklyOpeningHours),
-                facility.Images.Select(img => new ImageDto(img.Value, img.IsMain)).ToList()))
+                facility.Images.Select(img => new ImageDto(img.Value)).ToList()))
             .ToList();
 
         return new PagedResult<GetAllFacilitiesResult>(

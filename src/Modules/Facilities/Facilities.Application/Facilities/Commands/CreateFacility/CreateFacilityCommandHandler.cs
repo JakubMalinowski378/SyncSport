@@ -47,11 +47,10 @@ public sealed class CreateFacilityCommandHandler(
         {
             var filesToUpload = request.Images.ToUploadStreams();
             var imageUrls = (await imageStorageService.AddRangeAsync(filesToUpload, cancellationToken)).ToList();
-            var selectedMainIndex = request.MainImageIndex ?? 0;
 
             for (int i = 0; i < imageUrls.Count; i++)
             {
-                facility.AddImage(ImageUrl.Create(imageUrls[i], i == selectedMainIndex));
+                facility.AddImage(ImageUrl.Create(imageUrls[i]));
             }
         }
 

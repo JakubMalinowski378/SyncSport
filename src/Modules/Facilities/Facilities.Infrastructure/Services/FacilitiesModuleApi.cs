@@ -66,7 +66,7 @@ internal sealed class FacilitiesModuleApi(
             court.SurfaceType,
             court.IsActive,
             court.OverrideReservationDuration,
-            court.Images.Select(i => new CourtImageDto(i.Value, i.IsMain)));
+            court.Images.Select(i => new CourtImageDto(i.Value)));
     }
 
     public async Task<IReadOnlyDictionary<Guid, CourtWithFacilityDto>> GetCourtsWithFacilityByIdsAsync(

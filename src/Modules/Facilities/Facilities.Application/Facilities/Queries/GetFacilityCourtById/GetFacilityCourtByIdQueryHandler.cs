@@ -39,6 +39,6 @@ public sealed class GetFacilityCourtByIdQueryHandler(
             court.SurfaceType,
             court.IsActive,
             court.OverrideReservationDuration,
-            court.Images.Select(img => new ImageDto(img.Value, img.IsMain)).ToList());
+            court.Images.Select(img => new ImageDto(img.Value)).ToList());
     }
 }

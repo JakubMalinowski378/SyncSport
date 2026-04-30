@@ -10,7 +10,7 @@ namespace Facilities.Application.Facilities.Queries.GetFacilityCourts;
 
 public sealed class GetFacilityCourtsQueryHandler(
     IRepository<Facility, FacilityId> facilityRepository,
-    IRepository<Court, CourtId> courtRepository) 
+    IRepository<Court, CourtId> courtRepository)
     : IRequestHandler<GetFacilityCourtsQuery, PagedResult<CourtDto>>
 {
     public async Task<PagedResult<CourtDto>> Handle(GetFacilityCourtsQuery request, CancellationToken cancellationToken)
@@ -42,7 +42,7 @@ public sealed class GetFacilityCourtsQueryHandler(
             c.SurfaceType,
             c.IsActive,
             c.OverrideReservationDuration,
-            c.Images.Select(img => new ImageDto(img.Value, img.IsMain)).ToList())).ToList();
+            c.Images.Select(img => new ImageDto(img.Value)).ToList())).ToList();
 
         return new PagedResult<CourtDto>(
             courts,

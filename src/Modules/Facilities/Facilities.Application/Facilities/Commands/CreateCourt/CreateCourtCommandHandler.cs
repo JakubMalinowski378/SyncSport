@@ -18,7 +18,7 @@ public sealed class CreateCourtCommandHandler(
     public async Task<Guid> Handle(CreateCourtCommand request, CancellationToken cancellationToken)
     {
         facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
-        
+
         var facility = await facilityRepository.GetByIdAsync(
             new FacilityId(request.FacilityId),
             asNoTracking: false,
@@ -38,11 +38,10 @@ public sealed class CreateCourtCommandHandler(
         if (request.Images is not null && request.Images.Count > 0)
         {
             var imageUrls = (await imageStorageService.AddRangeAsync(request.Images.ToUploadStreams(), cancellationToken)).ToList();
-            var selectedMainIndex = request.MainImageIndex ?? 0;
 
             for (var index = 0; index < imageUrls.Count; index++)
             {
-                court.AddImage(ImageUrl.Create(imageUrls[index], index == selectedMainIndex));
+                court.AddImage(ImageUrl.Create(imageUrls[index]));
             }
         }
 

@@ -72,8 +72,7 @@ public sealed class EditFacilityCommandHandler(
 
         var hasImageChanges =
             (request.RemovedImageUrls is not null && request.RemovedImageUrls.Count > 0) ||
-            (request.Images is not null && request.Images.Any()) ||
-            request.MainImageIndex.HasValue;
+            (request.Images is not null && request.Images.Any());
 
         if (hasImageChanges)
         {
@@ -100,17 +99,8 @@ public sealed class EditFacilityCommandHandler(
                 : [];
 
             var finalImages = imagesToKeep
-                .Concat(uploadedImageUrls.Select(url => ImageUrl.Create(url, false)))
+                .Concat(uploadedImageUrls.Select(url => ImageUrl.Create(url)))
                 .ToList();
-
-            if (request.MainImageIndex.HasValue && request.MainImageIndex.Value >= finalImages.Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(request.MainImageIndex), "MainImageIndex must point to an existing image after applying image changes.");
-            }
-
-            var mainImageUrl = request.MainImageIndex.HasValue
-                ? finalImages[request.MainImageIndex.Value].Value
-                : finalImages.FirstOrDefault(x => x.IsMain)?.Value ?? finalImages.FirstOrDefault()?.Value;
 
             foreach (var existingImage in currentImages)
             {
@@ -119,7 +109,7 @@ public sealed class EditFacilityCommandHandler(
 
             foreach (var finalImage in finalImages)
             {
-                facility.AddImage(ImageUrl.Create(finalImage.Value, finalImage.Value == mainImageUrl));
+                facility.AddImage(ImageUrl.Create(finalImage.Value));
             }
         }
 

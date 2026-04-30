@@ -75,7 +75,7 @@ public partial class Court
         {
             throw new ArgumentException("Reservation duration must be greater than zero.");
         }
-        
+
         OverrideReservationDuration = overrideReservationDuration;
     }
     public WeeklyOpeningHours? GetEffectiveOpeningHours(Facility facility)
@@ -99,17 +99,6 @@ public partial class Court
         else
         {
             _images.Add(imageUrl);
-        }
-
-        if (imageUrl.IsMain)
-        {
-            for (var i = 0; i < _images.Count; i++)
-            {
-                if (_images[i].Value != imageUrl.Value && _images[i].IsMain)
-                {
-                    _images[i] = ImageUrl.Create(_images[i].Value, false);
-                }
-            }
         }
     }
 
