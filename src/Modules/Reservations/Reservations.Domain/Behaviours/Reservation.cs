@@ -14,7 +14,8 @@ public partial class Reservation
         Guid courtId,
         TimeRange time,
         ReservationStatus status,
-        decimal price)
+        decimal price,
+        DateTime createdAt)
         : base(id)
     {
         UserId = userId;
@@ -22,6 +23,7 @@ public partial class Reservation
         Time = time;
         Status = status;
         Price = price;
+        CreatedAt = createdAt;
     }
 
     public static async Task<Reservation> CreateAsync(
@@ -54,12 +56,12 @@ public partial class Reservation
             throw new ReservationOverlapException();
         }
 
-        return new Reservation(id, userId, courtId, time, ReservationStatus.Pending, price);
+        return new Reservation(id, userId, courtId, time, ReservationStatus.Pending, price, now);
     }
 
     public static Reservation Create(Guid userId, Guid courtId, TimeRange time, decimal price)
     {
-        var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time, ReservationStatus.Pending, price);
+        var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time, ReservationStatus.Pending, price, DateTime.UtcNow);
         return reservation;
     }
 

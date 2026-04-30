@@ -27,6 +27,8 @@ public static class DependencyInjection
         services.AddScoped<IReservationChecker, ReservationChecker>();
         services.AddScoped<IReservationsModuleApi, ReservationsModuleApi>();
 
+        services.AddHostedService<StaleReservationCleanupJob>();
+
         return services;
     }
 }

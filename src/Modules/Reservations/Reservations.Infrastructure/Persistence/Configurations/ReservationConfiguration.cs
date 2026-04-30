@@ -27,6 +27,9 @@ internal sealed class ReservationConfiguration : IEntityTypeConfiguration<Reserv
             .HasColumnType("numeric(18,2)")
             .IsRequired();
 
+        builder.Property(x => x.CreatedAt)
+            .IsRequired();
+
         builder.OwnsOne(x => x.Time, timeBuilder =>
         {
             timeBuilder.Property(t => t.Start)

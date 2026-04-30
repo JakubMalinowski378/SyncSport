@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Payments.Models;
 using Reservations.Shared;
 using Reservations.Shared.DTOs;
 using Stripe;
@@ -76,11 +77,4 @@ public sealed class PaymentEndpoints : ICarterModule
     {
         return $"Rezerwacja kortu {reservation.CourtId} na {reservation.StartTime:yyyy-MM-dd HH:mm}";
     }
-}
-
-public sealed class CheckoutRequest
-{
-    public Guid ReservationId { get; set; }
-    public string SuccessUrl { get; set; } = string.Empty;
-    public string CancelUrl { get; set; } = string.Empty;
 }
