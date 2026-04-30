@@ -75,6 +75,6 @@ public sealed class PaymentEndpoints : ICarterModule
 
     private static string GenerateReservationName(ReservationDetailsDto reservation)
     {
-        return $"Rezerwacja kortu {reservation.CourtId} na {reservation.StartTime:yyyy-MM-dd HH:mm}";
+        return $"Rezerwacja kortu {reservation.CourtName} dnia {reservation.StartTime:dd-MM-yyyy} w godzinach {reservation.StartTime:HH:mm} - {reservation.EndTime:HH:mm}";
     }
 }

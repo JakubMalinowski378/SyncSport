@@ -1,3 +1,4 @@
+using Facilities.Shared;
 using Reservations.Domain.Entities;
 using Reservations.Domain.Enums;
 using Reservations.Shared;
@@ -6,7 +7,9 @@ using Shared.Persistence;
 
 namespace Reservations.Infrastructure.Services;
 
-internal sealed class ReservationsModuleApi(IRepository<Reservation, Guid> reservationRepository)
+internal sealed class ReservationsModuleApi(
+    IRepository<Reservation, Guid> reservationRepository,
+    IFacilitiesModuleApi facilitiesModuleApi)
     : IReservationsModuleApi
 {
     public async Task<ReservationDetailsDto?> GetByIdAsync(Guid reservationId, CancellationToken cancellationToken = default)
@@ -21,9 +24,17 @@ internal sealed class ReservationsModuleApi(IRepository<Reservation, Guid> reser
             return null;
         }
 
+        var court = await facilitiesModuleApi.GetCourtByIdAsync(reservation.CourtId, cancellationToken);
+
+        if(court is null)
+        {
+            return null;
+        }
+
         return new ReservationDetailsDto(
             reservation.Id,
             reservation.CourtId,
+            court.Name,
             reservation.UserId,
             reservation.Status.ToString(),
             reservation.Price,

@@ -19,7 +19,7 @@ public sealed class ReservationsDbContext(DbContextOptions<ReservationsDbContext
     {
         modelBuilder.HasDefaultSchema("reservations");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ReservationsDbContext).Assembly);
-        
+
         base.OnModelCreating(modelBuilder);
     }
 }
