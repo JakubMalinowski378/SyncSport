@@ -13,6 +13,7 @@ using Reservations.Application.Reservations.Queries.GetMyReservations;
 using Reservations.Application.Reservations.Queries.GetReservation;
 using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
 using Reservations.Application.Reservations.Queries.GetUserReservations;
+using Reservations.Domain.Enums;
 using Shared.Authorization;
 using Shared.Pagination;
 
@@ -84,7 +85,12 @@ public sealed class ReservationsEndpoints : ICarterModule
         var query = new GetMyReservationsQuery
         {
             PageNumber = request.PageNumber,
-            PageSize = request.PageSize
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDirection = request.SortDirection,
+            Status = request.Status,
+            CourtName = request.CourtName,
+            FacilityName = request.FacilityName
         };
         var result = await sender.Send(query, cancellationToken);
         return Results.Ok(result);
@@ -170,5 +176,10 @@ public sealed class ReservationsEndpoints : ICarterModule
 
 internal sealed record GetMyReservationsRequest(
     int PageNumber = 1,
-    int PageSize = 10
+    int PageSize = 10,
+    string? SortBy = null,
+    string? SortDirection = null,
+    ReservationStatus? Status = null,
+    string? CourtName = null,
+    string? FacilityName = null
 );

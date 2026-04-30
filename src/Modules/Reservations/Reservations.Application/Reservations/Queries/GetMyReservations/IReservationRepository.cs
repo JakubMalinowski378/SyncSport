@@ -15,11 +15,21 @@ public sealed record ReservationWithDetailsDto(
     decimal Price,
     ReservationStatus Status);
 
+public sealed record ReservationFilters(
+    ReservationStatus? Status);
+
+public sealed record GetMyReservationsResult(
+    IReadOnlyList<Reservation> Reservations,
+    Dictionary<Guid, CourtWithDetails> CourtDetails);
+
+public sealed record CourtWithDetails(
+    string CourtName,
+    string FacilityName);
+
 public interface IReservationRepository : IRepository<Reservation, Guid>
 {
-    Task<PagedResult<ReservationWithDetailsDto>> GetMyReservationsWithDetailsAsync(
+    Task<IReadOnlyList<Reservation>> GetMyReservationsAsync(
         Guid userId,
-        int pageNumber,
-        int pageSize,
+        ReservationFilters filters,
         CancellationToken cancellationToken = default);
 }
