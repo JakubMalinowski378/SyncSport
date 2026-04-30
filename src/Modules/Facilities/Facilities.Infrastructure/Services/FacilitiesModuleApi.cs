@@ -32,7 +32,7 @@ internal sealed class FacilitiesModuleApi(
             .Where(x => !x.Value.IsClosed)
             .Select(x => new OpeningHoursAvailabilityInfo(x.Key, x.Value.OpenTime, x.Value.CloseTime));
 
-        return new FacilityAvailabilityDto(facilityId, courts, openingHours);
+        return new FacilityAvailabilityDto(facilityId, facility.Name, courts, openingHours);
     }
 
     public async Task<Guid?> GetFacilityIdByCourtIdAsync(Guid courtId, CancellationToken cancellationToken = default)
@@ -67,5 +67,32 @@ internal sealed class FacilitiesModuleApi(
             court.IsActive,
             court.OverrideReservationDuration,
             court.Images.Select(i => new CourtImageDto(i.Value, i.IsMain)));
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, CourtWithFacilityDto>> GetCourtsWithFacilityByIdsAsync(
+        IEnumerable<Guid> courtIds,
+        CancellationToken cancellationToken = default)
+    {
+        var courtIdValues = courtIds.ToHashSet();
+        if (courtIdValues.Count == 0)
+            return new Dictionary<Guid, CourtWithFacilityDto>();
+
+        var courtIdVos = courtIdValues.Select(id => new CourtId(id)).ToHashSet();
+
+        var facilities = await facilityRepository.FindAsync(
+            predicate: f => f.Courts.Any(c => courtIdVos.Contains(c.Id)),
+            include: q => q.Include(f => f.Courts),
+            asNoTracking: true,
+            ct: cancellationToken);
+
+        return facilities
+            .SelectMany(f => f.Courts
+                .Where(c => courtIdValues.Contains(c.Id.Value))
+                .Select(c => new CourtWithFacilityDto(
+                    c.Id.Value,
+                    c.Name,
+                    f.Id.Value,
+                    f.Name)))
+            .ToDictionary(dto => dto.CourtId);
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Reservations.Application.Reservations.Queries.GetMyReservations;
 using Reservations.Domain.Services;
 using Reservations.Infrastructure.Persistence;
 using Reservations.Infrastructure.Services;
@@ -23,7 +24,9 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
         });
 
-        services.AddScoped<IRepository<Reservations.Domain.Entities.Reservation, Guid>, ReservationsRepository<Reservations.Domain.Entities.Reservation, Guid>>();
+        services.AddScoped<ReservationRepository>();
+        services.AddScoped<IRepository<Reservations.Domain.Entities.Reservation, Guid>>(sp => sp.GetRequiredService<ReservationRepository>());
+        services.AddScoped<IReservationRepository>(sp => sp.GetRequiredService<ReservationRepository>());
         services.AddScoped<IReservationChecker, ReservationChecker>();
         services.AddScoped<IReservationsModuleApi, ReservationsModuleApi>();
 

@@ -9,6 +9,7 @@ using Reservations.Application.Reservations.Commands.AdminDeleteReservation;
 using Reservations.Application.Reservations.Commands.CancelReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
 using Reservations.Application.Reservations.Queries.GetCourtReservations;
+using Reservations.Application.Reservations.Queries.GetMyReservations;
 using Reservations.Application.Reservations.Queries.GetReservation;
 using Reservations.Application.Reservations.Queries.GetReservationsByUserId;
 using Reservations.Application.Reservations.Queries.GetUserReservations;
@@ -24,12 +25,17 @@ public sealed class ReservationsEndpoints : ICarterModule
         var group = app.MapGroup("/api/reservations").WithTags("Reservations");
         var userGroup = app.MapGroup("/api/users").WithTags("Reservations");
 
+        group.MapGet("/me", GetMyReservations)
+            .WithName("GetMyReservations")
+            .Produces<PagedResult<ReservationWithDetailsDto>>(StatusCodes.Status200OK)
+            .RequireAuthorization();
+
         group.MapPost("/me", CreateReservation)
             .WithName("CreateSelfReservation")
             .Produces<Guid>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization(Policies.User);
+            .RequireAuthorization();
 
         group.MapPost("/", AdminCreateReservation)
             .WithName("AdminCreateReservation")
@@ -49,7 +55,7 @@ public sealed class ReservationsEndpoints : ICarterModule
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization(Policies.User);
+            .RequireAuthorization();
 
         group.MapGet("/courts/{courtId:guid}", GetCourtReservations)
             .WithName("GetCourtReservations")
@@ -70,6 +76,20 @@ public sealed class ReservationsEndpoints : ICarterModule
             .Produces<PagedResult<UserReservationResponse>>(StatusCodes.Status200OK)
             .RequireAuthorization(Policies.AdminOrManager);
     }
+    private static async Task<IResult> GetMyReservations(
+        [AsParameters] GetMyReservationsRequest request,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetMyReservationsQuery
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+        var result = await sender.Send(query, cancellationToken);
+        return Results.Ok(result);
+    }
+
     private static async Task<IResult> CreateReservation(
         CreateReservationCommand command,
         ISender sender,
@@ -147,3 +167,8 @@ public sealed class ReservationsEndpoints : ICarterModule
         return result is null ? Results.NotFound() : Results.Ok(result);
     }
 }
+
+internal sealed record GetMyReservationsRequest(
+    int PageNumber = 1,
+    int PageSize = 10
+);
