@@ -8,7 +8,7 @@ public record CourtReservationResponse(Guid Id, DateTime StartTime, DateTime End
 public record CourtReservationSlotResponse(
     DateTime StartTime,
     DateTime EndTime,
-    bool IsReserved);
+    string? Status);
 
 public record CourtReservationDayResponse(
     DateTime Date,

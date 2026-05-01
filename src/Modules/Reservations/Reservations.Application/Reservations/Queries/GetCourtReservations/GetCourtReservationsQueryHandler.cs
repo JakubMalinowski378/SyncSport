@@ -65,12 +65,12 @@ internal sealed class GetCourtReservationsQueryHandler(
 
                         if (overlapping is null)
                         {
-                            slots.Add(new CourtReservationSlotResponse(current, slotEnd, false));
+                            slots.Add(new CourtReservationSlotResponse(current, slotEnd, null));
                             current = current.AddMinutes(reservationDurationMinutes);
                         }
                         else
                         {
-                            slots.Add(new CourtReservationSlotResponse(overlapping.Time.Start, overlapping.Time.End, true));
+                            slots.Add(new CourtReservationSlotResponse(overlapping.Time.Start, overlapping.Time.End, overlapping.Status.ToString()));
 
                             current = overlapping.Time.End > current ? overlapping.Time.End : current.AddMinutes(reservationDurationMinutes);
                         }
