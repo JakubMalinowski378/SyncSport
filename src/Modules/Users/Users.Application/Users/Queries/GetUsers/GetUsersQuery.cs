@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Shared.FluentValidation;
 using Shared.Pagination;
 using Users.Application.Users.Queries.GetUser;
 
@@ -10,7 +11,7 @@ public sealed record GetUsersQuery(
     int PageSize = 10,
     string? SearchTerm = null,
     string? SortColumn = null,
-    string? SortOrder = null) : IRequest<PagedResult<GetUserResponse>>;
+    string? SortOrder = null) : IRequest<PagedResult<GetUserResponse>>, IPaginatedRequest;
 
 public sealed class GetUsersQueryValidator : AbstractValidator<GetUsersQuery>
 {
@@ -19,9 +20,8 @@ public sealed class GetUsersQueryValidator : AbstractValidator<GetUsersQuery>
 
     public GetUsersQueryValidator()
     {
-        RuleFor(x => x.PageNumber).GreaterThanOrEqualTo(1);
-        RuleFor(x => x.PageSize).GreaterThanOrEqualTo(1);
-        
+        this.AddPaginationRules();
+
         RuleFor(x => x.SortColumn)
             .Must(x => x is null || AllowedSortColumns.Contains(x))
             .WithMessage($"Sort column must be one of: {string.Join(", ", AllowedSortColumns)}");

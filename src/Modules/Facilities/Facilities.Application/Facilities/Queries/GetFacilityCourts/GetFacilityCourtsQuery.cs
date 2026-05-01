@@ -5,7 +5,7 @@ using Shared.Pagination;
 
 namespace Facilities.Application.Facilities.Queries.GetFacilityCourts;
 
-public sealed class GetFacilityCourtsQuery : IRequest<PagedResult<CourtDto>>
+public sealed class GetFacilityCourtsQuery : IRequest<PagedResult<CourtDto>>, IPaginatedRequest
 {
     [JsonIgnore]
     public string FacilitySlug { get; set; } = string.Empty;

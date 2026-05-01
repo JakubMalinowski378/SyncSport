@@ -2,13 +2,14 @@ using FluentValidation;
 using MediatR;
 using Reservations.Domain.Enums;
 using Shared.Behaviors;
+using Shared.FluentValidation;
 using Shared.Pagination;
 using System.Text.Json.Serialization;
 
 namespace Reservations.Application.Reservations.Queries.GetMyReservations;
 
 public sealed class GetMyReservationsQuery
-    : IRequest<PagedResult<ReservationWithDetailsDto>>, IAuditable
+    : IRequest<PagedResult<ReservationWithDetailsDto>>, IAuditable, IPaginatedRequest
 {
     [JsonIgnore]
     public Guid UserId { get; set; }
@@ -38,7 +39,6 @@ public static class SortDirection
 
 internal sealed class GetMyReservationsQueryValidator : AbstractValidator<GetMyReservationsQuery>
 {
-    private static readonly int[] AllowedPageSizes = [5, 10, 15, 20, 25, 30];
     private static readonly string[] AllowedSortFields = [
         GetMyReservationsSortFields.Date,
         GetMyReservationsSortFields.Status,
@@ -48,12 +48,7 @@ internal sealed class GetMyReservationsQueryValidator : AbstractValidator<GetMyR
 
     public GetMyReservationsQueryValidator()
     {
-        RuleFor(x => x.PageNumber)
-            .GreaterThanOrEqualTo(1).WithMessage("PageNumber must be greater than or equal to 1.");
-
-        RuleFor(x => x.PageSize)
-            .Must(size => AllowedPageSizes.Contains(size))
-            .WithMessage("PageSize must be one of: 5, 10, 15, 20, 25, 30.");
+        this.AddPaginationRules();
 
         RuleFor(x => x.SortBy)
             .Must(field => field is null || AllowedSortFields.Contains(field))
