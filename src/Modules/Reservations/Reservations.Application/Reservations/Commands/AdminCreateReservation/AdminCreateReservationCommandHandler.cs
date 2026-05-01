@@ -1,3 +1,4 @@
+using Facilities.Shared;
 using MediatR;
 using Pricing.Shared;
 using Reservations.Domain.Entities;
@@ -13,12 +14,17 @@ internal sealed class AdminCreateReservationCommandHandler(
     IRepository<Reservation, Guid> reservationRepository,
     IReservationChecker reservationChecker,
     IPricingModuleApi pricingModuleApi,
-    IFacilityAuthorizationService facilityAuthorizationService)
+    IFacilityAuthorizationService facilityAuthorizationService,
+    IFacilitiesModuleApi facilitiesModuleApi)
     : IRequestHandler<AdminCreateReservationCommand, Guid>
 {
     public async Task<Guid> Handle(AdminCreateReservationCommand request, CancellationToken cancellationToken)
     {
-        facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
+        var facilityId = await facilitiesModuleApi.GetFacilityIdByCourtIdAsync(request.CourtId, cancellationToken);
+        if (facilityId is null)
+            throw new InvalidOperationException("Court not found.");
+
+        facilityAuthorizationService.AuthorizeFacilityAccess(facilityId.Value);
 
         var timeRange = TimeRange.Create(request.StartTime, request.EndTime);
 
@@ -35,7 +41,7 @@ internal sealed class AdminCreateReservationCommandHandler(
             throw new UserAlreadyHasReservationException();
         }
 
-        var price = await pricingModuleApi.CalculatePriceAsync(request.FacilityId, request.CourtId, request.StartTime, request.EndTime, cancellationToken);
+        var price = await pricingModuleApi.CalculatePriceAsync(facilityId.Value, request.CourtId, request.StartTime, request.EndTime, cancellationToken);
 
         var reservation = Reservation.Create(request.UserId, request.CourtId, timeRange, price);
 

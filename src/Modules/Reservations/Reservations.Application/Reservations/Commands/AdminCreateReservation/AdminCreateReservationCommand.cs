@@ -1,13 +1,11 @@
 using FluentValidation;
 using Facilities.Shared;
-using System.Linq;
 using MediatR;
 
 namespace Reservations.Application.Reservations.Commands.AdminCreateReservation;
 
 public record AdminCreateReservationCommand(
     Guid UserId,
-    Guid FacilityId,
     Guid CourtId,
     DateTime StartTime,
     DateTime EndTime)
@@ -23,9 +21,6 @@ internal sealed class AdminCreateReservationCommandValidator
         _facilitiesModuleApi = facilitiesModuleApi;
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("UserId is required.");
-
-        RuleFor(x => x.FacilityId)
-            .NotEmpty().WithMessage("FacilityId is required.");
 
         RuleFor(x => x.CourtId)
             .NotEmpty().WithMessage("CourtId is required.");
@@ -46,7 +41,10 @@ internal sealed class AdminCreateReservationCommandValidator
 
     private async Task<bool> IsAlignedWithFacilityAsync(AdminCreateReservationCommand command, CancellationToken ct)
     {
-        var info = await _facilitiesModuleApi.GetFacilityAvailabilityInfoAsync(command.FacilityId, ct);
+        var facilityId = await _facilitiesModuleApi.GetFacilityIdByCourtIdAsync(command.CourtId, ct);
+        if (facilityId is null) return false;
+
+        var info = await _facilitiesModuleApi.GetFacilityAvailabilityInfoAsync(facilityId.Value, ct);
         if (info is null) return false;
 
         var court = info.Courts.FirstOrDefault(c => c.CourtId == command.CourtId);
