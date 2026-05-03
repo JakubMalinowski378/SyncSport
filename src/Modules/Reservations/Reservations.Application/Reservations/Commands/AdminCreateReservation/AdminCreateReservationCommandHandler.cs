@@ -5,8 +5,9 @@ using Reservations.Domain.Entities;
 using Reservations.Domain.Exceptions;
 using Reservations.Domain.Services;
 using Reservations.Domain.ValueObjects;
-using Users.Shared.Authorization;
 using Shared.Persistence;
+using Shared.Time;
+using Users.Shared.Authorization;
 
 namespace Reservations.Application.Reservations.Commands.AdminCreateReservation;
 
@@ -25,6 +26,14 @@ internal sealed class AdminCreateReservationCommandHandler(
             throw new InvalidOperationException("Court not found.");
 
         facilityAuthorizationService.AuthorizeFacilityAccess(facilityId.Value);
+
+        var startUtc = NormalizeToUtc(request.StartTime);
+        if (startUtc < DateTime.UtcNow)
+        {
+            throw new ReservationInPastException();
+        }
+
+        await EnsureAlignedWithFacilityAsync(request, cancellationToken);
 
         var timeRange = TimeRange.Create(request.StartTime, request.EndTime);
 
@@ -54,5 +63,69 @@ internal sealed class AdminCreateReservationCommandHandler(
         await reservationRepository.SaveChangesAsync(cancellationToken);
 
         return reservation.Id;
+    }
+
+    private static DateTime NormalizeToUtc(DateTime dateTime)
+    {
+        return dateTime.Kind switch
+        {
+            DateTimeKind.Utc => dateTime,
+            DateTimeKind.Local => dateTime.ToUniversalTime(),
+            _ => PolishTimeProvider.ConvertPolishLocalToUtc(dateTime)
+        };
+    }
+
+    private async Task EnsureAlignedWithFacilityAsync(AdminCreateReservationCommand command, CancellationToken ct)
+    {
+        var facilityId = await facilitiesModuleApi.GetFacilityIdByCourtIdAsync(command.CourtId, ct);
+        if (facilityId is null)
+        {
+            throw new InvalidOperationException("Facility not found for the given court.");
+        }
+
+        var info = await facilitiesModuleApi.GetFacilityAvailabilityInfoAsync(facilityId.Value, ct);
+        if (info is null)
+        {
+            throw new InvalidOperationException("Facility availability info not found.");
+        }
+
+        var court = info.Courts.FirstOrDefault(c => c.CourtId == command.CourtId);
+        if (court is null)
+        {
+            throw new InvalidOperationException("Court not found in facility.");
+        }
+
+        var duration = court.ReservationDurationMinutes;
+
+        var start = command.StartTime;
+        var end = command.EndTime;
+
+        if ((end - start).TotalMinutes != duration)
+        {
+            throw new InvalidOperationException("Reservation duration does not match the court's reservation duration.");
+        }
+
+        var opening = info.OpeningHours.FirstOrDefault(o => o.DayOfWeek == start.DayOfWeek);
+        if (opening is null)
+        {
+            throw new InvalidOperationException("Facility is closed on this day.");
+        }
+
+        var open = opening.OpenTime;
+        var close = opening.CloseTime;
+
+        var startTime = start.TimeOfDay;
+        var endTime = end.TimeOfDay;
+
+        if (startTime < open || endTime > close)
+        {
+            throw new InvalidOperationException("Reservation must be within facility opening hours.");
+        }
+
+        var minutesFromOpen = (int)(startTime - open).TotalMinutes;
+        if (minutesFromOpen % duration != 0)
+        {
+            throw new InvalidOperationException("Reservation start time must align with the court's reservation slots.");
+        }
     }
 }

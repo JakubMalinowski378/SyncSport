@@ -1,6 +1,7 @@
 using MediatR;
 using Reservations.Domain.Entities;
 using Shared.Persistence;
+using Shared.Time;
 
 namespace Reservations.Application.Reservations.Queries.GetCourtReservations;
 
@@ -14,13 +15,13 @@ internal sealed class GetCourtReservationsQueryHandler(
         var weekStartDate = GetWeekStartDate(request.WeekDate);
         var weekEndExclusive = weekStartDate.AddDays(7);
 
-        var weekStartDateTime = weekStartDate.ToDateTime(TimeOnly.MinValue);
-        var weekEndExclusiveDateTime = weekEndExclusive.ToDateTime(TimeOnly.MinValue);
+        var weekStartUtc = PolishTimeProvider.PolishMidnightToUtc(weekStartDate);
+        var weekEndUtc = PolishTimeProvider.PolishMidnightToUtc(weekEndExclusive);
 
         var reservations = await reservationRepository.FindAsync(
             r => r.CourtId == request.CourtId &&
-                 r.Time.Start < weekEndExclusiveDateTime &&
-                 r.Time.End > weekStartDateTime,
+                 r.Time.Start < weekEndUtc &&
+                 r.Time.End > weekStartUtc,
             asNoTracking: true,
             ct: cancellationToken);
 
@@ -44,8 +45,8 @@ internal sealed class GetCourtReservationsQueryHandler(
             .Select(offset => weekStartDate.AddDays(offset))
             .Select(dayDate =>
             {
-                var dayDateTime = dayDate.ToDateTime(TimeOnly.MinValue);
-                var dayReservations = reservationsList.Where(r => r.Time.Start.Date == dayDateTime).ToList();
+                var dayDateTime = PolishTimeProvider.PolishMidnightToUtc(dayDate);
+                var dayReservations = reservationsList.Where(r => r.Time.Start.Date == dayDateTime.Date).ToList();
 
                 var openingHours = facilityInfo.OpeningHours.FirstOrDefault(h => h.DayOfWeek == dayDate.DayOfWeek);
 
@@ -70,7 +71,14 @@ internal sealed class GetCourtReservationsQueryHandler(
                         }
                         else
                         {
-                            slots.Add(new CourtReservationSlotResponse(overlapping.Time.Start, overlapping.Time.End, overlapping.Status.ToString()));
+                            var slotStatus = overlapping.Status switch
+                            {
+                                Domain.Enums.ReservationStatus.Pending => "Pending",
+                                Domain.Enums.ReservationStatus.Paid or Domain.Enums.ReservationStatus.AwaitingOnSitePayment => "reserved",
+                                _ => null
+                            };
+
+                            slots.Add(new CourtReservationSlotResponse(overlapping.Time.Start, overlapping.Time.End, slotStatus));
 
                             current = overlapping.Time.End > current ? overlapping.Time.End : current.AddMinutes(reservationDurationMinutes);
                         }

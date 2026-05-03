@@ -13,7 +13,7 @@ internal sealed class CancelReservationCommandHandler(
     public async Task Handle(CancelReservationCommand request, CancellationToken cancellationToken)
     {
         var reservation = await reservationRepository.GetByIdAsync(request.Id, ct: cancellationToken);
-        
+
         if (reservation is null)
         {
             throw new Exception("Reservation not found.");
@@ -34,8 +34,7 @@ internal sealed class CancelReservationCommandHandler(
         }
 
         reservation.Cancel();
-        
-        // reservationRepository.Update(reservation); optionally if tracking is explicit, though typically SaveChanges is enough if entity is tracked.
+
         await reservationRepository.SaveChangesAsync(cancellationToken);
     }
 }
