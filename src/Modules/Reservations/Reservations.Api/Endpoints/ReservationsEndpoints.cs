@@ -8,6 +8,7 @@ using Reservations.Application.Reservations.Commands.AdminCreateReservation;
 using Reservations.Application.Reservations.Commands.AdminDeleteReservation;
 using Reservations.Application.Reservations.Commands.CancelReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
+using Reservations.Application.Reservations.Commands.MarkReservationAsPaidOnSite;
 using Reservations.Application.Reservations.Queries.GetCourtReservations;
 using Reservations.Application.Reservations.Queries.GetMyReservations;
 using Reservations.Application.Reservations.Queries.GetReservation;
@@ -71,6 +72,13 @@ public sealed class ReservationsEndpoints : ICarterModule
             .WithName("GetReservationById")
             .Produces<ReservationDetailsResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPatch("/{id:guid}/mark-paid-on-site", MarkReservationAsPaidOnSite)
+            .WithName("MarkReservationAsPaidOnSite")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(Policies.AdminOrManager);
 
         userGroup.MapGet("{userId:guid}/reservations", GetUserReservations)
             .WithName("GetUserReservations")
@@ -171,6 +179,15 @@ public sealed class ReservationsEndpoints : ICarterModule
     {
         var result = await sender.Send(new GetReservationQuery(id), cancellationToken);
         return result is null ? Results.NotFound() : Results.Ok(result);
+    }
+
+    private static async Task<IResult> MarkReservationAsPaidOnSite(
+        Guid id,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(new MarkReservationAsPaidOnSiteCommand(id), cancellationToken);
+        return Results.NoContent();
     }
 }
 

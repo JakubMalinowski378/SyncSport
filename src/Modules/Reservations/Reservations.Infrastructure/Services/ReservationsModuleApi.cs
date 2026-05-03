@@ -67,6 +67,9 @@ internal sealed class ReservationsModuleApi(
             case ReservationStatus.Cancelled:
                 reservation.Cancel();
                 break;
+            case ReservationStatus.AwaitingOnSitePayment:
+                reservation.MarkAsAwaitingOnSitePayment();
+                break;
             default:
                 return false;
         }

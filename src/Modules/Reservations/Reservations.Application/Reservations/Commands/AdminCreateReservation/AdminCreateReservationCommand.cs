@@ -8,7 +8,8 @@ public record AdminCreateReservationCommand(
     Guid UserId,
     Guid CourtId,
     DateTime StartTime,
-    DateTime EndTime)
+    DateTime EndTime,
+    bool PayOnSite = false)
     : IRequest<Guid>;
 
 internal sealed class AdminCreateReservationCommandValidator

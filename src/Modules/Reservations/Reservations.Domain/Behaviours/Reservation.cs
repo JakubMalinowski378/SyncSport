@@ -91,4 +91,24 @@ public partial class Reservation
         }
         Status = ReservationStatus.Cancelled;
     }
+
+    public void MarkAsAwaitingOnSitePayment()
+    {
+        if (Status is ReservationStatus.Cancelled or ReservationStatus.Paid)
+        {
+            throw new InvalidOperationException("Cannot mark a cancelled or already paid reservation for on-site payment.");
+        }
+
+        Status = ReservationStatus.AwaitingOnSitePayment;
+    }
+
+    public void MarkAsPaidOnSite()
+    {
+        if (Status != ReservationStatus.AwaitingOnSitePayment)
+        {
+            throw new InvalidOperationException("Only reservations awaiting on-site payment can be marked as paid on site.");
+        }
+
+        Status = ReservationStatus.Paid;
+    }
 }

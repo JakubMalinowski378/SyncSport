@@ -5,5 +5,6 @@ public enum ReservationStatus
     Pending,
     Confirmed,
     Paid,
-    Cancelled
+    Cancelled,
+    AwaitingOnSitePayment
 }

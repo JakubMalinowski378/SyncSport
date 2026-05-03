@@ -10,7 +10,8 @@ namespace Reservations.Application.Reservations.Commands.CreateReservation;
 public record CreateReservationCommand(
     Guid CourtId,
     DateTime StartTime,
-    DateTime EndTime)
+    DateTime EndTime,
+    bool PayOnSite = false)
     : IRequest<Guid>, IAuditable
 {
     [JsonIgnore]

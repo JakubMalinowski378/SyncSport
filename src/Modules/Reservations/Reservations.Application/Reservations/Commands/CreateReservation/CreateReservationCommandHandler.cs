@@ -42,6 +42,11 @@ internal sealed class CreateReservationCommandHandler(
 
         var reservation = Reservation.Create(request.UserId, request.CourtId, timeRange, price);
 
+        if (request.PayOnSite)
+        {
+            reservation.MarkAsAwaitingOnSitePayment();
+        }
+
         await reservationRepository.AddAsync(reservation, cancellationToken);
         await reservationRepository.SaveChangesAsync(cancellationToken);
 
