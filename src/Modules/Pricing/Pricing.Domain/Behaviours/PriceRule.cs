@@ -12,8 +12,8 @@ public partial class PriceRule
         RuleType type,
         decimal multiplier,
         DayOfWeek? dayOfWeek,
-        TimeSpan? startTime,
-        TimeSpan? endTime)
+        TimeOnly? startTime,
+        TimeOnly? endTime)
         : base(id)
     {
         Type = type;
@@ -23,7 +23,7 @@ public partial class PriceRule
         EndTime = endTime;
     }
 
-    public static PriceRule CreatePeakHoursRule(TimeSpan start, TimeSpan end, decimal multiplier)
+    public static PriceRule CreatePeakHoursRule(TimeOnly start, TimeOnly end, decimal multiplier)
     {
         return new PriceRule(PriceRuleId.New(), RuleType.PeakHoursMultiplier, multiplier, null, start, end);
     }
@@ -59,8 +59,8 @@ public partial class PriceRule
                 break;
 
             case RuleType.PeakHoursMultiplier:
-                var startHour = reservationStart.TimeOfDay;
-                var endHour = reservationEnd.TimeOfDay;
+                var startHour = TimeOnly.FromTimeSpan(reservationStart.TimeOfDay);
+                var endHour = TimeOnly.FromTimeSpan(reservationEnd.TimeOfDay);
 
                 if (StartTime.HasValue && EndTime.HasValue)
                 {

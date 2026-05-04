@@ -2,6 +2,6 @@ namespace Facilities.Application.Facilities.Common;
 
 public sealed record DateSpecificOpeningHoursDto(
     DateOnly Date,
-    TimeSpan OpenTime,
-    TimeSpan CloseTime,
+    TimeOnly OpenTime,
+    TimeOnly CloseTime,
     bool IsClosed);

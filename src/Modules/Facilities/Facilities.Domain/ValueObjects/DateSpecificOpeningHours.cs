@@ -5,11 +5,11 @@ namespace Facilities.Domain.ValueObjects;
 public class DateSpecificOpeningHours : ValueObject
 {
     public DateOnly Date { get; }
-    public TimeSpan OpenTime { get; }
-    public TimeSpan CloseTime { get; }
+    public TimeOnly OpenTime { get; }
+    public TimeOnly CloseTime { get; }
     public bool IsClosed { get; }
 
-    private DateSpecificOpeningHours(DateOnly date, TimeSpan openTime, TimeSpan closeTime, bool isClosed)
+    private DateSpecificOpeningHours(DateOnly date, TimeOnly openTime, TimeOnly closeTime, bool isClosed)
     {
         Date = date;
         OpenTime = openTime;
@@ -17,7 +17,7 @@ public class DateSpecificOpeningHours : ValueObject
         IsClosed = isClosed;
     }
 
-    public static DateSpecificOpeningHours Create(DateOnly date, TimeSpan openTime, TimeSpan closeTime)
+    public static DateSpecificOpeningHours Create(DateOnly date, TimeOnly openTime, TimeOnly closeTime)
     {
         if (openTime >= closeTime)
         {
@@ -29,10 +29,10 @@ public class DateSpecificOpeningHours : ValueObject
 
     public static DateSpecificOpeningHours CreateClosed(DateOnly date)
     {
-        return new DateSpecificOpeningHours(date, TimeSpan.Zero, TimeSpan.Zero, isClosed: true);
+        return new DateSpecificOpeningHours(date, TimeOnly.MinValue, TimeOnly.MinValue, isClosed: true);
     }
 
-    public bool IsWithinHours(TimeSpan time)
+    public bool IsWithinHours(TimeOnly time)
     {
         if (IsClosed)
             return false;

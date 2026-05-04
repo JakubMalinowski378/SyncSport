@@ -4,10 +4,10 @@ namespace Facilities.Domain.ValueObjects;
 
 public class OpeningHours : ValueObject
 {
-    public TimeSpan OpenTime { get; }
-    public TimeSpan CloseTime { get; }
+    public TimeOnly OpenTime { get; }
+    public TimeOnly CloseTime { get; }
 
-    public OpeningHours(TimeSpan openTime, TimeSpan closeTime)
+    public OpeningHours(TimeOnly openTime, TimeOnly closeTime)
     {
         if (openTime >= closeTime)
         {
@@ -18,12 +18,12 @@ public class OpeningHours : ValueObject
         CloseTime = closeTime;
     }
 
-    public static OpeningHours Create(TimeSpan openTime, TimeSpan closeTime)
+    public static OpeningHours Create(TimeOnly openTime, TimeOnly closeTime)
     {
         return new OpeningHours(openTime, closeTime);
     }
 
-    public bool IsWithinHours(TimeSpan time)
+    public bool IsWithinHours(TimeOnly time)
     {
         return time >= OpenTime && time <= CloseTime;
     }

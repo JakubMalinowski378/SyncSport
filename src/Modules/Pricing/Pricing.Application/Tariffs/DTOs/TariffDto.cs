@@ -18,6 +18,6 @@ public record PriceRuleDto(
     string Type,
     decimal Multiplier,
     int? DayOfWeek,
-    TimeSpan? StartTime,
-    TimeSpan? EndTime
+    TimeOnly? StartTime,
+    TimeOnly? EndTime
 );

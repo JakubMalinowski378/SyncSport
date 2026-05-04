@@ -121,8 +121,8 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
         }
     }
 
-    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
-    private sealed record DateSpecificHoursDto(DateOnly Date, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
+    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeOnly OpenTime, TimeOnly CloseTime, bool IsClosed);
+    private sealed record DateSpecificHoursDto(DateOnly Date, TimeOnly OpenTime, TimeOnly CloseTime, bool IsClosed);
 
     private static List<ImageUrl> DeserializeImages(string? json)
     {

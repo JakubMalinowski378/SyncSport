@@ -83,7 +83,7 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
         return WeeklyOpeningHours.Create(daily);
     }
 
-    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeSpan OpenTime, TimeSpan CloseTime, bool IsClosed);
+    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeOnly OpenTime, TimeOnly CloseTime, bool IsClosed);
 
     private static List<ImageUrl> DeserializeImages(string? json)
     {

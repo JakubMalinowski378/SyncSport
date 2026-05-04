@@ -25,13 +25,13 @@ internal sealed class FacilitySeeder(
 
         var standardHours = WeeklyOpeningHours.Create(
         [
-            DailyOpeningHours.Create(DayOfWeek.Monday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Tuesday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Wednesday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Thursday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Friday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Saturday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Sunday, new TimeSpan(8, 0, 0), new TimeSpan(22, 0, 0))
+            DailyOpeningHours.Create(DayOfWeek.Monday, new TimeOnly(8, 0, 0), new TimeOnly(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Tuesday, new TimeOnly(8, 0, 0), new TimeOnly(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Wednesday, new TimeOnly(8, 0, 0), new TimeOnly(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Thursday, new TimeOnly(8, 0, 0), new TimeOnly(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Friday, new TimeOnly(8, 0, 0), new TimeOnly(22, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Saturday, new TimeOnly(9, 0, 0), new TimeOnly(21, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Sunday, new TimeOnly(9, 0, 0), new TimeOnly(21, 0, 0))
         ]);
 
         var facility1 = Facility.Create(
@@ -52,8 +52,8 @@ internal sealed class FacilitySeeder(
             DailyOpeningHours.CreateClosed(DayOfWeek.Wednesday),
             DailyOpeningHours.CreateClosed(DayOfWeek.Thursday),
             DailyOpeningHours.CreateClosed(DayOfWeek.Friday),
-            DailyOpeningHours.Create(DayOfWeek.Saturday, new TimeSpan(9, 0, 0), new TimeSpan(20, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Sunday, new TimeSpan(9, 0, 0), new TimeSpan(18, 0, 0))
+            DailyOpeningHours.Create(DayOfWeek.Saturday, new TimeOnly(9, 0, 0), new TimeOnly(20, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Sunday, new TimeOnly(9, 0, 0), new TimeOnly(18, 0, 0))
         ]);
 
         var facility2 = Facility.Create(

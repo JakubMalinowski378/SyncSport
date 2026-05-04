@@ -46,7 +46,14 @@ internal sealed class GetCourtReservationsQueryHandler(
             .Select(dayDate =>
             {
                 var dayDateTime = PolishTimeProvider.PolishMidnightToUtc(dayDate);
-                var dayReservations = reservationsList.Where(r => r.Time.Start.Date == dayDateTime.Date).ToList();
+                var polishLocalDay = PolishTimeProvider.ConvertUtcToPolishLocal(dayDateTime);
+                var dayReservations = reservationsList
+                    .Where(r =>
+                    {
+                        var localStart = PolishTimeProvider.ConvertUtcToPolishLocal(r.Time.Start);
+                        return localStart.Date == dayDate.ToDateTime(TimeOnly.MinValue).Date;
+                    })
+                    .ToList();
 
                 var openingHours = facilityInfo.OpeningHours.FirstOrDefault(h => h.DayOfWeek == dayDate.DayOfWeek);
 
@@ -54,15 +61,20 @@ internal sealed class GetCourtReservationsQueryHandler(
 
                 if (openingHours != null && reservationDurationMinutes > 0)
                 {
-                    var current = dayDateTime.Add(openingHours.OpenTime);
-                    var endTime = dayDateTime.Add(openingHours.CloseTime);
+                    var openDateTimeLocal = dayDate.ToDateTime(openingHours.OpenTime);
+                    var closeDateTimeLocal = dayDate.ToDateTime(openingHours.CloseTime);
+                    var openUtc = PolishTimeProvider.ConvertPolishLocalToUtc(openDateTimeLocal);
+                    var closeUtc = PolishTimeProvider.ConvertPolishLocalToUtc(closeDateTimeLocal);
+                    var current = openUtc;
                     var slotDuration = TimeSpan.FromMinutes(reservationDurationMinutes);
 
-                    while (current.Add(slotDuration) <= endTime)
+                    while (current.Add(slotDuration) <= closeUtc)
                     {
                         var slotEnd = current.Add(slotDuration);
 
-                        var overlapping = dayReservations.FirstOrDefault(r => r.Status != Domain.Enums.ReservationStatus.Cancelled && r.Time.Start < slotEnd && r.Time.End > current);
+                        var overlapping = dayReservations.FirstOrDefault(r =>
+                            r.Status != Domain.Enums.ReservationStatus.Cancelled &&
+                            r.Time.Start < slotEnd && r.Time.End > current);
 
                         if (overlapping is null)
                         {
@@ -74,7 +86,7 @@ internal sealed class GetCourtReservationsQueryHandler(
                             var slotStatus = overlapping.Status switch
                             {
                                 Domain.Enums.ReservationStatus.Pending => "Pending",
-                                Domain.Enums.ReservationStatus.Paid or Domain.Enums.ReservationStatus.AwaitingOnSitePayment => "reserved",
+                                Domain.Enums.ReservationStatus.Paid or Domain.Enums.ReservationStatus.AwaitingOnSitePayment => "Reserved",
                                 _ => null
                             };
 

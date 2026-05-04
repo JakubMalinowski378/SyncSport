@@ -127,7 +127,7 @@ public sealed class CreateFacilityCommandHandler(
     private sealed record WeeklyHoursPayloadItem(
         string? DayName,
         DayOfWeek? DayOfWeek,
-        TimeSpan OpenTime,
-        TimeSpan CloseTime,
+        TimeOnly OpenTime,
+        TimeOnly CloseTime,
         bool IsClosed);
 }

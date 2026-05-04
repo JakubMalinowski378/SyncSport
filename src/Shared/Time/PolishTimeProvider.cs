@@ -21,7 +21,8 @@ public static class PolishTimeProvider
         if (polishLocal.Offset == TimeSpan.Zero)
             return polishLocal;
 
-        return TimeZoneInfo.ConvertTime(polishLocal, PolishTimeZone);
+        var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(polishLocal.DateTime, PolishTimeZone);
+        return new DateTimeOffset(utcDateTime, TimeSpan.Zero);
     }
 
     public static DateTimeOffset ConvertUtcToPolishLocal(DateTimeOffset utc)

@@ -38,7 +38,7 @@ public class WeeklyOpeningHours : ValueObject
     public bool IsOpenAtDateTime(DateTimeOffset dateTime)
     {
         var dailyHours = GetHoursForDay(dateTime.DayOfWeek);
-        return dailyHours.IsWithinHours(dateTime.TimeOfDay);
+        return dailyHours.IsWithinHours(TimeOnly.FromTimeSpan(dateTime.TimeOfDay));
     }
 
     protected override IEnumerable<object?> GetAtomicValues()

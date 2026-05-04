@@ -184,7 +184,7 @@ public sealed class EditFacilityCommandHandler(
     private sealed record WeeklyHoursPayloadItem(
         string? DayName,
         DayOfWeek? DayOfWeek,
-        TimeSpan OpenTime,
-        TimeSpan CloseTime,
+        TimeOnly OpenTime,
+        TimeOnly CloseTime,
         bool IsClosed);
 }
