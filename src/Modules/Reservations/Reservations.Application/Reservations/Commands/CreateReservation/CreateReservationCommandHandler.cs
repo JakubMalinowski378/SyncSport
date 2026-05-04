@@ -92,7 +92,11 @@ internal sealed class CreateReservationCommandHandler(
             throw new InvalidOperationException("Reservation duration does not match the court's reservation duration.");
         }
 
-        var opening = info.OpeningHours.FirstOrDefault(o => o.DayOfWeek == start.DayOfWeek);
+        var startLocal = NormalizeToUtc(start).Kind == DateTimeKind.Utc
+            ? PolishTimeProvider.ConvertUtcToPolishLocal(NormalizeToUtc(start))
+            : start;
+
+        var opening = info.OpeningHours.FirstOrDefault(o => o.DayOfWeek == startLocal.DayOfWeek);
         if (opening is null)
         {
             throw new InvalidOperationException("Facility is closed on this day.");
@@ -101,8 +105,8 @@ internal sealed class CreateReservationCommandHandler(
         var open = opening.OpenTime;
         var close = opening.CloseTime;
 
-        var startTime = start.TimeOfDay;
-        var endTime = end.TimeOfDay;
+        var startTime = startLocal.TimeOfDay;
+        var endTime = PolishTimeProvider.ConvertUtcToPolishLocal(NormalizeToUtc(end)).TimeOfDay;
 
         if (startTime < open || endTime > close)
         {
