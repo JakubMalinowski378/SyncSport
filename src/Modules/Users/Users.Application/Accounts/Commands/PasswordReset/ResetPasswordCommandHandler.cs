@@ -17,7 +17,7 @@ internal sealed class ResetPasswordCommandHandler(
             a => a.PasswordResetToken == request.ResetToken,
             ct: cancellationToken);
 
-        if (account is null || account.PasswordResetTokenExpiryTime < DateTime.UtcNow)
+        if (account is null || account.PasswordResetTokenExpiryTime < DateTimeOffset.UtcNow)
         {
             throw new InvalidPasswordResetTokenException();
         }

@@ -17,7 +17,7 @@ internal sealed class RefreshTokenCommandHandler(
     {
         var account = await accountRepository.FirstOrDefaultAsync(a => a.RefreshToken == request.RefreshToken, ct: cancellationToken);
 
-        if (account is null || account.RefreshTokenExpiryTime < DateTime.UtcNow)
+        if (account is null || account.RefreshTokenExpiryTime < DateTimeOffset.UtcNow)
         {
             throw new InvalidRefreshTokenException();
         }

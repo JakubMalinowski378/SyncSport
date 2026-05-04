@@ -35,7 +35,7 @@ public class WeeklyOpeningHours : ValueObject
         return _hoursPerDay[day];
     }
 
-    public bool IsOpenAtDateTime(DateTime dateTime)
+    public bool IsOpenAtDateTime(DateTimeOffset dateTime)
     {
         var dailyHours = GetHoursForDay(dateTime.DayOfWeek);
         return dailyHours.IsWithinHours(dateTime.TimeOfDay);

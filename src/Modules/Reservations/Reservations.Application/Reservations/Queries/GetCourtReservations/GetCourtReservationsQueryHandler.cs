@@ -89,7 +89,7 @@ internal sealed class GetCourtReservationsQueryHandler(
             })
             .ToList();
 
-        return new GetCourtReservationsResponse(weekStartDate, weekStartDate.AddDays(6), days);
+        return new GetCourtReservationsResponse(weekStartUtc, PolishTimeProvider.PolishMidnightToUtc(weekStartDate.AddDays(6)), days);
     }
 
     private static DateOnly GetWeekStartDate(DateOnly date)

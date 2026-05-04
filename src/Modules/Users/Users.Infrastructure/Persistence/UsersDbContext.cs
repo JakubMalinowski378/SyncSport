@@ -11,7 +11,7 @@ public class UsersDbContext(DbContextOptions<UsersDbContext> options) : DbContex
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<UtcDateTimeConverter>();
         base.ConfigureConventions(configurationBuilder);
     }
 

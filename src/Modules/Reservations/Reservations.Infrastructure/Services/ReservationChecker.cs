@@ -9,7 +9,7 @@ internal sealed class ReservationChecker(
     IRepository<Reservation, Guid> reservationRepository)
     : IReservationChecker
 {
-    public Task<bool> IsUserHasConcurrentReservationAsync(Guid userId, DateTime start, DateTime end, CancellationToken cancellationToken = default)
+    public Task<bool> IsUserHasConcurrentReservationAsync(Guid userId, DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
     {
         return reservationRepository.AnyAsync(r =>
             r.UserId == userId &&
@@ -18,7 +18,7 @@ internal sealed class ReservationChecker(
             r.Time.End > start, cancellationToken);
     }
 
-    public async Task<bool> IsCourtAvailableAsync(Guid courtId, DateTime start, DateTime end, CancellationToken cancellationToken = default)
+    public async Task<bool> IsCourtAvailableAsync(Guid courtId, DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
     {
         var hasConflict = await reservationRepository.AnyAsync(r =>
             r.CourtId == courtId &&

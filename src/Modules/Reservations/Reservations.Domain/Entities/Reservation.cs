@@ -11,5 +11,5 @@ public partial class Reservation : AggregateRoot<Guid>
     public TimeRange Time { get; private set; }
     public ReservationStatus Status { get; private set; }
     public decimal Price { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
 }

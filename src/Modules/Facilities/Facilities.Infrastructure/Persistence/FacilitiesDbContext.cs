@@ -11,7 +11,7 @@ public sealed class FacilitiesDbContext(DbContextOptions<FacilitiesDbContext> op
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<UtcDateTimeConverter>();
         base.ConfigureConventions(configurationBuilder);
     }
 

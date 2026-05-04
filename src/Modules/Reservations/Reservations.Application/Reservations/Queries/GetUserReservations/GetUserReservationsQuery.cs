@@ -7,7 +7,7 @@ using Shared.Pagination;
 
 namespace Reservations.Application.Reservations.Queries.GetUserReservations;
 
-public record ReservationResponse(Guid Id, Guid CourtId, DateTime StartTime, DateTime EndTime, ReservationStatus Status);
+public record ReservationResponse(Guid Id, Guid CourtId, DateTimeOffset StartTime, DateTimeOffset EndTime, ReservationStatus Status);
 
 public sealed class GetUserReservationsQuery
     : IRequest<PagedResult<ReservationResponse>>, IPaginatedRequest

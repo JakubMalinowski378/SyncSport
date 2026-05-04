@@ -16,26 +16,23 @@ public static class PolishTimeProvider
         }
     }
 
-    public static DateTime ConvertPolishLocalToUtc(DateTime polishLocal)
+    public static DateTimeOffset ConvertPolishLocalToUtc(DateTimeOffset polishLocal)
     {
-        if (polishLocal.Kind == DateTimeKind.Utc)
+        if (polishLocal.Offset == TimeSpan.Zero)
             return polishLocal;
 
-        return TimeZoneInfo.ConvertTimeToUtc(
-            DateTime.SpecifyKind(polishLocal, DateTimeKind.Unspecified),
-            PolishTimeZone);
+        return TimeZoneInfo.ConvertTime(polishLocal, PolishTimeZone);
     }
 
-    public static DateTime ConvertUtcToPolishLocal(DateTime utc)
+    public static DateTimeOffset ConvertUtcToPolishLocal(DateTimeOffset utc)
     {
-        return TimeZoneInfo.ConvertTimeFromUtc(
-            DateTime.SpecifyKind(utc, DateTimeKind.Utc),
-            PolishTimeZone);
+        return TimeZoneInfo.ConvertTime(utc, PolishTimeZone);
     }
 
-    public static DateTime PolishMidnightToUtc(DateOnly date)
+    public static DateTimeOffset PolishMidnightToUtc(DateOnly date)
     {
         var polishMidnight = date.ToDateTime(TimeOnly.MinValue);
-        return ConvertPolishLocalToUtc(polishMidnight);
+        var polishDto = new DateTimeOffset(polishMidnight, PolishTimeZone.GetUtcOffset(polishMidnight));
+        return ConvertPolishLocalToUtc(polishDto);
     }
 }

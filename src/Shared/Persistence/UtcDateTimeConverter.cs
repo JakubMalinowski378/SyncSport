@@ -1,30 +1,13 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Shared.Time;
 
 namespace Shared.Persistence;
 
-public class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
+public class UtcDateTimeConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
 {
     public UtcDateTimeConverter()
         : base(
-            v => ConvertToUtc(v),
-            v => ConvertFromUtc(v))
+            v => v.ToUniversalTime(),
+            v => v.ToUniversalTime())
     {
-    }
-
-    private static DateTime ConvertToUtc(DateTime v)
-    {
-        if (v.Kind == DateTimeKind.Utc)
-            return v;
-
-        if (v.Kind == DateTimeKind.Unspecified)
-            return PolishTimeProvider.ConvertPolishLocalToUtc(v);
-
-        return v.ToUniversalTime();
-    }
-
-    private static DateTime ConvertFromUtc(DateTime v)
-    {
-        return DateTime.SpecifyKind(v, DateTimeKind.Utc);
     }
 }

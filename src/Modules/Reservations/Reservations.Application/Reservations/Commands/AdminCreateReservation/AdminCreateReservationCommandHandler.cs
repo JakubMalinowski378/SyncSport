@@ -28,7 +28,7 @@ internal sealed class AdminCreateReservationCommandHandler(
         facilityAuthorizationService.AuthorizeFacilityAccess(facilityId.Value);
 
         var startUtc = NormalizeToUtc(request.StartTime);
-        if (startUtc < DateTime.UtcNow)
+        if (startUtc < DateTimeOffset.UtcNow)
         {
             throw new ReservationInPastException();
         }
@@ -65,14 +65,9 @@ internal sealed class AdminCreateReservationCommandHandler(
         return reservation.Id;
     }
 
-    private static DateTime NormalizeToUtc(DateTime dateTime)
+    private static DateTimeOffset NormalizeToUtc(DateTimeOffset dateTime)
     {
-        return dateTime.Kind switch
-        {
-            DateTimeKind.Utc => dateTime,
-            DateTimeKind.Local => dateTime.ToUniversalTime(),
-            _ => PolishTimeProvider.ConvertPolishLocalToUtc(dateTime)
-        };
+        return dateTime.ToUniversalTime();
     }
 
     private async Task EnsureAlignedWithFacilityAsync(AdminCreateReservationCommand command, CancellationToken ct)
@@ -105,9 +100,7 @@ internal sealed class AdminCreateReservationCommandHandler(
             throw new InvalidOperationException("Reservation duration does not match the court's reservation duration.");
         }
 
-        var startLocal = NormalizeToUtc(start).Kind == DateTimeKind.Utc
-            ? PolishTimeProvider.ConvertUtcToPolishLocal(NormalizeToUtc(start))
-            : start;
+        var startLocal = PolishTimeProvider.ConvertUtcToPolishLocal(start.ToUniversalTime());
 
         var opening = info.OpeningHours.FirstOrDefault(o => o.DayOfWeek == startLocal.DayOfWeek);
         if (opening is null)
@@ -119,7 +112,7 @@ internal sealed class AdminCreateReservationCommandHandler(
         var close = opening.CloseTime;
 
         var startTime = startLocal.TimeOfDay;
-        var endTime = PolishTimeProvider.ConvertUtcToPolishLocal(NormalizeToUtc(end)).TimeOfDay;
+        var endTime = PolishTimeProvider.ConvertUtcToPolishLocal(end.ToUniversalTime()).TimeOfDay;
 
         if (startTime < open || endTime > close)
         {

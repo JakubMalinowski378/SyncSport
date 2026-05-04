@@ -54,7 +54,7 @@ public partial class Tariff : AggregateRoot<TariffId>
         existingOverride.UpdateHourlyRate(hourlyRate);
     }
 
-    public Money CalculatePrice(DateTime start, DateTime end, Guid? courtId = null)
+    public Money CalculatePrice(DateTimeOffset start, DateTimeOffset end, Guid? courtId = null)
     {
         var durationInHours = (decimal)(end - start).TotalHours;
 

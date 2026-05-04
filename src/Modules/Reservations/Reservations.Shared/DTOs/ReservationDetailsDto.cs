@@ -7,5 +7,5 @@ public sealed record ReservationDetailsDto(
     Guid UserId,
     string Status,
     decimal Price,
-    DateTime StartTime,
-    DateTime EndTime);
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime);

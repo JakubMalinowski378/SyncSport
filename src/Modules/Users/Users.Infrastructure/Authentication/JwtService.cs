@@ -34,7 +34,7 @@ internal sealed class JwtService(IOptions<JwtOptions> options) : IJwtService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(_options.ExpiryMinutes),
+            Expires = DateTimeOffset.UtcNow.UtcDateTime.AddMinutes(_options.ExpiryMinutes),
             Issuer = _options.Issuer,
             Audience = _options.Audience,
             SigningCredentials = credentials
@@ -53,7 +53,7 @@ internal sealed class JwtService(IOptions<JwtOptions> options) : IJwtService
         rng.GetBytes(randomNumber);
         var token = Convert.ToHexString(randomNumber);
 
-        return new RefreshTokenResult(token, DateTime.UtcNow.AddDays(_options.RefreshTokenExpiryDays));
+        return new RefreshTokenResult(token, DateTimeOffset.UtcNow.AddDays(_options.RefreshTokenExpiryDays));
     }
 
     public int GetPasswordResetTokenExpiryMinutes() => _options.PasswordResetTokenExpiryMinutes;

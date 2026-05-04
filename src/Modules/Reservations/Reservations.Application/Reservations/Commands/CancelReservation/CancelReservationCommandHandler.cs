@@ -26,7 +26,7 @@ internal sealed class CancelReservationCommandHandler(
             throw new UnauthorizedAccessException("You can only cancel your own reservations.");
         }
 
-        var timeUntilReservation = reservation.Time.Start - DateTime.UtcNow;
+        var timeUntilReservation = reservation.Time.Start - DateTimeOffset.UtcNow;
 
         if (timeUntilReservation.TotalHours < 24)
         {

@@ -45,9 +45,9 @@ public class SignUpCommandHandlerTests
         _passwordHasher.Hash(command.Password).Returns("hashed-password");
 
         var tokenResponse = new AuthenticationResponse("jwt-token", "refresh-token");
-        
+
         _jwtService.GenerateAccessToken(Arg.Any<User>()).Returns("jwt-token");
-        _jwtService.GenerateRefreshToken().Returns(new RefreshTokenResult("refresh-token", DateTime.UtcNow.AddDays(7)));
+        _jwtService.GenerateRefreshToken().Returns(new RefreshTokenResult("refresh-token", DateTimeOffset.UtcNow.AddDays(7)));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -73,7 +73,7 @@ public class SignUpCommandHandlerTests
         _passwordHasher.Hash(command.Password).Returns("hashed-password");
 
         _jwtService.GenerateAccessToken(Arg.Any<User>()).Returns("jwt-token-minimal");
-        _jwtService.GenerateRefreshToken().Returns(new RefreshTokenResult("refresh-token-minimal", DateTime.UtcNow.AddDays(7)));
+        _jwtService.GenerateRefreshToken().Returns(new RefreshTokenResult("refresh-token-minimal", DateTimeOffset.UtcNow.AddDays(7)));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);

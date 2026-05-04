@@ -10,8 +10,8 @@ public sealed record ReservationWithDetailsDto(
     Guid CourtId,
     string CourtName,
     string FacilityName,
-    DateTime StartTime,
-    DateTime EndTime,
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime,
     decimal Price,
     ReservationStatus Status);
 

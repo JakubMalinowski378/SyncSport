@@ -82,7 +82,7 @@ internal sealed class ReservationsModuleApi(
 
     public async Task<int> CancelStalePendingAsync(TimeSpan olderThan, CancellationToken cancellationToken = default)
     {
-        var cutoff = DateTime.UtcNow - olderThan;
+        var cutoff = DateTimeOffset.UtcNow - olderThan;
 
         var staleReservations = await reservationRepository.FindAsync(
             r => r.Status == ReservationStatus.Pending && r.CreatedAt < cutoff,

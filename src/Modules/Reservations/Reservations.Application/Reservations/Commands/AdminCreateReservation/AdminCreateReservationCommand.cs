@@ -6,8 +6,8 @@ namespace Reservations.Application.Reservations.Commands.AdminCreateReservation;
 public record AdminCreateReservationCommand(
     Guid UserId,
     Guid CourtId,
-    DateTime StartTime,
-    DateTime EndTime,
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime,
     bool PayOnSite = false)
     : IRequest<Guid>;
 

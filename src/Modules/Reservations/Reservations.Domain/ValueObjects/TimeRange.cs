@@ -4,16 +4,16 @@ namespace Reservations.Domain.ValueObjects;
 
 public sealed class TimeRange : ValueObject
 {
-    public DateTime Start { get; }
-    public DateTime End { get; }
+    public DateTimeOffset Start { get; }
+    public DateTimeOffset End { get; }
 
-    private TimeRange(DateTime start, DateTime end)
+    private TimeRange(DateTimeOffset start, DateTimeOffset end)
     {
         Start = start;
         End = end;
     }
 
-    public static TimeRange Create(DateTime start, DateTime end)
+    public static TimeRange Create(DateTimeOffset start, DateTimeOffset end)
     {
         if (start >= end)
         {

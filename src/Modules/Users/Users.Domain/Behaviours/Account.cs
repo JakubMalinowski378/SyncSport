@@ -17,13 +17,13 @@ public partial class Account
         return new Account(id, email, passwordHash);
     }
 
-    public void SetRefreshToken(string refreshToken, DateTime expiryTime)
+    public void SetRefreshToken(string refreshToken, DateTimeOffset expiryTime)
     {
         RefreshToken = refreshToken;
         RefreshTokenExpiryTime = expiryTime;
     }
 
-    public void SetPasswordResetToken(string resetToken, DateTime expiryTime)
+    public void SetPasswordResetToken(string resetToken, DateTimeOffset expiryTime)
     {
         PasswordResetToken = resetToken;
         PasswordResetTokenExpiryTime = expiryTime;

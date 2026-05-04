@@ -13,7 +13,7 @@ public partial class Reservation
         TimeRange time,
         ReservationStatus status,
         decimal price,
-        DateTime createdAt)
+        DateTimeOffset createdAt)
         : base(id)
     {
         UserId = userId;
@@ -26,7 +26,7 @@ public partial class Reservation
 
     public static Reservation Create(Guid userId, Guid courtId, TimeRange time, decimal price)
     {
-        var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time, ReservationStatus.Pending, price, DateTime.UtcNow);
+        var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time, ReservationStatus.Pending, price, DateTimeOffset.UtcNow);
         return reservation;
     }
 

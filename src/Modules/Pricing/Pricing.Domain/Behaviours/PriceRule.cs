@@ -38,7 +38,7 @@ public partial class PriceRule
         return new PriceRule(PriceRuleId.New(), RuleType.DayMultiplier, multiplier, day, null, null);
     }
 
-    public Money Apply(Money currentPrice, DateTime reservationStart, DateTime reservationEnd)
+    public Money Apply(Money currentPrice, DateTimeOffset reservationStart, DateTimeOffset reservationEnd)
     {
         bool applies = false;
 

@@ -9,8 +9,8 @@ public partial class Account : Entity<Guid>
     public string PasswordHash { get; private set; }
 
     public string? RefreshToken { get; private set; }
-    public DateTime? RefreshTokenExpiryTime { get; private set; }
+    public DateTimeOffset? RefreshTokenExpiryTime { get; private set; }
 
     public string? PasswordResetToken { get; private set; }
-    public DateTime? PasswordResetTokenExpiryTime { get; private set; }
+    public DateTimeOffset? PasswordResetTokenExpiryTime { get; private set; }
 }
