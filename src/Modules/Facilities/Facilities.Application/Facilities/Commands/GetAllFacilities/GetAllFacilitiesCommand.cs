@@ -11,7 +11,8 @@ public sealed record GetAllFacilitiesCommand(
     string? SortColumn = null,
     string? SortOrder = null,
     int PageNumber = 1,
-    int PageSize = 10) : IRequest<PagedResult<GetAllFacilitiesResult>>, IPaginatedRequest;
+    int PageSize = 10,
+    string? ManagedFacilityIds = null) : IRequest<PagedResult<GetAllFacilitiesResult>>, IPaginatedRequest;
 
 public sealed class GetAllFacilitiesCommandValidator : AbstractValidator<GetAllFacilitiesCommand>
 {

@@ -12,6 +12,8 @@ public sealed class GetAllFacilitiesCommandHandler(
 {
     public async Task<PagedResult<GetAllFacilitiesResult>> Handle(GetAllFacilitiesCommand request, CancellationToken cancellationToken)
     {
+        var managedFacilityIds = ParseManagedFacilityIds(request.ManagedFacilityIds);
+
         Func<IQueryable<Facility>, IOrderedQueryable<Facility>> orderBy = request.SortColumn?.ToLower() switch
         {
             "address" => request.SortOrder?.ToLower() == "desc" ? q => q.OrderByDescending(x => x.Address) : q => q.OrderBy(x => x.Address),
@@ -23,10 +25,11 @@ public sealed class GetAllFacilitiesCommandHandler(
             request.PageNumber,
             request.PageSize,
             filter: x =>
-                string.IsNullOrWhiteSpace(request.SearchTerm) ||
+                (managedFacilityIds.Count == 0 || managedFacilityIds.Contains(x.Id.Value)) &&
+                (string.IsNullOrWhiteSpace(request.SearchTerm) ||
                 x.Name.Contains(request.SearchTerm) ||
                 x.Slug.Contains(request.SearchTerm) ||
-                x.Address.Contains(request.SearchTerm),
+                x.Address.Contains(request.SearchTerm)),
             orderBy: orderBy,
             asNoTracking: true,
             ct: cancellationToken);
@@ -47,5 +50,18 @@ public sealed class GetAllFacilitiesCommandHandler(
             totalCount,
             request.PageNumber,
             request.PageSize);
+    }
+
+    private static List<Guid> ParseManagedFacilityIds(string? managedFacilityIds)
+    {
+        if (string.IsNullOrWhiteSpace(managedFacilityIds))
+            return [];
+
+        return managedFacilityIds
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(id => Guid.TryParse(id, out var guid) ? guid : (Guid?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .ToList();
     }
 }
