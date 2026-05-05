@@ -1,0 +1,39 @@
+name: Build, Test and Deploy App to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SyncSport.slnx
+
+      - name: Build application
+        run: dotnet build SyncSport.slnx --configuration Release --no-restore
+
+      - name: Run Tests
+        run: dotnet test SyncSport.slnx --configuration Release --no-build --verbosity normal
+
+      - name: Publish application
+        run: dotnet publish src/Bootstrapper/Bootstrapper.csproj -c Release -o ./publish-deploy --no-build
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'syncsportapi'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish-deploy

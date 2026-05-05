@@ -96,6 +96,13 @@ public static class DependencyInjection
     {
         app.UseExceptionHandler();
 
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseHsts();
+        }
+
+        app.UseHttpsRedirection();
+
         app.UseCors();
 
         if (app.Environment.IsDevelopment())
