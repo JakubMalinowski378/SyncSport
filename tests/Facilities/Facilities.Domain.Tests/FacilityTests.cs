@@ -6,9 +6,16 @@ namespace Facilities.Domain.Tests;
 
 public class FacilityTests
 {
+    private static WeeklyOpeningHours CreateUniformWeeklyHours(TimeSpan open, TimeSpan close)
+    {
+        var dailyHours = Enum.GetValues<DayOfWeek>().Select(day =>
+            DailyOpeningHours.Create(day, TimeOnly.FromTimeSpan(open), TimeOnly.FromTimeSpan(close)));
+        return WeeklyOpeningHours.Create(dailyHours);
+    }
+
     private WeeklyOpeningHours GetDefaultOpeningHours()
     {
-        return WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22));
+        return CreateUniformWeeklyHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22));
     }
 
     [Fact]
@@ -20,7 +27,7 @@ public class FacilityTests
         var openingHours = GetDefaultOpeningHours();
 
         // Act
-        var facility = Facility.Create(name, address, openingHours);
+        var facility = Facility.Create(name, "test-facility", address, 60, openingHours);
 
         // Assert
         facility.Should().NotBeNull();
@@ -42,7 +49,7 @@ public class FacilityTests
         var openingHours = GetDefaultOpeningHours();
 
         // Act
-        Action action = () => Facility.Create(invalidName!, address, openingHours);
+        Action action = () => Facility.Create(invalidName!, "slug", address, 60, openingHours);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -60,7 +67,7 @@ public class FacilityTests
         var openingHours = GetDefaultOpeningHours();
 
         // Act
-        Action action = () => Facility.Create(name, invalidAddress!, openingHours);
+        Action action = () => Facility.Create(name, "slug", invalidAddress!, 60, openingHours);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -71,19 +78,20 @@ public class FacilityTests
     public void AddCourt_GivenValidData_ShouldAddCourtToFacility()
     {
         // Arrange
-        var facility = Facility.Create("Test Facility", "Address", GetDefaultOpeningHours());
+        var facility = Facility.Create("Test Facility", "test-facility", "Address", 60, GetDefaultOpeningHours());
         var courtName = "Court 1";
+        var courtSlug = "court-1";
         var surfaceType = "Clay";
 
         // Act
-        var court = facility.AddCourt(courtName, surfaceType);
+        var court = facility.AddCourt(courtName, courtSlug, surfaceType);
 
         // Assert
         court.Should().NotBeNull();
         court.Id.Should().NotBeNull();
         court.Name.Should().Be(courtName);
         court.SurfaceType.Should().Be(surfaceType);
-        
+
         facility.Courts.Should().ContainSingle();
         facility.Courts.Should().Contain(court);
     }
@@ -92,24 +100,24 @@ public class FacilityTests
     public void AddCourt_GivenExistingCourtName_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var facility = Facility.Create("Test Facility", "Address", GetDefaultOpeningHours());
+        var facility = Facility.Create("Test Facility", "test-facility", "Address", 60, GetDefaultOpeningHours());
         var courtName = "Court 1";
-        facility.AddCourt(courtName, "Clay");
+        facility.AddCourt(courtName, "court-1", "Clay");
 
         // Act
-        Action action = () => facility.AddCourt(courtName, "Grass");
+        Action action = () => facility.AddCourt(courtName, "court-1", "Grass");
 
         // Assert
         action.Should().Throw<InvalidOperationException>()
-            .WithMessage("A court with this name already exists in this facility.");
+            .WithMessage("A court with this slug already exists in this facility.");
     }
 
     [Fact]
     public void RemoveCourt_GivenExistingCourtId_ShouldRemoveCourtFromFacility()
     {
         // Arrange
-        var facility = Facility.Create("Test Facility", "Address", GetDefaultOpeningHours());
-        var court = facility.AddCourt("Court 1", "Clay");
+        var facility = Facility.Create("Test Facility", "test-facility", "Address", 60, GetDefaultOpeningHours());
+        var court = facility.AddCourt("Court 1", "court-1", "Clay");
 
         // Act
         facility.RemoveCourt(court.Id);
@@ -122,7 +130,7 @@ public class FacilityTests
     public void RemoveCourt_GivenNonExistingCourtId_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var facility = Facility.Create("Test Facility", "Address", GetDefaultOpeningHours());
+        var facility = Facility.Create("Test Facility", "test-facility", "Address", 60, GetDefaultOpeningHours());
         var otherCourtId = CourtId.New();
 
         // Act
@@ -137,7 +145,7 @@ public class FacilityTests
     public void Rename_GivenValidName_ShouldUpdateName()
     {
         // Arrange
-        var facility = Facility.Create("Old Name", "Address", GetDefaultOpeningHours());
+        var facility = Facility.Create("Old Name", "old-name", "Address", 60, GetDefaultOpeningHours());
         var newName = "New Name";
 
         // Act
@@ -154,7 +162,7 @@ public class FacilityTests
     public void Rename_GivenInvalidName_ShouldThrowArgumentException(string? invalidName)
     {
         // Arrange
-        var facility = Facility.Create("Name", "Address", GetDefaultOpeningHours());
+        var facility = Facility.Create("Name", "name", "Address", 60, GetDefaultOpeningHours());
 
         // Act
         Action action = () => facility.Rename(invalidName!);
@@ -168,7 +176,7 @@ public class FacilityTests
     public void ChangeAddress_GivenValidAddress_ShouldUpdateAddress()
     {
         // Arrange
-        var facility = Facility.Create("Name", "Old Address", GetDefaultOpeningHours());
+        var facility = Facility.Create("Name", "name", "Old Address", 60, GetDefaultOpeningHours());
         var newAddress = "New Address";
 
         // Act
@@ -185,7 +193,7 @@ public class FacilityTests
     public void ChangeAddress_GivenInvalidAddress_ShouldThrowArgumentException(string? invalidAddress)
     {
         // Arrange
-        var facility = Facility.Create("Name", "Address", GetDefaultOpeningHours());
+        var facility = Facility.Create("Name", "name", "Address", 60, GetDefaultOpeningHours());
 
         // Act
         Action action = () => facility.ChangeAddress(invalidAddress!);
@@ -199,8 +207,8 @@ public class FacilityTests
     public void ChangeOpeningHours_ShouldUpdateOpeningHours()
     {
         // Arrange
-        var facility = Facility.Create("Name", "Address", GetDefaultOpeningHours());
-        var newHours = WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(9), TimeSpan.FromHours(17));
+        var facility = Facility.Create("Name", "name", "Address", 60, GetDefaultOpeningHours());
+        var newHours = CreateUniformWeeklyHours(TimeSpan.FromHours(9), TimeSpan.FromHours(17));
 
         // Act
         facility.ChangeOpeningHours(newHours);

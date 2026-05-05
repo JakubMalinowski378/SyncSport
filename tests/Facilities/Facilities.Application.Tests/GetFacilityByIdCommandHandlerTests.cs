@@ -3,8 +3,8 @@ using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
-using Shared.Domain;
 using Shared.Persistence;
+using System.Linq.Expressions;
 
 namespace Facilities.Application.Tests;
 
@@ -20,23 +20,22 @@ public class GetFacilityByIdCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GivenValidId_WhenFacilityExists_ShouldReturnResult()
+    public async Task Handle_GivenValidSlug_WhenFacilityExists_ShouldReturnResult()
     {
         // Arrange
-        var facilityId = Guid.NewGuid();
-        var command = new GetFacilityByIdCommand(facilityId);
+        var slug = "test-facility";
+        var command = new GetFacilityByIdCommand(slug);
 
         var existingFacility = Facility.Create(
             "Test Facility",
+            slug,
             "Test Address",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
-        // We change the generated Id to match the requested one
-        typeof(Entity<FacilityId>).GetProperty("Id")!.SetValue(existingFacility, new FacilityId(facilityId));
-
-        _facilityRepository.GetByIdAsync(
-            Arg.Is<FacilityId>(id => id.Value == facilityId),
-            Arg.Any<Func<IQueryable<Facility>, IQueryable<Facility>>>(),
+        _facilityRepository.FirstOrDefaultAsync(
+            Arg.Any<Expression<Func<Facility, bool>>>(),
+            Arg.Any<Func<IQueryable<Facility>, IQueryable<Facility>>?>(),
             Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<Facility?>(existingFacility));
@@ -46,22 +45,20 @@ public class GetFacilityByIdCommandHandlerTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(facilityId);
-        result.Name.Should().Be("Test Facility");
+        result!.Name.Should().Be("Test Facility");
         result.Address.Should().Be("Test Address");
         result.OpeningHours.Should().NotBeEmpty();
     }
 
     [Fact]
-    public async Task Handle_GivenValidId_WhenFacilityDoesNotExist_ShouldReturnNull()
+    public async Task Handle_GivenValidSlug_WhenFacilityDoesNotExist_ShouldReturnNull()
     {
         // Arrange
-        var facilityId = Guid.NewGuid();
-        var command = new GetFacilityByIdCommand(facilityId);
+        var command = new GetFacilityByIdCommand("nonexistent");
 
-        _facilityRepository.GetByIdAsync(
-            Arg.Any<FacilityId>(),
-            Arg.Any<Func<IQueryable<Facility>, IQueryable<Facility>>>(),
+        _facilityRepository.FirstOrDefaultAsync(
+            Arg.Any<Expression<Func<Facility, bool>>>(),
+            Arg.Any<Func<IQueryable<Facility>, IQueryable<Facility>>?>(),
             Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<Facility?>(null));
@@ -71,5 +68,12 @@ public class GetFacilityByIdCommandHandlerTests
 
         // Assert
         result.Should().BeNull();
+    }
+
+    private static WeeklyOpeningHours CreateUniformOpeningHours(TimeSpan open, TimeSpan close)
+    {
+        var dailyHours = Enum.GetValues<DayOfWeek>().Select(day =>
+            DailyOpeningHours.Create(day, TimeOnly.FromTimeSpan(open), TimeOnly.FromTimeSpan(close)));
+        return WeeklyOpeningHours.Create(dailyHours);
     }
 }

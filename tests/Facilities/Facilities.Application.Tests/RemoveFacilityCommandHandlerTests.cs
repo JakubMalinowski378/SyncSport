@@ -50,8 +50,10 @@ public class RemoveFacilityCommandHandlerTests
 
         var facility = Facility.Create(
             "Test Facility",
+            "test-facility",
             "Test Address",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
         _facilityRepository.GetByIdAsync(
             Arg.Is<FacilityId>(id => id.Value == facilityId),
@@ -90,5 +92,12 @@ public class RemoveFacilityCommandHandlerTests
 
         _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(facilityId);
         _facilityRepository.DidNotReceive().Remove(Arg.Any<Facility>());
+    }
+
+    private static WeeklyOpeningHours CreateUniformOpeningHours(TimeSpan open, TimeSpan close)
+    {
+        var dailyHours = Enum.GetValues<DayOfWeek>().Select(day =>
+            DailyOpeningHours.Create(day, TimeOnly.FromTimeSpan(open), TimeOnly.FromTimeSpan(close)));
+        return WeeklyOpeningHours.Create(dailyHours);
     }
 }

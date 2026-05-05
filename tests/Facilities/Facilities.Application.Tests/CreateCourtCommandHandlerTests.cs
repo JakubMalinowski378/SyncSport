@@ -4,6 +4,7 @@ using Facilities.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
 using Shared.Persistence;
+using Storage;
 using Users.Shared.Authorization;
 
 namespace Facilities.Application.Tests;
@@ -11,21 +12,30 @@ namespace Facilities.Application.Tests;
 public class CreateCourtCommandHandlerTests
 {
     private readonly IRepository<Facility, FacilityId> _facilityRepository;
+    private readonly IRepository<Court, CourtId> _courtRepository;
     private readonly IFacilityAuthorizationService _facilityAuthorizationService;
+    private readonly IImageStorageService _imageStorageService;
     private readonly CreateCourtCommandHandler _handler;
 
     public CreateCourtCommandHandlerTests()
     {
         _facilityRepository = Substitute.For<IRepository<Facility, FacilityId>>();
+        _courtRepository = Substitute.For<IRepository<Court, CourtId>>();
         _facilityAuthorizationService = Substitute.For<IFacilityAuthorizationService>();
-        _handler = new CreateCourtCommandHandler(_facilityRepository, _facilityAuthorizationService);
+        _imageStorageService = Substitute.For<IImageStorageService>();
+        _handler = new CreateCourtCommandHandler(_facilityRepository, _courtRepository, _facilityAuthorizationService, _imageStorageService);
     }
 
     [Fact]
     public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
-        var command = new CreateCourtCommand(Guid.NewGuid(), "Court 1", "Clay");
+        var command = new CreateCourtCommand
+        {
+            FacilityId = Guid.NewGuid(),
+            Name = "Court 1",
+            SurfaceType = "Clay"
+        };
 
         _facilityAuthorizationService
             .When(x => x.AuthorizeFacilityAccess(command.FacilityId))
@@ -46,12 +56,19 @@ public class CreateCourtCommandHandlerTests
     {
         // Arrange
         var facilityId = Guid.NewGuid();
-        var command = new CreateCourtCommand(facilityId, "Court 1", "Clay");
+        var command = new CreateCourtCommand
+        {
+            FacilityId = facilityId,
+            Name = "Court 1",
+            SurfaceType = "Clay"
+        };
 
         var facility = Facility.Create(
             "Test Facility",
+            "test-facility",
             "Test Address",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
         _facilityRepository.GetByIdAsync(
             Arg.Is<FacilityId>(id => id.Value == facilityId),
@@ -76,7 +93,12 @@ public class CreateCourtCommandHandlerTests
     public async Task Handle_WhenFacilityDoesNotExist_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var command = new CreateCourtCommand(Guid.NewGuid(), "Court 1", "Clay");
+        var command = new CreateCourtCommand
+        {
+            FacilityId = Guid.NewGuid(),
+            Name = "Court 1",
+            SurfaceType = "Clay"
+        };
 
         _facilityRepository.GetByIdAsync(
             Arg.Any<FacilityId>(),
@@ -92,5 +114,12 @@ public class CreateCourtCommandHandlerTests
 
         _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(command.FacilityId);
         _facilityRepository.DidNotReceive().Update(Arg.Any<Facility>());
+    }
+
+    private static WeeklyOpeningHours CreateUniformOpeningHours(TimeSpan open, TimeSpan close)
+    {
+        var dailyHours = Enum.GetValues<DayOfWeek>().Select(day =>
+            DailyOpeningHours.Create(day, TimeOnly.FromTimeSpan(open), TimeOnly.FromTimeSpan(close)));
+        return WeeklyOpeningHours.Create(dailyHours);
     }
 }

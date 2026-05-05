@@ -4,6 +4,7 @@ using Facilities.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
 using Shared.Persistence;
+using Storage;
 using System.Linq.Expressions;
 using Users.Shared.Authorization;
 
@@ -13,20 +14,27 @@ public class EditFacilityCommandHandlerTests
 {
     private readonly IRepository<Facility, FacilityId> _facilityRepository;
     private readonly IFacilityAuthorizationService _facilityAuthorizationService;
+    private readonly IImageStorageService _imageStorageService;
     private readonly EditFacilityCommandHandler _handler;
 
     public EditFacilityCommandHandlerTests()
     {
         _facilityRepository = Substitute.For<IRepository<Facility, FacilityId>>();
         _facilityAuthorizationService = Substitute.For<IFacilityAuthorizationService>();
-        _handler = new EditFacilityCommandHandler(_facilityRepository, _facilityAuthorizationService);
+        _imageStorageService = Substitute.For<IImageStorageService>();
+        _handler = new EditFacilityCommandHandler(_facilityRepository, _facilityAuthorizationService, _imageStorageService);
     }
 
     [Fact]
     public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
-        var command = new EditFacilityCommand(Guid.NewGuid(), "Updated Facility", "Updated Address", null, null);
+        var command = new EditFacilityCommand
+        {
+            FacilityId = Guid.NewGuid(),
+            Name = "Updated Facility",
+            Address = "Updated Address"
+        };
 
         _facilityAuthorizationService
             .When(x => x.AuthorizeFacilityAccess(command.FacilityId))
@@ -47,12 +55,21 @@ public class EditFacilityCommandHandlerTests
     {
         // Arrange
         var facilityId = Guid.NewGuid();
-        var command = new EditFacilityCommand(facilityId, "Updated Facility", "Updated Address", null, null);
+        var command = new EditFacilityCommand
+        {
+            FacilityId = facilityId,
+            Name = "Updated Facility",
+            Address = "Updated Address",
+            ReservationDuration = 60,
+            WeeklyHours = "[{\"DayOfWeek\":1,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":2,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":3,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":4,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":5,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":6,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":0,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false}]"
+        };
 
         var facility = Facility.Create(
             "Test Facility",
+            "test-facility",
             "Test Address",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
         _facilityRepository.GetByIdAsync(
             Arg.Is<FacilityId>(id => id.Value == facilityId),
@@ -85,7 +102,13 @@ public class EditFacilityCommandHandlerTests
     public async Task Handle_WhenFacilityDoesNotExist_ShouldThrowException()
     {
         // Arrange
-        var command = new EditFacilityCommand(Guid.NewGuid(), "Updated", "Address", null, null);
+        var command = new EditFacilityCommand
+        {
+            FacilityId = Guid.NewGuid(),
+            Name = "Updated",
+            Address = "Address",
+            WeeklyHours = "[{\"DayOfWeek\":1,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":2,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":3,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":4,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":5,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":6,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":0,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false}]"
+        };
 
         _facilityRepository.GetByIdAsync(
             Arg.Any<FacilityId>(),
@@ -109,17 +132,28 @@ public class EditFacilityCommandHandlerTests
         // Arrange
         var targetFacilityId = Guid.NewGuid();
         var otherFacilityId = Guid.NewGuid();
-        var command = new EditFacilityCommand(targetFacilityId, "Duplicate Name", "Address", null, null);
+        var command = new EditFacilityCommand
+        {
+            FacilityId = targetFacilityId,
+            Name = "Duplicate Name",
+            Address = "Address",
+            ReservationDuration = 60,
+            WeeklyHours = "[{\"DayOfWeek\":1,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":2,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":3,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":4,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":5,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":6,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false},{\"DayOfWeek\":0,\"OpenTime\":\"08:00\",\"CloseTime\":\"22:00\",\"IsClosed\":false}]"
+        };
 
         var facility = Facility.Create(
             "Old Name",
+            "old-name",
             "Test Address",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
         var existingFacility = Facility.Create(
             "Duplicate Name",
+            "duplicate-name",
             "Another Address",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
         typeof(Shared.Domain.Entity<FacilityId>).GetProperty("Id")!.SetValue(existingFacility, new FacilityId(otherFacilityId));
 
@@ -144,5 +178,12 @@ public class EditFacilityCommandHandlerTests
 
         _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(targetFacilityId);
         _facilityRepository.DidNotReceive().Update(Arg.Any<Facility>());
+    }
+
+    private static WeeklyOpeningHours CreateUniformOpeningHours(TimeSpan open, TimeSpan close)
+    {
+        var dailyHours = Enum.GetValues<DayOfWeek>().Select(day =>
+            DailyOpeningHours.Create(day, TimeOnly.FromTimeSpan(open), TimeOnly.FromTimeSpan(close)));
+        return WeeklyOpeningHours.Create(dailyHours);
     }
 }

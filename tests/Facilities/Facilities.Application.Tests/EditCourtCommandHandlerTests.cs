@@ -5,6 +5,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
 using NSubstitute;
 using Shared.Persistence;
+using Storage;
 using Users.Shared.Authorization;
 
 namespace Facilities.Application.Tests;
@@ -13,20 +14,28 @@ public class EditCourtCommandHandlerTests
 {
     private readonly IRepository<Facility, FacilityId> _facilityRepository;
     private readonly IFacilityAuthorizationService _facilityAuthorizationService;
+    private readonly IImageStorageService _imageStorageService;
     private readonly EditCourtCommandHandler _handler;
 
     public EditCourtCommandHandlerTests()
     {
         _facilityRepository = Substitute.For<IRepository<Facility, FacilityId>>();
         _facilityAuthorizationService = Substitute.For<IFacilityAuthorizationService>();
-        _handler = new EditCourtCommandHandler(_facilityRepository, _facilityAuthorizationService);
+        _imageStorageService = Substitute.For<IImageStorageService>();
+        _handler = new EditCourtCommandHandler(_facilityRepository, _facilityAuthorizationService, _imageStorageService);
     }
 
     [Fact]
     public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
-        var command = new EditCourtCommand(Guid.NewGuid(), Guid.NewGuid(), "Updated Court", true);
+        var command = new EditCourtCommand
+        {
+            FacilityId = Guid.NewGuid(),
+            CourtId = Guid.NewGuid(),
+            Name = "Updated Court",
+            IsActive = true
+        };
 
         _facilityAuthorizationService
             .When(x => x.AuthorizeFacilityAccess(command.FacilityId))
@@ -49,13 +58,21 @@ public class EditCourtCommandHandlerTests
         var facilityId = Guid.NewGuid();
         var facility = Facility.Create(
             "Test Facility",
+            "test-facility",
             "Test Address",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
-        var court = facility.AddCourt("Court 1", "Clay");
+        var court = facility.AddCourt("Court 1", "court-1", "Clay");
         var courtId = court.Id.Value;
 
-        var command = new EditCourtCommand(facilityId, courtId, "Updated Court", true);
+        var command = new EditCourtCommand
+        {
+            FacilityId = facilityId,
+            CourtId = courtId,
+            Name = "Updated Court",
+            IsActive = true
+        };
 
         _facilityRepository.GetByIdAsync(
             Arg.Is<FacilityId>(id => id.Value == facilityId),
@@ -75,5 +92,12 @@ public class EditCourtCommandHandlerTests
         var updatedCourt = facility.Courts.Single(c => c.Id.Value == courtId);
         updatedCourt.Name.Should().Be("Updated Court");
         updatedCourt.IsActive.Should().BeTrue();
+    }
+
+    private static WeeklyOpeningHours CreateUniformOpeningHours(TimeSpan open, TimeSpan close)
+    {
+        var dailyHours = Enum.GetValues<DayOfWeek>().Select(day =>
+            DailyOpeningHours.Create(day, TimeOnly.FromTimeSpan(open), TimeOnly.FromTimeSpan(close)));
+        return WeeklyOpeningHours.Create(dailyHours);
     }
 }

@@ -27,13 +27,17 @@ public class GetAllFacilitiesCommandHandlerTests
 
         var facility1 = Facility.Create(
             "Test Facility 1",
+            "test-facility-1",
             "Address 1",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
         var facility2 = Facility.Create(
             "Test Facility 2",
+            "test-facility-2",
             "Address 2",
-            WeeklyOpeningHours.CreateUniform(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
         var facilities = new List<Facility> { facility1, facility2 };
 
@@ -85,5 +89,12 @@ public class GetAllFacilitiesCommandHandlerTests
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
         await action.Should().ThrowAsync<ArgumentException>();
+    }
+
+    private static WeeklyOpeningHours CreateUniformOpeningHours(TimeSpan open, TimeSpan close)
+    {
+        var dailyHours = Enum.GetValues<DayOfWeek>().Select(day =>
+            DailyOpeningHours.Create(day, TimeOnly.FromTimeSpan(open), TimeOnly.FromTimeSpan(close)));
+        return WeeklyOpeningHours.Create(dailyHours);
     }
 }
