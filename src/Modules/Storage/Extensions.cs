@@ -7,8 +7,8 @@ public static class Extensions
 {
     public static IServiceCollection AddImageStorage(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<AzureBlobStorageOptions>(configuration.GetSection("AzureBlobStorage"));
-        services.AddScoped<IImageStorageService, AzureBlobStorageService>();
+        services.Configure<BlobStorageOptions>(configuration.GetSection("BlobStorage"));
+        services.AddScoped<IImageStorageService, BlobStorageService>();
 
         return services;
     }

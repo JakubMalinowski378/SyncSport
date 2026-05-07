@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Storage;
 
-internal sealed class AzureBlobStorageService(IOptions<AzureBlobStorageOptions> options) : IImageStorageService
+internal sealed class BlobStorageService(IOptions<BlobStorageOptions> options) : IImageStorageService
 {
     private readonly BlobContainerClient _containerClient = new(options.Value.ConnectionString, options.Value.ContainerName);
 
