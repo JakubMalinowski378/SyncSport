@@ -10,6 +10,9 @@ using Users.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddConsole();
+builder.Logging.AddAzureWebAppDiagnostics();
+
 builder.Services.AddSharedFramework(builder.Configuration);
 builder.Services.AddFacilitiesModule(builder.Configuration);
 builder.Services.AddUsersModule(builder.Configuration);
