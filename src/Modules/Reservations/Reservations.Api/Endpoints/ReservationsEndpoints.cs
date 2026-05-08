@@ -8,6 +8,7 @@ using Reservations.Application.Reservations.Commands.AdminCreateReservation;
 using Reservations.Application.Reservations.Commands.AdminDeleteReservation;
 using Reservations.Application.Reservations.Commands.CancelReservation;
 using Reservations.Application.Reservations.Commands.CreateReservation;
+using Reservations.Application.Reservations.Commands.MarkAsAwaitingOnSitePayment;
 using Reservations.Application.Reservations.Commands.MarkReservationAsPaidOnSite;
 using Reservations.Application.Reservations.Queries.GetCourtReservations;
 using Reservations.Application.Reservations.Queries.GetMyReservations;
@@ -54,6 +55,13 @@ public sealed class ReservationsEndpoints : ICarterModule
 
         group.MapDelete("/me/{id:guid}", CancelSelfReservation)
             .WithName("CancelSelfReservation")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
+
+        group.MapPatch("/me/{id:guid}/mark-awaiting-on-site-payment", MarkAsAwaitingOnSitePayment)
+            .WithName("MarkAsAwaitingOnSitePayment")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -138,6 +146,15 @@ public sealed class ReservationsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         await sender.Send(new CancelReservationCommand(id), cancellationToken);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> MarkAsAwaitingOnSitePayment(
+        Guid id,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(new MarkAsAwaitingOnSitePaymentCommand(id), cancellationToken);
         return Results.NoContent();
     }
 

@@ -13,6 +13,7 @@ public sealed class GetAllFacilitiesCommandHandler(
     public async Task<PagedResult<GetAllFacilitiesResult>> Handle(GetAllFacilitiesCommand request, CancellationToken cancellationToken)
     {
         var managedFacilityIds = ParseManagedFacilityIds(request.ManagedFacilityIds);
+        var facilityIds = managedFacilityIds.Select(id => new FacilityId(id)).ToList();
 
         Func<IQueryable<Facility>, IOrderedQueryable<Facility>> orderBy = request.SortColumn?.ToLower() switch
         {
@@ -25,7 +26,7 @@ public sealed class GetAllFacilitiesCommandHandler(
             request.PageNumber,
             request.PageSize,
             filter: x =>
-                (managedFacilityIds.Count == 0 || managedFacilityIds.Contains(x.Id.Value)) &&
+                (facilityIds.Count == 0 || facilityIds.Contains(x.Id)) &&
                 (string.IsNullOrWhiteSpace(request.SearchTerm) ||
                 x.Name.Contains(request.SearchTerm) ||
                 x.Slug.Contains(request.SearchTerm) ||
