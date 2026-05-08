@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Reservations.Application.Reservations.Queries.GetMyReservations;
+using Reservations.Application.Common.Interfaces;
 using Reservations.Domain.Services;
 using Reservations.Infrastructure.Persistence;
 using Reservations.Infrastructure.Services;

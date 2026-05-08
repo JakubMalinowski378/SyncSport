@@ -1,5 +1,6 @@
 using Facilities.Shared;
 using MediatR;
+using Reservations.Application.Common.Interfaces;
 using Shared.Pagination;
 
 namespace Reservations.Application.Reservations.Queries.GetMyReservations;
