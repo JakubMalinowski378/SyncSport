@@ -1,4 +1,5 @@
 using Reservations.Domain.Enums;
+using Reservations.Shared.Events;
 using Reservations.Domain.ValueObjects;
 
 namespace Reservations.Domain.Entities;
@@ -27,6 +28,7 @@ public partial class Reservation
     public static Reservation Create(Guid userId, Guid courtId, TimeRange time, decimal price)
     {
         var reservation = new Reservation(Guid.NewGuid(), userId, courtId, time, ReservationStatus.Pending, price, DateTimeOffset.UtcNow);
+        reservation.AddDomainEvent(new ReservationCreatedEvent(reservation.Id));
         return reservation;
     }
 

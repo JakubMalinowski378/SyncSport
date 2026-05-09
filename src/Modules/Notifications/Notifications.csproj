@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.csproj" />
     <ProjectReference Include="..\Users\Users.Shared\Users.Shared.csproj" />
+    <ProjectReference Include="..\Reservations\Reservations.Shared\Reservations.Shared.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
