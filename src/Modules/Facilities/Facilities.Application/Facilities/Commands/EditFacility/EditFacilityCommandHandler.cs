@@ -58,7 +58,7 @@ public sealed class EditFacilityCommandHandler(
         var parsedCustomDateHours = request.CustomDateHours.DeserializeJson<List<DateSpecificHoursDto>>(JsonOptions);
         var customDateHours = parsedCustomDateHours?.Select(x => x.IsClosed
             ? DateSpecificOpeningHours.CreateClosed(x.Date)
-            : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime)).ToList();
+            : DateSpecificOpeningHours.Create(x.Date, x.OpenTime!.Value, x.CloseTime!.Value)).ToList();
 
         facility.Rename(request.Name);
         facility.ChangeAddress(request.Address);
@@ -162,7 +162,7 @@ public sealed class EditFacilityCommandHandler(
             var day = x.DayOfWeek ?? ParseDayOfWeek(x.DayName);
             return x.IsClosed
                 ? DailyOpeningHours.CreateClosed(day)
-                : DailyOpeningHours.Create(day, x.OpenTime, x.CloseTime);
+                : DailyOpeningHours.Create(day, x.OpenTime!.Value, x.CloseTime!.Value);
         }).ToList();
     }
 
@@ -184,7 +184,7 @@ public sealed class EditFacilityCommandHandler(
     private sealed record WeeklyHoursPayloadItem(
         string? DayName,
         DayOfWeek? DayOfWeek,
-        TimeOnly OpenTime,
-        TimeOnly CloseTime,
+        TimeOnly? OpenTime,
+        TimeOnly? CloseTime,
         bool IsClosed);
 }

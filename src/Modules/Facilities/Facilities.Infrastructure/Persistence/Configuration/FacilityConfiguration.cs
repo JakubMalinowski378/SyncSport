@@ -88,7 +88,7 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
         var daily = items.Select(x => x.IsClosed
             ? DailyOpeningHours.CreateClosed(x.DayOfWeek)
-            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime, x.CloseTime));
+            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime!.Value, x.CloseTime!.Value));
 
         return WeeklyOpeningHours.Create(daily);
     }
@@ -112,7 +112,7 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
 
             return items.Select(x => x.IsClosed
                 ? DateSpecificOpeningHours.CreateClosed(x.Date)
-                : DateSpecificOpeningHours.Create(x.Date, x.OpenTime, x.CloseTime))
+                : DateSpecificOpeningHours.Create(x.Date, x.OpenTime!.Value, x.CloseTime!.Value))
                 .ToList();
         }
         catch (JsonException)
@@ -121,8 +121,8 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
         }
     }
 
-    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeOnly OpenTime, TimeOnly CloseTime, bool IsClosed);
-    private sealed record DateSpecificHoursDto(DateOnly Date, TimeOnly OpenTime, TimeOnly CloseTime, bool IsClosed);
+    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeOnly? OpenTime, TimeOnly? CloseTime, bool IsClosed);
+    private sealed record DateSpecificHoursDto(DateOnly Date, TimeOnly? OpenTime, TimeOnly? CloseTime, bool IsClosed);
 
     private static List<ImageUrl> DeserializeImages(string? json)
     {

@@ -5,11 +5,11 @@ namespace Facilities.Domain.ValueObjects;
 public class DailyOpeningHours : ValueObject
 {
     public DayOfWeek DayOfWeek { get; }
-    public TimeOnly OpenTime { get; }
-    public TimeOnly CloseTime { get; }
+    public TimeOnly? OpenTime { get; }
+    public TimeOnly? CloseTime { get; }
     public bool IsClosed { get; }
 
-    private DailyOpeningHours(DayOfWeek dayOfWeek, TimeOnly openTime, TimeOnly closeTime, bool isClosed)
+    private DailyOpeningHours(DayOfWeek dayOfWeek, TimeOnly? openTime, TimeOnly? closeTime, bool isClosed)
     {
         DayOfWeek = dayOfWeek;
         OpenTime = openTime;
@@ -29,15 +29,15 @@ public class DailyOpeningHours : ValueObject
 
     public static DailyOpeningHours CreateClosed(DayOfWeek dayOfWeek)
     {
-        return new DailyOpeningHours(dayOfWeek, TimeOnly.MinValue, TimeOnly.MinValue, isClosed: true);
+        return new DailyOpeningHours(dayOfWeek, null, null, isClosed: true);
     }
 
     public bool IsWithinHours(TimeOnly time)
     {
-        if (IsClosed)
+        if (IsClosed || !OpenTime.HasValue || !CloseTime.HasValue)
             return false;
 
-        return time >= OpenTime && time <= CloseTime;
+        return time >= OpenTime.Value && time <= CloseTime.Value;
     }
 
     protected override IEnumerable<object?> GetAtomicValues()

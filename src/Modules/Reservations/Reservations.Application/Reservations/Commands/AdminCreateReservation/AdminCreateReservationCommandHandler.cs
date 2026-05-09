@@ -111,15 +111,20 @@ internal sealed class AdminCreateReservationCommandHandler(
         var open = opening.OpenTime;
         var close = opening.CloseTime;
 
+        if (!open.HasValue || !close.HasValue)
+        {
+            throw new InvalidOperationException("Facility is closed on this day.");
+        }
+
         var startTime = TimeOnly.FromTimeSpan(startLocal.TimeOfDay);
         var endTime = TimeOnly.FromTimeSpan(PolishTimeProvider.ConvertUtcToPolishLocal(end.ToUniversalTime()).TimeOfDay);
 
-        if (startTime < open || endTime > close)
+        if (startTime < open.Value || endTime > close.Value)
         {
             throw new InvalidOperationException("Reservation must be within facility opening hours.");
         }
 
-        var minutesFromOpen = (startTime.ToTimeSpan() - open.ToTimeSpan()).TotalMinutes;
+        var minutesFromOpen = (startTime.ToTimeSpan() - open.Value.ToTimeSpan()).TotalMinutes;
         if (minutesFromOpen % duration != 0)
         {
             throw new InvalidOperationException("Reservation start time must align with the court's reservation slots.");

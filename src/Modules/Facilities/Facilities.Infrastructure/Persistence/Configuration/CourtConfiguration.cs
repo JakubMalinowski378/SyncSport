@@ -78,12 +78,12 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
 
         var daily = items.Select(x => x.IsClosed
             ? DailyOpeningHours.CreateClosed(x.DayOfWeek)
-            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime, x.CloseTime));
+            : DailyOpeningHours.Create(x.DayOfWeek, x.OpenTime!.Value, x.CloseTime!.Value));
 
         return WeeklyOpeningHours.Create(daily);
     }
 
-    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeOnly OpenTime, TimeOnly CloseTime, bool IsClosed);
+    private sealed record DailyHoursDto(DayOfWeek DayOfWeek, TimeOnly? OpenTime, TimeOnly? CloseTime, bool IsClosed);
 
     private static List<ImageUrl> DeserializeImages(string? json)
     {

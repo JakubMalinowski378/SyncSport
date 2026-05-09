@@ -59,10 +59,10 @@ internal sealed class GetCourtReservationsQueryHandler(
 
                 var slots = new List<CourtReservationSlotResponse>();
 
-                if (openingHours != null && reservationDurationMinutes > 0)
+                if (openingHours != null && openingHours.OpenTime.HasValue && openingHours.CloseTime.HasValue && reservationDurationMinutes > 0)
                 {
-                    var openDateTimeLocal = dayDate.ToDateTime(openingHours.OpenTime);
-                    var closeDateTimeLocal = dayDate.ToDateTime(openingHours.CloseTime);
+                    var openDateTimeLocal = dayDate.ToDateTime(openingHours.OpenTime.Value);
+                    var closeDateTimeLocal = dayDate.ToDateTime(openingHours.CloseTime.Value);
                     var openUtc = PolishTimeProvider.ConvertPolishLocalToUtc(openDateTimeLocal);
                     var closeUtc = PolishTimeProvider.ConvertPolishLocalToUtc(closeDateTimeLocal);
                     var current = openUtc;
