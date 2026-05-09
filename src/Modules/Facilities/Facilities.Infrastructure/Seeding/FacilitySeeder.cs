@@ -47,13 +47,13 @@ internal sealed class FacilitySeeder(
 
         var weekendOnlyHours = WeeklyOpeningHours.Create(
         [
-            DailyOpeningHours.CreateClosed(DayOfWeek.Monday),
-            DailyOpeningHours.CreateClosed(DayOfWeek.Tuesday),
-            DailyOpeningHours.CreateClosed(DayOfWeek.Wednesday),
-            DailyOpeningHours.CreateClosed(DayOfWeek.Thursday),
-            DailyOpeningHours.CreateClosed(DayOfWeek.Friday),
-            DailyOpeningHours.Create(DayOfWeek.Saturday, new TimeOnly(9, 0, 0), new TimeOnly(20, 0, 0)),
-            DailyOpeningHours.Create(DayOfWeek.Sunday, new TimeOnly(9, 0, 0), new TimeOnly(18, 0, 0))
+            DailyOpeningHours.Create(DayOfWeek.Monday, new TimeOnly(6, 0, 0), new TimeOnly(23, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Tuesday, new TimeOnly(6, 0, 0), new TimeOnly(23, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Wednesday, new TimeOnly(6, 0, 0), new TimeOnly(23, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Thursday, new TimeOnly(6, 0, 0), new TimeOnly(23, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Friday, new TimeOnly(6, 0, 0), new TimeOnly(23, 0, 0)),
+            DailyOpeningHours.Create(DayOfWeek.Saturday, new TimeOnly(8, 0, 0), new TimeOnly(21, 0, 0)),
+            DailyOpeningHours.CreateClosed(DayOfWeek.Sunday)
         ]);
 
         var facility2 = Facility.Create(
