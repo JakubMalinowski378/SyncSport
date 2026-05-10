@@ -3,6 +3,7 @@ using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
+using Shared.Domain;
 using Shared.Persistence;
 using Storage;
 using System.Linq.Expressions;
@@ -155,7 +156,7 @@ public class EditFacilityCommandHandlerTests
             60,
             CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
 
-        typeof(Shared.Domain.Entity<FacilityId>).GetProperty("Id")!.SetValue(existingFacility, new FacilityId(otherFacilityId));
+        typeof(Entity<FacilityId>).GetProperty("Id")!.SetValue(existingFacility, new FacilityId(otherFacilityId));
 
         _facilityRepository.GetByIdAsync(
             Arg.Is<FacilityId>(id => id.Value == targetFacilityId),

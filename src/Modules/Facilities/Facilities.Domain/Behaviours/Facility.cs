@@ -1,4 +1,5 @@
 using Facilities.Domain.ValueObjects;
+using Facilities.Shared.Events;
 namespace Facilities.Domain.Entities;
 
 public partial class Facility
@@ -41,6 +42,8 @@ public partial class Facility
         {
             facility._customDateHours.AddRange(customDateHours);
         }
+
+        facility.AddDomainEvent(new FacilityCreatedEvent(facility.Id.Value));
 
         return facility;
     }

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pl-PL">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anulowano Rezerwacje - SyncSport</title>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    "
+  >
+    <div
+      style="
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <h2 style="color: #d9534f">Anulowana Rezerwacja</h2>
+      <p>Cześć {{UserName}},</p>
+      <p>
+        Twoja rezerwacja dla <strong>{{CourtName}}</strong> została anulowana.
+      </p>
+      <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #d9534f; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Czas rozpoczęcia:</strong> {{StartTime}}</p>
+        <p style="margin: 5px 0;"><strong>Czas zakończenia:</strong> {{EndTime}}</p>
+        <p style="margin: 5px 0;"><strong>Cena:</strong> {{Price}} PLN</p>
+        <p style="margin: 5px 0;"><strong>Status:</strong> {{Status}}</p>
+      </div>
+      <br />
+      <p>Pozdrawiamy,</p>
+      <p>Zespół SyncSport</p>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0" />
+      <p style="font-size: 12px; color: #777; text-align: center">
+        W razie pytań, skontaktuj się z pomocą techniczną pod adresem support@syncsport.com.
+      </p>
+    </div>
+  </body>
+</html>
