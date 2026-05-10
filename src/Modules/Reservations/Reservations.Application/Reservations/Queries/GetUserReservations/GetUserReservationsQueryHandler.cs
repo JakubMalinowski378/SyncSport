@@ -14,8 +14,8 @@ internal sealed class GetUserReservationsQueryHandler(
 {
     public async Task<PagedResult<ReservationResponse>> Handle(GetUserReservationsQuery request, CancellationToken cancellationToken)
     {
-        // todo: get facility id 
-        // facilityAuthorizationService.AuthorizeUserAccess();
+        var facilityId = await facilityAuthorizationService.GetFacilityIdForCourtAsync(request.CourtId, cancellationToken);
+        facilityAuthorizationService.AuthorizeUserAccess();
 
         var result = await reservationRepository.GetPagedAsync(
             pageNumber: request.PageNumber,
