@@ -5,7 +5,6 @@ using Users.Application.Abstractions;
 using Users.Application.Accounts.Commands.SignUp;
 using Users.Domain.Entities;
 using Users.Domain.Exceptions;
-using Users.Domain.ValueObjects;
 using System.Linq.Expressions;
 using Users.Application.Accounts.Common;
 
