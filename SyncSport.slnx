@@ -45,4 +45,7 @@
     <Project Path="tests/Facilities/Facilities.Application.Tests/Facilities.Application.Tests.csproj"/>
     <Project Path="tests/Facilities/Facilities.Domain.Tests/Facilities.Domain.Tests.csproj"/>
   </Folder>
+  <Folder Name="/tests/Reservations/">
+    <Project Path="tests/Reservations/Reservations.Application.Tests/Reservations.Application.Tests.csproj"/>
+  </Folder>
 </Solution>

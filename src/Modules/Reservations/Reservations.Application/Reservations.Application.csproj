@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Reservations.Application.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Reservations.Domain\Reservations.Domain.csproj" />
     <ProjectReference Include="..\Reservations.Shared\Reservations.Shared.csproj" />
     <ProjectReference Include="..\..\Users\Users.Shared\Users.Shared.csproj" />
