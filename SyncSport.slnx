@@ -51,5 +51,6 @@
   </Folder>
   <Folder Name="/tests/Pricing/">
     <Project Path="tests/Pricing/Pricing.Application.Tests/Pricing.Application.Tests.csproj"/>
+    <Project Path="tests/Pricing/Pricing.Domain.Tests/Pricing.Domain.Tests.csproj"/>
   </Folder>
 </Solution>
