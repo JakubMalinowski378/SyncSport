@@ -1,6 +1,5 @@
 using Reservations.Domain.Entities;
 using Reservations.Domain.Enums;
-using Shared.Persistence;
 
 namespace Reservations.Application.Reservations.Queries.GetMyReservations;
 

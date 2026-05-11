@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Users.Shared.Authorization;
 using Shared.Behaviors;
+using Users.Shared.Authorization;
 
 namespace Reservations.Application;
 

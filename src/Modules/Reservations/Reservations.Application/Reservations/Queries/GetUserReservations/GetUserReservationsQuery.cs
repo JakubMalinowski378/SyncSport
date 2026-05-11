@@ -1,9 +1,9 @@
-using System.Text.Json.Serialization;
 using FluentValidation;
 using MediatR;
 using Reservations.Domain.Enums;
 using Shared.FluentValidation;
 using Shared.Pagination;
+using System.Text.Json.Serialization;
 
 namespace Reservations.Application.Reservations.Queries.GetUserReservations;
 

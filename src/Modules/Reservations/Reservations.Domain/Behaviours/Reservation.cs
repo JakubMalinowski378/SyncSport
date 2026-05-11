@@ -1,6 +1,6 @@
 using Reservations.Domain.Enums;
-using Reservations.Shared.Events;
 using Reservations.Domain.ValueObjects;
+using Reservations.Shared.Events;
 
 namespace Reservations.Domain.Entities;
 

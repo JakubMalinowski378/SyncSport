@@ -27,9 +27,9 @@ internal sealed class GetReservationsByUserIdQueryHandler(
             r.Status)).ToList();
 
         return new PagedResult<UserReservationResponse>(
-            responseItems, 
-            result.TotalCount, 
-            request.PageNumber, 
+            responseItems,
+            result.TotalCount,
+            request.PageNumber,
             request.PageSize);
     }
 }

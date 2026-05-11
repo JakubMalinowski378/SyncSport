@@ -1,4 +1,5 @@
-using Facilities.Application.Facilities.Common; using MediatR;
+using Facilities.Application.Facilities.Common;
+using MediatR;
 
 namespace Facilities.Application.Facilities.Queries.GetFacilityById;
 

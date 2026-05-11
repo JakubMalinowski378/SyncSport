@@ -1,5 +1,5 @@
-using MediatR;
 using FluentValidation;
+using MediatR;
 using Reservations.Domain.Enums;
 using Shared.FluentValidation;
 using Shared.Pagination;
