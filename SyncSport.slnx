@@ -47,5 +47,6 @@
   </Folder>
   <Folder Name="/tests/Reservations/">
     <Project Path="tests/Reservations/Reservations.Application.Tests/Reservations.Application.Tests.csproj"/>
+    <Project Path="tests/Reservations/Reservations.Domain.Tests/Reservations.Domain.Tests.csproj"/>
   </Folder>
 </Solution>
