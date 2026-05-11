@@ -21,7 +21,6 @@ public class RemoveCourtCommandHandlerTests
         _facilityRepository = Substitute.For<IRepository<Facility, FacilityId>>();
         _facilityAuthorizationService = Substitute.For<IFacilityAuthorizationService>();
         _courtRepository = Substitute.For<IRepository<Court, CourtId>>();
-        _facilityAuthorizationService = Substitute.For<IFacilityAuthorizationService>();
         _handler = new RemoveCourtCommandHandler(_facilityRepository, _courtRepository, _facilityAuthorizationService);
     }
 
@@ -29,20 +28,29 @@ public class RemoveCourtCommandHandlerTests
     public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
-        var command = new RemoveCourtCommand(Guid.NewGuid());
+        var facilityId = Guid.NewGuid();
+        var facility = Facility.Create("Test Facility", "test-facility", "Test Address", 60, CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+        var propertyInfo = typeof(global::Shared.Domain.Entity<FacilityId>).GetProperty("Id");
+        propertyInfo?.SetValue(facility, new FacilityId(facilityId));
+
+        var court = facility.AddCourt("Court 1", "court-1", "Clay");
+        var command = new RemoveCourtCommand(court.Id.Value);
+
+        _facilityRepository.FirstOrDefaultAsync(
+            Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
+            Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
+            Arg.Any<bool>(),
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Facility?>(facility));
 
         _facilityAuthorizationService
-            .When(x => x.AuthorizeFacilityAccess(command.CourtId))
+            .When(x => x.AuthorizeFacilityAccess(facilityId))
             .Throw(new UnauthorizedAccessException("You are not authorized to access this facility."));
 
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
         await action.Should().ThrowAsync<UnauthorizedAccessException>();
-
-        var anyId = Arg.Any<FacilityId>();
-        await _facilityRepository.DidNotReceiveWithAnyArgs()
-            .GetByIdAsync(anyId, Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -50,22 +58,19 @@ public class RemoveCourtCommandHandlerTests
     {
         // Arrange
         var facilityId = Guid.NewGuid();
-        var facility = Facility.Create(
-            "Test Facility",
-            "test-facility",
-            "Test Address",
-            60,
-            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+        var facility = Facility.Create("Test Facility", "test-facility", "Test Address", 60, CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+        var propertyInfo = typeof(global::Shared.Domain.Entity<FacilityId>).GetProperty("Id");
+        propertyInfo?.SetValue(facility, new FacilityId(facilityId));
 
         var court = facility.AddCourt("Court 1", "court-1", "Clay");
         var courtId = court.Id.Value;
 
         var command = new RemoveCourtCommand(courtId);
 
-        _facilityRepository.GetByIdAsync(
-            Arg.Is<FacilityId>(id => id.Value == facilityId),
+        _facilityRepository.FirstOrDefaultAsync(
+            Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
             Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
-            Arg.Is(false),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<Facility?>(facility));
 
@@ -83,24 +88,21 @@ public class RemoveCourtCommandHandlerTests
     public async Task Handle_WhenFacilityDoesNotExist_ShouldThrowException()
     {
         // Arrange
-        var facilityId = Guid.NewGuid();
-        var courtId = Guid.NewGuid();
-        var command = new RemoveCourtCommand(courtId);
+        var command = new RemoveCourtCommand(Guid.NewGuid());
 
-        _facilityRepository.GetByIdAsync(
-            Arg.Any<FacilityId>(),
+        _facilityRepository.FirstOrDefaultAsync(
+            Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
             Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
-            Arg.Is(false),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<Facility?>(null));
 
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<Exception>();
+        await action.Should().ThrowAsync<Exception>().WithMessage("Facility not found.");
 
-        _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(facilityId);
-        _facilityRepository.DidNotReceive().Update(Arg.Any<Facility>());
+        _facilityAuthorizationService.DidNotReceiveWithAnyArgs().AuthorizeFacilityAccess(Arg.Any<Guid>());
     }
 
     [Fact]
@@ -108,27 +110,23 @@ public class RemoveCourtCommandHandlerTests
     {
         // Arrange
         var facilityId = Guid.NewGuid();
-        var courtId = Guid.NewGuid();
-        var command = new RemoveCourtCommand(courtId);
+        var facility = Facility.Create("Test Facility", "test-facility", "Test Address", 60, CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+        var propertyInfo = typeof(global::Shared.Domain.Entity<FacilityId>).GetProperty("Id");
+        propertyInfo?.SetValue(facility, new FacilityId(facilityId));
 
-        var facility = Facility.Create(
-            "Test Facility",
-            "test-facility",
-            "Test Address",
-            60,
-            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+        var command = new RemoveCourtCommand(Guid.NewGuid()); // Random CourtId that is not in the facility
 
-        _facilityRepository.GetByIdAsync(
-            Arg.Is<FacilityId>(id => id.Value == facilityId),
+        _facilityRepository.FirstOrDefaultAsync(
+            Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
             Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
-            Arg.Is(false),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<Facility?>(facility));
 
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<Exception>();
+        await action.Should().ThrowAsync<Exception>().WithMessage("Court not found.");
 
         _facilityAuthorizationService.Received(1).AuthorizeFacilityAccess(facilityId);
         _facilityRepository.DidNotReceive().Update(Arg.Any<Facility>());

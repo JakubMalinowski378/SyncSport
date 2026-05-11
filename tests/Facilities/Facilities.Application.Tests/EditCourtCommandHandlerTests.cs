@@ -50,12 +50,12 @@ public class EditCourtCommandHandlerTests
             IsActive = true
         };
 
-        _facilityRepository.FindAsync(
+        _facilityRepository.FirstOrDefaultAsync(
             Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
             Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
             Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IEnumerable<Facility>>(new List<Facility> { facility }));
+            .Returns(Task.FromResult<Facility?>(facility));
 
         _facilityAuthorizationService
             .When(x => x.AuthorizeFacilityAccess(facilityId))
@@ -92,12 +92,12 @@ public class EditCourtCommandHandlerTests
             IsActive = true
         };
 
-        _facilityRepository.FindAsync(
+        _facilityRepository.FirstOrDefaultAsync(
             Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
             Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
             Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IEnumerable<Facility>>(new List<Facility> { facility }));
+            .Returns(Task.FromResult<Facility?>(facility));
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
