@@ -2,21 +2,15 @@ using MediatR;
 using Reservations.Domain.Entities;
 using Shared.Pagination;
 using Shared.Persistence;
-using Users.Shared;
-using Users.Shared.Authorization;
 
 namespace Reservations.Application.Reservations.Queries.GetUserReservations;
 
 internal sealed class GetUserReservationsQueryHandler(
-    IRepository<Reservation, Guid> reservationRepository,
-    IFacilityAuthorizationService facilityAuthorizationService)
+    IRepository<Reservation, Guid> reservationRepository)
     : IRequestHandler<GetUserReservationsQuery, PagedResult<ReservationResponse>>
 {
     public async Task<PagedResult<ReservationResponse>> Handle(GetUserReservationsQuery request, CancellationToken cancellationToken)
     {
-        var facilityId = await facilityAuthorizationService.GetFacilityIdForCourtAsync(request.CourtId, cancellationToken);
-        facilityAuthorizationService.AuthorizeUserAccess();
-
         var result = await reservationRepository.GetPagedAsync(
             pageNumber: request.PageNumber,
             pageSize: request.PageSize,
