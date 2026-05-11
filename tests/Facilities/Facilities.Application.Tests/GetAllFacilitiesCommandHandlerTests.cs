@@ -1,4 +1,4 @@
-using Facilities.Application.Facilities.Commands.GetAllFacilities;
+using Facilities.Application.Facilities.Queries.GetAllFacilities;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using FluentAssertions;

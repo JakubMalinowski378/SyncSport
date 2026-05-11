@@ -1,4 +1,4 @@
-﻿using Facilities.Application.Facilities.Commands.GetFacilityById;
+﻿using Facilities.Application.Facilities.Queries.GetFacilityById;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
 using FluentAssertions;
@@ -8,15 +8,15 @@ using System.Linq.Expressions;
 
 namespace Facilities.Application.Tests;
 
-public class GetFacilityByIdCommandHandlerTests
+public class GetFacilityByIdQueryHandlerTests
 {
     private readonly IRepository<Facility, FacilityId> _facilityRepository;
-    private readonly GetFacilityByIdCommandHandler _handler;
+    private readonly GetFacilityByIdQueryHandler _handler;
 
-    public GetFacilityByIdCommandHandlerTests()
+    public GetFacilityByIdQueryHandlerTests()
     {
         _facilityRepository = Substitute.For<IRepository<Facility, FacilityId>>();
-        _handler = new GetFacilityByIdCommandHandler(_facilityRepository);
+        _handler = new GetFacilityByIdQueryHandler(_facilityRepository);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class GetFacilityByIdCommandHandlerTests
     {
         // Arrange
         var slug = "test-facility";
-        var command = new GetFacilityByIdCommand(slug);
+        var command = new GetFacilityByIdQuery(slug);
 
         var existingFacility = Facility.Create(
             "Test Facility",
@@ -54,7 +54,7 @@ public class GetFacilityByIdCommandHandlerTests
     public async Task Handle_GivenValidSlug_WhenFacilityDoesNotExist_ShouldReturnNull()
     {
         // Arrange
-        var command = new GetFacilityByIdCommand("nonexistent");
+        var command = new GetFacilityByIdQuery("nonexistent");
 
         _facilityRepository.FirstOrDefaultAsync(
             Arg.Any<Expression<Func<Facility, bool>>>(),

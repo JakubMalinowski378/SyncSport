@@ -5,7 +5,7 @@ using MediatR;
 using Shared.Pagination;
 using Shared.Persistence;
 
-namespace Facilities.Application.Facilities.Commands.GetAllFacilities;
+namespace Facilities.Application.Facilities.Queries.GetAllFacilities;
 
 public sealed class GetAllFacilitiesCommandHandler(
     IRepository<Facility, FacilityId> facilityRepository) : IRequestHandler<GetAllFacilitiesCommand, PagedResult<GetAllFacilitiesResult>>

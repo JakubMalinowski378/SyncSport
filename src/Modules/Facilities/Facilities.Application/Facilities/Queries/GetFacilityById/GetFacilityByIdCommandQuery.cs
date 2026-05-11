@@ -4,12 +4,12 @@ using Facilities.Domain.ValueObjects;
 using MediatR;
 using Shared.Persistence;
 
-namespace Facilities.Application.Facilities.Commands.GetFacilityById;
+namespace Facilities.Application.Facilities.Queries.GetFacilityById;
 
-public sealed class GetFacilityByIdCommandHandler(
-    IRepository<Facility, FacilityId> facilityRepository) : IRequestHandler<GetFacilityByIdCommand, GetFacilityByIdResult?>
+public sealed class GetFacilityByIdQueryHandler(
+    IRepository<Facility, FacilityId> facilityRepository) : IRequestHandler<GetFacilityByIdQuery, GetFacilityByIdResult?>
 {
-    public async Task<GetFacilityByIdResult?> Handle(GetFacilityByIdCommand request, CancellationToken cancellationToken)
+    public async Task<GetFacilityByIdResult?> Handle(GetFacilityByIdQuery request, CancellationToken cancellationToken)
     {
         var facility = await facilityRepository.FirstOrDefaultAsync(
             x => x.Slug == request.FacilitySlug,

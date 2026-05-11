@@ -13,23 +13,26 @@ public class RemoveCourtCommandHandlerTests
 {
     private readonly IRepository<Facility, FacilityId> _facilityRepository;
     private readonly IFacilityAuthorizationService _facilityAuthorizationService;
+    private readonly IRepository<Court, CourtId> _courtRepository;
     private readonly RemoveCourtCommandHandler _handler;
 
     public RemoveCourtCommandHandlerTests()
     {
         _facilityRepository = Substitute.For<IRepository<Facility, FacilityId>>();
         _facilityAuthorizationService = Substitute.For<IFacilityAuthorizationService>();
-        _handler = new RemoveCourtCommandHandler(_facilityRepository, _facilityAuthorizationService);
+        _courtRepository = Substitute.For<IRepository<Court, CourtId>>();
+        _facilityAuthorizationService = Substitute.For<IFacilityAuthorizationService>();
+        _handler = new RemoveCourtCommandHandler(_facilityRepository, _courtRepository, _facilityAuthorizationService);
     }
 
     [Fact]
     public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
-        var command = new RemoveCourtCommand(Guid.NewGuid(), Guid.NewGuid());
+        var command = new RemoveCourtCommand(Guid.NewGuid());
 
         _facilityAuthorizationService
-            .When(x => x.AuthorizeFacilityAccess(command.FacilityId))
+            .When(x => x.AuthorizeFacilityAccess(command.CourtId))
             .Throw(new UnauthorizedAccessException("You are not authorized to access this facility."));
 
         // Act & Assert
@@ -57,7 +60,7 @@ public class RemoveCourtCommandHandlerTests
         var court = facility.AddCourt("Court 1", "court-1", "Clay");
         var courtId = court.Id.Value;
 
-        var command = new RemoveCourtCommand(facilityId, courtId);
+        var command = new RemoveCourtCommand(courtId);
 
         _facilityRepository.GetByIdAsync(
             Arg.Is<FacilityId>(id => id.Value == facilityId),
@@ -82,7 +85,7 @@ public class RemoveCourtCommandHandlerTests
         // Arrange
         var facilityId = Guid.NewGuid();
         var courtId = Guid.NewGuid();
-        var command = new RemoveCourtCommand(facilityId, courtId);
+        var command = new RemoveCourtCommand(courtId);
 
         _facilityRepository.GetByIdAsync(
             Arg.Any<FacilityId>(),
@@ -106,7 +109,7 @@ public class RemoveCourtCommandHandlerTests
         // Arrange
         var facilityId = Guid.NewGuid();
         var courtId = Guid.NewGuid();
-        var command = new RemoveCourtCommand(facilityId, courtId);
+        var command = new RemoveCourtCommand(courtId);
 
         var facility = Facility.Create(
             "Test Facility",

@@ -9,14 +9,13 @@ namespace Facilities.Application.Facilities.Commands.RemoveCourt;
 
 public sealed class RemoveCourtCommandHandler(
     IRepository<Facility, FacilityId> facilityRepository,
+    IRepository<Court, CourtId> courtRepository,
     IFacilityAuthorizationService facilityAuthorizationService) : IRequestHandler<RemoveCourtCommand>
 {
     public async Task Handle(RemoveCourtCommand request, CancellationToken cancellationToken)
     {
-        facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
-
-        var facility = await facilityRepository.GetByIdAsync(
-            new FacilityId(request.FacilityId),
+        var facility = await facilityRepository.FirstOrDefaultAsync(
+            f => f.Courts.Any(c => c.Id.Value == request.CourtId),
             include: query => query.Include(f => f.Courts),
             asNoTracking: false,
             ct: cancellationToken);
@@ -25,6 +24,8 @@ public sealed class RemoveCourtCommandHandler(
         {
             throw new Exception("Facility not found.");
         }
+
+        facilityAuthorizationService.AuthorizeFacilityAccess(facility.Id.Value);
 
         var court = facility.Courts.FirstOrDefault(c => c.Id.Value == request.CourtId);
         if (court is null)

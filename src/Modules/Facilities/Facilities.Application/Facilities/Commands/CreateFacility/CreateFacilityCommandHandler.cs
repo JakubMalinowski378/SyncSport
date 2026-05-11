@@ -1,17 +1,18 @@
+using System.Text.Json;
+using Facilities.Application.Facilities.Common;
 using Facilities.Domain.Entities;
 using Facilities.Domain.ValueObjects;
-using Facilities.Application.Facilities.Common;
 using MediatR;
-using Shared.Persistence;
-using System.Text.Json;
-using Storage;
 using Shared.Extensions;
+using Shared.Persistence;
+using Storage;
 
 namespace Facilities.Application.Facilities.Commands.CreateFacility;
 
 public sealed class CreateFacilityCommandHandler(
     IRepository<Facility, FacilityId> facilityRepository,
-    IImageStorageService imageStorageService) : IRequestHandler<CreateFacilityCommand, Guid>
+    IImageStorageService imageStorageService)
+    : IRequestHandler<CreateFacilityCommand, Guid>
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 

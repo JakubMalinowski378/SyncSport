@@ -16,13 +16,10 @@ public sealed class EditCourtCommandHandler(
 {
     public async Task Handle(EditCourtCommand request, CancellationToken cancellationToken)
     {
-        facilityAuthorizationService.AuthorizeFacilityAccess(request.FacilityId);
-
-        var facilityId = new FacilityId(request.FacilityId);
         var courtId = new CourtId(request.CourtId);
 
-        var facility = await facilityRepository.GetByIdAsync(
-            facilityId,
+        var facility = await facilityRepository.FirstOrDefaultAsync(
+            f => f.Courts.Any(c => c.Id == courtId),
             include: query => query.Include(f => f.Courts),
             asNoTracking: false,
             ct: cancellationToken);
@@ -31,6 +28,8 @@ public sealed class EditCourtCommandHandler(
         {
             throw new Exception("Facility not found.");
         }
+
+        facilityAuthorizationService.AuthorizeFacilityAccess(facility.Id.Value);
 
         var court = facility.Courts.FirstOrDefault(c => c.Id.Value == request.CourtId);
         if (court is null)

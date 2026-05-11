@@ -29,26 +29,42 @@ public class EditCourtCommandHandlerTests
     public async Task Handle_WhenUserIsNotAuthorized_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
+        var facilityId = Guid.NewGuid();
+        var facility = Facility.Create(
+            "Test Facility",
+            "test-facility",
+            "Test Address",
+            60,
+            CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+        // Hardcode the ID for the mock
+        var propertyInfo = typeof(global::Shared.Domain.Entity<FacilityId>).GetProperty("Id");
+        propertyInfo?.SetValue(facility, new FacilityId(facilityId));
+
+        var court = facility.AddCourt("Court 1", "court-1", "Clay");
+        var courtId = court.Id.Value;
+
         var command = new EditCourtCommand
         {
-            FacilityId = Guid.NewGuid(),
-            CourtId = Guid.NewGuid(),
+            CourtId = courtId,
             Name = "Updated Court",
             IsActive = true
         };
 
+        _facilityRepository.FindAsync(
+            Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
+            Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
+            Arg.Any<bool>(),
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IEnumerable<Facility>>(new List<Facility> { facility }));
+
         _facilityAuthorizationService
-            .When(x => x.AuthorizeFacilityAccess(command.FacilityId))
+            .When(x => x.AuthorizeFacilityAccess(facilityId))
             .Throw(new UnauthorizedAccessException("You are not authorized to access this facility."));
 
         // Act & Assert
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
         await action.Should().ThrowAsync<UnauthorizedAccessException>();
-
-        var anyId = Arg.Any<FacilityId>();
-        await _facilityRepository.DidNotReceiveWithAnyArgs()
-            .GetByIdAsync(anyId, Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -62,24 +78,26 @@ public class EditCourtCommandHandlerTests
             "Test Address",
             60,
             CreateUniformOpeningHours(TimeSpan.FromHours(8), TimeSpan.FromHours(22)));
+        // Hardcode the ID for the mock
+        var propertyInfo = typeof(global::Shared.Domain.Entity<FacilityId>).GetProperty("Id");
+        propertyInfo?.SetValue(facility, new FacilityId(facilityId));
 
         var court = facility.AddCourt("Court 1", "court-1", "Clay");
         var courtId = court.Id.Value;
 
         var command = new EditCourtCommand
         {
-            FacilityId = facilityId,
             CourtId = courtId,
             Name = "Updated Court",
             IsActive = true
         };
 
-        _facilityRepository.GetByIdAsync(
-            Arg.Is<FacilityId>(id => id.Value == facilityId),
+        _facilityRepository.FindAsync(
+            Arg.Any<System.Linq.Expressions.Expression<Func<Facility, bool>>>(),
             Arg.Any<Func<IQueryable<Facility>, IIncludableQueryable<Facility, object>>>(),
-            Arg.Is(false),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<Facility?>(facility));
+            .Returns(Task.FromResult<IEnumerable<Facility>>(new List<Facility> { facility }));
 
         // Act
         await _handler.Handle(command, CancellationToken.None);

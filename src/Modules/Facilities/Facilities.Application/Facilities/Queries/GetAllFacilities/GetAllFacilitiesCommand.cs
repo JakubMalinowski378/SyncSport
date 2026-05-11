@@ -4,7 +4,7 @@ using MediatR;
 using Shared.FluentValidation;
 using Shared.Pagination;
 
-namespace Facilities.Application.Facilities.Commands.GetAllFacilities;
+namespace Facilities.Application.Facilities.Queries.GetAllFacilities;
 
 public sealed record GetAllFacilitiesCommand(
     string? SearchTerm = null,

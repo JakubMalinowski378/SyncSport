@@ -13,7 +13,6 @@ public sealed class CreateFacilityCommand : IRequest<Guid>
     public string? WeeklyHours { get; set; }
     public string? CustomDateHours { get; set; }
     public IFormFileCollection? Images { get; set; }
-    public int? MainImageIndex { get; set; }
 }
 
 public sealed class CreateFacilityCommandValidator : AbstractValidator<CreateFacilityCommand>
@@ -33,11 +32,6 @@ public sealed class CreateFacilityCommandValidator : AbstractValidator<CreateFac
 
         RuleFor(x => x.Images)
             .ValidateImageFormFiles();
-
-        RuleFor(x => x.MainImageIndex)
-            .Must((cmd, index) => !index.HasValue || (cmd.Images != null && index.Value >= 0 && index.Value < cmd.Images.Count))
-            .WithMessage("MainImageIndex must be valid for the provided images.")
-            .When(x => x.MainImageIndex.HasValue);
     }
 }
 

@@ -1,4 +1,3 @@
-using Facilities.Application.Facilities.Common;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -8,23 +7,18 @@ namespace Facilities.Application.Facilities.Commands.EditCourt;
 
 public sealed class EditCourtCommand : IRequest
 {
-    public Guid FacilityId { get; set; }
     public Guid CourtId { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public int? OverrideReservationDuration { get; set; }
     public IFormFileCollection? Images { get; set; }
     public List<string>? RemovedImageUrls { get; set; }
-    public int? MainImageIndex { get; set; }
 }
 
 public sealed class EditCourtCommandValidator : AbstractValidator<EditCourtCommand>
 {
     public EditCourtCommandValidator()
     {
-        RuleFor(x => x.FacilityId)
-            .NotEmpty();
-
         RuleFor(x => x.CourtId)
             .NotEmpty();
 
@@ -44,10 +38,5 @@ public sealed class EditCourtCommandValidator : AbstractValidator<EditCourtComma
             .Must(url => Uri.TryCreate(url, UriKind.Absolute, out _))
             .WithMessage("Each removed image URL must be a valid absolute URI.")
             .When(x => x.RemovedImageUrls is not null && x.RemovedImageUrls.Count > 0);
-
-        RuleFor(x => x.MainImageIndex)
-            .Must(index => !index.HasValue || index.Value >= 0)
-            .WithMessage("MainImageIndex must be greater than or equal to 0.")
-            .When(x => x.MainImageIndex.HasValue);
     }
 }

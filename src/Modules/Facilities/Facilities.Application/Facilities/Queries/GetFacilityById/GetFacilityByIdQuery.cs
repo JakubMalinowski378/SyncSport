@@ -1,9 +1,8 @@
-using Facilities.Application.Facilities.Common;
-using MediatR;
+using Facilities.Application.Facilities.Common; using MediatR;
 
-namespace Facilities.Application.Facilities.Commands.GetFacilityById;
+namespace Facilities.Application.Facilities.Queries.GetFacilityById;
 
-public sealed record GetFacilityByIdCommand(string FacilitySlug) : IRequest<GetFacilityByIdResult?>;
+public sealed record GetFacilityByIdQuery(string FacilitySlug) : IRequest<GetFacilityByIdResult?>;
 
 public sealed record GetFacilityByIdResult(
     Guid Id,

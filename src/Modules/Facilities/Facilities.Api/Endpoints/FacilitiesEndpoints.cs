@@ -3,11 +3,10 @@ using Facilities.Application.Facilities.Commands.CreateCourt;
 using Facilities.Application.Facilities.Commands.CreateFacility;
 using Facilities.Application.Facilities.Commands.EditCourt;
 using Facilities.Application.Facilities.Commands.EditFacility;
-using Facilities.Application.Facilities.Commands.GetAllFacilities;
-using Facilities.Application.Facilities.Commands.GetFacilityById;
+using Facilities.Application.Facilities.Queries.GetAllFacilities;
+using Facilities.Application.Facilities.Queries.GetFacilityById;
 using Facilities.Application.Facilities.Commands.RemoveCourt;
 using Facilities.Application.Facilities.Commands.RemoveFacility;
-using Facilities.Application.Facilities.Common;
 using Facilities.Application.Facilities.Queries.GetFacilityCourtById;
 using Facilities.Application.Facilities.Queries.GetFacilityCourts;
 using MediatR;
@@ -31,7 +30,8 @@ public sealed class FacilitiesEndpoints : ICarterModule
             .Produces<Guid>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .DisableAntiforgery();
+            .DisableAntiforgery()
+            .RequireAuthorization(Policies.AdminOrManager);
 
         group.MapGet("/", GetFacilities)
             .WithName("GetFacilities")
@@ -117,7 +117,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> GetFacilityById(string facilitySlug, ISender sender, CancellationToken ct)
     {
-        var facility = await sender.Send(new GetFacilityByIdCommand(facilitySlug), ct);
+        var facility = await sender.Send(new GetFacilityByIdQuery(facilitySlug), ct);
 
         if (facility is null)
         {
@@ -171,14 +171,12 @@ public sealed class FacilitiesEndpoints : ICarterModule
     {
         await sender.Send(new EditCourtCommand
         {
-            FacilityId = facilityId,
             CourtId = courtId,
             Name = request.Name,
             IsActive = request.IsActive,
             OverrideReservationDuration = request.OverrideReservationDuration,
             Images = request.Images,
-            RemovedImageUrls = request.RemovedImageUrls,
-            MainImageIndex = request.MainImageIndex
+            RemovedImageUrls = request.RemovedImageUrls
         }, ct);
 
         return Results.NoContent();
@@ -194,7 +192,7 @@ public sealed class FacilitiesEndpoints : ICarterModule
 
     private static async Task<IResult> RemoveCourt(Guid facilityId, Guid courtId, ISender sender, CancellationToken ct)
     {
-        await sender.Send(new RemoveCourtCommand(facilityId, courtId), ct);
+        await sender.Send(new RemoveCourtCommand(courtId), ct);
 
         return Results.NoContent();
     }

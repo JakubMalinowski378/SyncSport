@@ -21,4 +21,3 @@ public sealed record CourtDto(
     bool IsActive,
     int? OverrideReservationDuration,
     List<ImageDto> Images);
-
