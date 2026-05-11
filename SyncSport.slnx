@@ -49,4 +49,7 @@
     <Project Path="tests/Reservations/Reservations.Application.Tests/Reservations.Application.Tests.csproj"/>
     <Project Path="tests/Reservations/Reservations.Domain.Tests/Reservations.Domain.Tests.csproj"/>
   </Folder>
+  <Folder Name="/tests/Pricing/">
+    <Project Path="tests/Pricing/Pricing.Application.Tests/Pricing.Application.Tests.csproj"/>
+  </Folder>
 </Solution>
